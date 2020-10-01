@@ -1,0 +1,108 @@
+﻿<Window x:Class="FnSync.WindowSetting"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FnSync"
+        mc:Ignorable="d"
+        WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
+        Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
+        Title="{DynamicResource Setting}" Height="300" Width="500">
+    <TabControl Background="Transparent" Margin="4">
+        <TabItem Header="{DynamicResource General}">
+            <StackPanel x:Name="Settings" Margin="8">
+                <CheckBox Margin="0,4" Content="{DynamicResource ConnectOnStartup}" IsChecked="{Binding ConnectOnStartup, Mode=TwoWay}"/>
+                <CheckBox Margin="0,4" Content="{DynamicResource HideOnStartup}" IsChecked="{Binding HideOnStartup, Mode=TwoWay}"/>
+                <CheckBox Margin="0,4" Content="{DynamicResource DontToastConnected}" IsChecked="{Binding DontToastConnected, Mode=TwoWay}"/>
+                <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}" Checked="ClipboardSync_Checked"/>
+            </StackPanel>
+        </TabItem>
+
+        <TabItem x:Name="NotificationClickEventTab" Header="{DynamicResource NotificationClickEvent}" Visibility="Collapsed">
+            <DataGrid x:Name="AppList" AutoGenerateColumns="False" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="{DynamicResource APPName}" Binding="{Binding Value}" />
+                    <DataGridTextColumn Header="{DynamicResource PkgID}" Binding="{Binding Key}" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </TabItem>
+
+        <TabItem Header="{DynamicResource About}" >
+            <RichTextBox HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled" IsDocumentEnabled="True">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text="{DynamicResource FnSync}"/>
+                        <Run Text="Version"/>
+                        <Run x:Name="Version" Text=""/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="{DynamicResource OpenSourcedAt}"/>
+                        <Hyperlink NavigateUri="https://gitee.com/holmium/fnsync" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="{DynamicResource ThisId}"/>
+                        <Run x:Name="IdField" Text="(ID)"/>
+                    </Paragraph>
+                    <Paragraph>
+                        <Run Text="{DynamicResource Locale}"/>
+                        <Run x:Name="LocaleField" Text="(LOCALE)"/>
+                    </Paragraph>
+
+
+                    <Paragraph>
+                        <Run Text="{DynamicResource AndroidCompanion}"/>
+                        <Run Text=": "/>
+                        <Hyperlink NavigateUri="https://play.google.com/store/apps/details?id=holmium.fnsync" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                    </Paragraph>
+
+                    <Paragraph>
+                        <Run Text="{DynamicResource ThirdPartyLibrary}"/>
+                        <LineBreak/>
+
+                        <Run Text="Hardcodet.NotifyIcon.Wpf"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://www.codeproject.com/info/cpol10.aspx" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
+                        <Run Text="Newtonsoft.Json"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://licenses.nuget.org/MIT" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
+                        <Run Text="Portable.BouncyCastle"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://www.bouncycastle.org/csharp/licence.html" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
+                        <Run Text="QueryString.NET"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://raw.githubusercontent.com/WindowsNotifications/QueryString.NET/master/LICENSE" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
+                        <Run Text="QRCoder"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://licenses.nuget.org/MIT" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
+                    </Paragraph>
+
+                </FlowDocument>
+            </RichTextBox>
+        </TabItem>
+
+    </TabControl>
+</Window>

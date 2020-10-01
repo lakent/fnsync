@@ -1,0 +1,36 @@
+﻿<Window x:Class="FnSync.WindowInstruction"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FnSync"
+        mc:Ignorable="d"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="CanMinimize"
+        Title="{DynamicResource Instruction}"
+        Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
+        WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico"
+        >
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Image Grid.Row="0" Margin="8" Stretch="None" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Source="{Binding Mode=OneWay, Source={StaticResource GettingStarted_Screenshot_Scan}}"/>
+        <Label Grid.Row="1" Content="{DynamicResource Instructions}"/>
+        <Label Grid.Row="2">
+            <Hyperlink NavigateUri="https://play.google.com/store/apps/details?id=holmium.fnsync" RequestNavigate="DownloadAndroidCompanion_RequestNavigate">
+                <TextBlock Text="{DynamicResource DownloadAndroidCompanion}"/>
+            </Hyperlink>
+        </Label>
+        <Label Grid.Row="3" Visibility="Collapsed" x:Name="DownloadAndroidCompanionCoolApk" >
+            <Hyperlink NavigateUri="https://www.coolapk.com/apk/269031" RequestNavigate="DownloadAndroidCompanion_RequestNavigate">
+                <TextBlock Text="下载安卓端 APP（酷安）"/>
+            </Hyperlink>
+        </Label>
+        <Button Grid.Row="4" x:Name="GotIt" Margin="0,8,0,0" Padding="8,4" Content="{DynamicResource GotIt}" HorizontalAlignment="Center" Click="GotIt_Click"/>
+    </Grid>
+</Window>

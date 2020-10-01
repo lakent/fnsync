@@ -1,0 +1,114 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=mscorlib">
+    
+    <System:String x:Key="FnSync">FnSync</System:String>
+    <System:String x:Key="FnSyncTooltip">FnSync - 与电脑同步</System:String>
+    <System:String x:Key="Exit">退出</System:String>
+    <System:String x:Key="EnterConnectionCodeHere">输入连接码…</System:String>
+    <System:String x:Key="Connect">连接</System:String>
+    <System:String x:Key="Cancel">取消</System:String>
+    <System:String x:Key="Cancelling">取消</System:String>
+    <System:String x:Key="Prompt">提示</System:String>
+    <System:String x:Key="PleaseEnterConnectionCode">请输入连接码。</System:String>
+
+    <System:String x:Key="SwitchToEnter">切换到连接码</System:String>
+    <System:String x:Key="SwitchToScan">切换到二维码</System:String>
+    <System:String x:Key="ConnectionCode">连接码</System:String>
+    <System:String x:Key="LocalAddress">本地 IP 地址</System:String>
+    <System:String x:Key="Connected">已连接</System:String>
+    <System:String x:Key="LostConnection">连接已断开</System:String>
+    <System:String x:Key="ConnectionFailed">请重试</System:String>
+    <System:String x:Key="PromptAccept">请在手机上接受连接</System:String>
+    <System:String x:Key="Rename">重命名</System:String>
+    <System:String x:Key="Disconnect">断开连接</System:String>
+    <System:String x:Key="ConnectOther">连接其它设备</System:String>
+    <System:String x:Key="Status">状态</System:String>
+    <System:String x:Key="Online">在线</System:String>
+    <System:String x:Key="Offline">离线</System:String>
+    <System:String x:Key="OfflineWithPhone">离线 - {0} - 点击重新连接</System:String>
+    <System:String x:Key="Connecting">连接中…</System:String>
+    <System:String x:Key="ConnectingKnown">正在连接已知设备…</System:String>
+    <System:String x:Key="ConnectedPhones">已连接的设备：</System:String>
+    <System:String x:Key="ConnectedPhonesNone">(无)</System:String>
+    <System:String x:Key="CopyText">复制文本</System:String>
+
+    <System:String x:Key="TextCastReceived">收到一段文本</System:String>
+    <System:String x:Key="TextTooLongAlreadyCopied">文本太长，已复制到剪切板</System:String>
+
+    <System:String x:Key="About">关于</System:String>
+    <System:String x:Key="ThisId">本机ID：</System:String>
+    <System:String x:Key="Locale">区域代码：</System:String>
+    <System:String x:Key="OpenSourcedAt">本项目托管在：</System:String>
+    <System:String x:Key="AndroidCompanion">安卓端 APP</System:String>
+    <System:String x:Key="ThirdPartyLibrary">本程序使用了以下第三方库：</System:String>
+
+    <System:String x:Key="Instruction">操作步骤</System:String>
+    <System:String x:Key="GettingStarted_Screenshot">Resources\PhoneScreenshot_zh-cn.png</System:String>
+    <System:String x:Key="GettingStarted_Screenshot_Scan">Resources\PhoneScreenshot_scan_zh-cn.png</System:String>
+    <System:String x:Key="DownloadAndroidCompanion">下载安卓端 APP（Google Play）</System:String>
+    <System:String x:Key="Instructions" xml:space="preserve">操作步骤:
+0、将手机和电脑连接到同一个局域网中。
+1、下载并打开安卓端 APP。
+2、在安卓端软件中开启想要使用的功能。
+3、用手机扫描电脑端软件显示的二维码，或者在电脑端软件输入手机上生成的“连接码”再点击“链接”。</System:String>
+    <System:String x:Key="GotIt">知道了</System:String>
+
+    <System:String x:Key="DeviceManager">设备管理器</System:String>
+    <System:String x:Key="Name">名称</System:String>
+    <System:String x:Key="ID">ID</System:String>
+    <System:String x:Key="IsOnline">在线？</System:String>
+    <System:String x:Key="Yes">是</System:String>
+    <System:String x:Key="No">否</System:String>
+    <System:String x:Key="Delete">删除</System:String>
+    <System:String x:Key="FirstConnectedAt">首次连接时间</System:String>
+    <System:String x:Key="IPAddress">IP 地址</System:String>
+    <System:String x:Key="ChargingState">充电状态</System:String>
+    <System:String x:Key="Charging">充电中</System:String>
+    <System:String x:Key="NotCharging">未充电</System:String>
+    <System:String x:Key="BatteryLevel">电量</System:String>
+    <System:String x:Key="SelectADevice">选择一个设备</System:String>
+    <System:String x:Key="History">历史</System:String>
+    <System:String x:Key="NoHistory">（无历史记录）</System:String>
+    <System:String x:Key="DeleteNotificationHistory">删除历史</System:String>
+    <System:String x:Key="MarkAsImportant">标记为重要通知</System:String>
+    <System:String x:Key="ImportantNotifications">重要通知</System:String>
+    <System:String x:Key="Refresh">刷新</System:String>
+    <System:String x:Key="DeviceCount">数量：</System:String>
+
+    <System:String x:Key="ConfirmDeletion">确认删除？</System:String>
+
+    <System:String x:Key="Setting">设置</System:String>
+    <System:String x:Key="General">基本设置</System:String>
+    <System:String x:Key="NotificationClickEvent">通知点击事件（未完成）</System:String>
+    <System:String x:Key="APPName">应用名称</System:String>
+    <System:String x:Key="PkgID">包名</System:String>
+    <System:String x:Key="ConnectOnStartup">启动自动连接已知设备</System:String>
+    <System:String x:Key="HideOnStartup">启动时不显示连接窗口</System:String>
+    <System:String x:Key="DontToastConnected">不显示“已连接”通知</System:String>
+    <System:String x:Key="ClipboardSync">同步剪切板到手机（仅文本）</System:String>
+
+    <System:String x:Key="FileReceiving">文件接收</System:String>
+    <System:String x:Key="SaveTo">保存到</System:String>
+    <System:String x:Key="YouReceivedAFile">接收到一个文件，大小 {1}</System:String>
+    <System:String x:Key="YouReceivedFiles">接受到 {0} 个文件，总大小 {1}</System:String>
+    <System:String x:Key="SaveAs">另存为</System:String>
+    <System:String x:Key="Files">文件：</System:String>
+    <System:String x:Key="Transferred">已传输：</System:String>
+    <System:String x:Key="Speed">速率：</System:String>
+    <System:String x:Key="Total">总计</System:String>
+    <System:String x:Key="CancelFileTransferPrompt">是否取消文件传输？</System:String>
+
+    <System:String x:Key="FileAlreadyExistsTitle">文件已存在</System:String>
+    <System:String x:Key="FileAlreadyExists">此文件已存在：</System:String>
+    <System:String x:Key="SkipThisFile">跳过</System:String>
+    <System:String x:Key="OverwriteThisFile">覆盖</System:String>
+    <System:String x:Key="RenameThisFile">重命名（加 (1)、(2)、(3)等后缀）</System:String>
+    <System:String x:Key="ApplyToAll">应用到所有文件</System:String>
+    <System:String x:Key="OK">确定</System:String>
+
+    <System:String x:Key="ErrorEncountered">遇到错误</System:String>
+    <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com</System:String>
+    <System:String x:Key="Quit">退出程序</System:String>
+    <System:String x:Key="Ignore">忽略此错误</System:String>
+</ResourceDictionary>

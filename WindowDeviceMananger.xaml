@@ -1,0 +1,105 @@
+﻿<Window x:Class="FnSync.WindowDeviceMananger"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FnSync"
+        mc:Ignorable="d"
+        Title="{DynamicResource DeviceManager}"
+        Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
+        WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" Width="650" Height="350"
+        >
+    <Window.Resources>
+        
+    </Window.Resources>
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <DataGrid Grid.Row="0" x:Name="DeviceList" Margin="4" AutoGenerateColumns="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="DeviceList_SelectionChanged">
+            <DataGrid.Resources>
+                <ContextMenu x:Key="Menu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="{DynamicResource Delete}" Click="Menu_Delete_Click"/>
+                </ContextMenu>
+            </DataGrid.Resources>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow" >
+                    <Setter Property="ContextMenu" Value="{StaticResource Menu}" />
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="{DynamicResource Name}" Binding="{Binding Name, Mode=TwoWay}"/>
+                <DataGridTextColumn Header="{DynamicResource ID}" IsReadOnly="True" Binding="{Binding Id, Mode=OneWay}"/>
+                <DataGridCheckBoxColumn Header="{DynamicResource IsOnline}" IsReadOnly="True" Binding="{Binding Alive, Mode=OneWay}"/>
+                <DataGridTextColumn Header="{DynamicResource FirstConnectedAt}" IsReadOnly="True" Binding="{Binding FirstConnectedTime, Mode=OneWay}"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <GridSplitter Width="4"/>
+        <TabControl x:Name="DeviceInfoTabs" Grid.Column="1" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,4,4,4" SelectionChanged="DeviceInfoTabs_SelectionChanged">
+            <TabItem x:Name="TabStatus" Header="{DynamicResource Status}">
+                <Grid Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0" Grid.Column="0" Content="{DynamicResource IPAddress}" HorizontalAlignment="Right"/>
+                    <Label Grid.Row="0" Grid.Column="1" x:Name="IPAddress" Content=""/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="{DynamicResource ChargingState}" HorizontalAlignment="Right"/>
+                    <Label Grid.Row="1" Grid.Column="1" Content="{Binding ChargingState}"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Content="{DynamicResource BatteryLevel}" HorizontalAlignment="Right"/>
+                    <Label Grid.Row="2" Grid.Column="1" Content="{Binding BatteryLevel}"/>                </Grid>
+            </TabItem>
+            <TabItem x:Name="TabNotificationHistory" Header="{DynamicResource History}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="HistoryDateChoose" IsEditable="False" SelectionChanged="HistoryDateChoose_SelectionChanged"/>
+                        <Button Grid.Column="1" x:Name="RefreshHistory" Content="{DynamicResource Refresh}" Margin="4,0,0,0" Click="RefreshHistory_Click"/>
+                        <Button Grid.Column="2" x:Name="DeleteHistory" Content="{DynamicResource DeleteNotificationHistory}" Margin="4,0,0,0" Click="DeleteHistory_Click" IsEnabled="False"/>
+                    </Grid>
+                    <RichTextBox Grid.Row="1" x:Name="HistoryBox" IsReadOnly="True" IsReadOnlyCaretVisible="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,4,0,0" IsUndoEnabled="False" SpellCheck.IsEnabled="False">
+                        <RichTextBox.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Command="ApplicationCommands.Copy"/>
+                                <!--
+                                <MenuItem x:Name="Menu_MarkAsImportant" Header="{DynamicResource MarkAsImportant}" Visibility="Collapsed"
+                                          Command="{Binding Path=PlacementTarget.DataContext.MarkAsImportantCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" 
+                                          CommandParameter="{Binding ElementName=HistoryBox}"/>
+                                -->
+                            </ContextMenu>
+                        </RichTextBox.ContextMenu>
+                    </RichTextBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <Label x:Name="PromptToSelectDevice" Visibility="Collapsed" Grid.Column="1" Grid.Row="0" Content="{DynamicResource SelectADevice}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Background="{DynamicResource {x:Static SystemColors.MenuBrushKey}}"/>
+        <StatusBar Grid.Row="1" Grid.ColumnSpan="2">
+            <StatusBarItem>
+                <TextBlock Text="{DynamicResource DeviceCount}"/>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="Count" Text="{Binding Count}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

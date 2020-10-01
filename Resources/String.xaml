@@ -1,0 +1,115 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:String x:Key="FnSync">FnSync</System:String>
+    <System:String x:Key="FnSyncTooltip">FnSync - Sync with your PC</System:String>
+    <System:String x:Key="Exit">Exit</System:String>
+    <System:String x:Key="EnterConnectionCodeHere">Enter Connection Code...</System:String>
+    <System:String x:Key="Connect">Connect</System:String>
+    <System:String x:Key="Cancel">Cancel</System:String>
+    <System:String x:Key="Cancelling">Cancelling</System:String>
+    <System:String x:Key="Prompt">Prompt</System:String>
+    <System:String x:Key="PleaseEnterConnectionCode">Please enter connection code.</System:String>
+
+    <System:String x:Key="SwitchToEnter">Connect by Connection Code</System:String>
+    <System:String x:Key="SwitchToScan">Connect by QR Code</System:String>
+    <System:String x:Key="ConnectionCode">Connection Code</System:String>
+    <System:String x:Key="LocalAddress">Local Address</System:String>
+    <System:String x:Key="Connected">Connected</System:String>
+    <System:String x:Key="LostConnection">Lost Connection to phone</System:String>
+    <System:String x:Key="ConnectionFailed">Please try again</System:String>
+    <System:String x:Key="PromptAccept">You may accept the connection on your phone</System:String>
+    <System:String x:Key="Rename">Rename</System:String>
+    <System:String x:Key="Disconnect">Disconnect</System:String>
+    <System:String x:Key="ConnectOther">Connect Other Device</System:String>
+    <System:String x:Key="Status">Status</System:String>
+    <System:String x:Key="Online">Online</System:String>
+    <System:String x:Key="Offline">Offline</System:String>
+    <System:String x:Key="OfflineWithPhone">Offline - {0} - Click to Reconnect</System:String>
+    <System:String x:Key="Connecting">Connecting…</System:String>
+    <System:String x:Key="ConnectingKnown">Connecting known phones...</System:String>
+    <System:String x:Key="ConnectedPhones">Connected Phones:</System:String>
+    <System:String x:Key="ConnectedPhonesNone">(None)</System:String>
+    <System:String x:Key="CopyText">Copy Text</System:String>
+
+    <System:String x:Key="TextCastReceived">Text Received</System:String>
+    <System:String x:Key="TextTooLongAlreadyCopied">Text is already copied to the clipboard, because it is too show here</System:String>
+
+    <System:String x:Key="About">About</System:String>
+    <System:String x:Key="ThisId">Local ID: </System:String>
+    <System:String x:Key="Locale">Locale: </System:String>
+    <System:String x:Key="OpenSourcedAt">This program is open-sourced at : </System:String>
+    <System:String x:Key="AndroidCompanion">Android Companion APP</System:String>
+    <System:String x:Key="ThirdPartyLibrary">This program uses these third party libraries:</System:String>
+
+    <System:String x:Key="Instruction">Instruction</System:String>
+    <System:String x:Key="GettingStarted_Screenshot">Resources\PhoneScreenshot_en.png</System:String>
+    <System:String x:Key="GettingStarted_Screenshot_Scan">Resources\PhoneScreenshot_scan_en.png</System:String>
+    <System:String x:Key="DownloadAndroidCompanion">Download Android Companion APP from Google Play</System:String>
+    <System:String x:Key="Instructions" xml:space="preserve">Instructions:
+0. Make sure your phone and PC are at the same network.
+1. Download the Android companion app and run it.
+2. Turn on features you need on your phone.
+3. Either, with your phone scan the QR code on the PC companion app,
+   or enter the Connection Code generated on your phone into the PC companion app and click "Connect".</System:String>
+    <System:String x:Key="GotIt">Got It!</System:String>
+
+    <System:String x:Key="DeviceManager">Device Manager</System:String>
+    <System:String x:Key="Name">Name</System:String>
+    <System:String x:Key="ID">ID</System:String>
+    <System:String x:Key="IsOnline">Online?</System:String>
+    <System:String x:Key="Yes">Yes</System:String>
+    <System:String x:Key="No">No</System:String>
+    <System:String x:Key="Delete">Delete</System:String>
+    <System:String x:Key="FirstConnectedAt">First Connected At</System:String>
+    <System:String x:Key="SelectADevice">Select a Device</System:String>
+    <System:String x:Key="IPAddress">IP Address</System:String>
+    <System:String x:Key="ChargingState">Charging State</System:String>
+    <System:String x:Key="Charging">Charging</System:String>
+    <System:String x:Key="NotCharging">Not Charging</System:String>
+    <System:String x:Key="BatteryLevel">Battery Level</System:String>
+    <System:String x:Key="History">History</System:String>
+    <System:String x:Key="NoHistory">(No History)</System:String>
+    <System:String x:Key="DeleteNotificationHistory">Delete History</System:String>
+    <System:String x:Key="MarkAsImportant">Mark as Important</System:String>
+    <System:String x:Key="ImportantNotifications">Important Notifications</System:String>
+    <System:String x:Key="Refresh">Refresh</System:String>
+    <System:String x:Key="DeviceCount">Count: </System:String>
+
+    <System:String x:Key="ConfirmDeletion">Do you really want to delete?</System:String>
+
+    <System:String x:Key="Setting">Setting</System:String>
+    <System:String x:Key="General">General</System:String>
+    <System:String x:Key="NotificationClickEvent">Notification Click Event (Not Finished)</System:String>
+    <System:String x:Key="APPName">APP Name</System:String>
+    <System:String x:Key="PkgID">Package ID</System:String>
+    <System:String x:Key="ConnectOnStartup">Connect known phones on startup</System:String>
+    <System:String x:Key="HideOnStartup">Don't show Connect window on startup</System:String>
+    <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
+    <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>
+
+    <System:String x:Key="FileReceiving">File Receiving</System:String>
+    <System:String x:Key="SaveTo">Save to</System:String>
+    <System:String x:Key="YouReceivedAFile">You just received a file. {1} in size</System:String>
+    <System:String x:Key="YouReceivedFiles">You just received {0} files. Total {1} in size</System:String>
+    <System:String x:Key="SaveAs">Save As</System:String>
+    <System:String x:Key="Files">Files: </System:String>
+    <System:String x:Key="Transferred">Transferred: </System:String>
+    <System:String x:Key="Speed">Speed: </System:String>
+    <System:String x:Key="Total">Total</System:String>
+    <System:String x:Key="CancelFileTransferPrompt">Do you want to cancel transferring ?</System:String>
+
+    <System:String x:Key="FileAlreadyExistsTitle">File Already Exists</System:String>
+    <System:String x:Key="FileAlreadyExists">This file already exists: </System:String>
+    <System:String x:Key="SkipThisFile">Skip</System:String>
+    <System:String x:Key="OverwriteThisFile">Overwrite</System:String>
+    <System:String x:Key="RenameThisFile">Rename (Append suffix (1), (2) or (3) etc.)</System:String>
+    <System:String x:Key="ApplyToAll">Apply to all</System:String>
+    <System:String x:Key="OK">OK</System:String>
+
+    <System:String x:Key="ErrorEncountered">Error Encountered</System:String>
+    <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We will be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.</System:String>
+    <System:String x:Key="Quit">Quit This Program</System:String>
+    <System:String x:Key="Ignore">Ignore This Error</System:String>
+</ResourceDictionary>

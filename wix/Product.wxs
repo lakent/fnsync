@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?if $(var.Platform) = x64 ?>
+  <?define bitness = "(64 bit)" ?>
+  <?define Win64 = "yes" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+  <?else ?>
+  <?define bitness = "(32 bit)" ?>
+  <?define Win64 = "no" ?>
+  <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+  <?endif ?>
+
+  <Product Id="*" Name="FnSync" Language="1033" Version="0.2.0.0" Manufacturer="holmium" UpgradeCode="9ad7c0b9-c690-4cf2-bbb6-093d68c50100" >
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes"/>
+    <WixVariable Id="WixUILicenseRtf" Value="LICENSE.rtf" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <UIRef Id="WixUI_InstallDir" />
+
+    <Feature Id="ProductFeature" Title="WixInstaller" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.PlatformProgramFilesFolder)">
+        <Directory Id="INSTALLFOLDER" Name="FnSync" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="ProgramMenuFolder">
+      <Component Id="ApplicationShortcut" Guid="c7a6c885-eb0f-406e-9351-90cce2092d00">
+        <Shortcut Id="ApplicationStartMenuShortcut" Name="FnSync" Description="FnSync" Target="[INSTALLFOLDER]FnSync.exe" WorkingDirectory="INSTALLFOLDER">
+
+          <!--AUMID-->
+          <ShortcutProperty Key="System.AppUserModel.ID" Value="holmium.FnSync.A7F49234CADC422229142EDC7D8932E"/>
+
+          <!--COM CLSID, specifying which CLSID to activate when toast clicked-->
+          <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{8C025F15-F051-427B-AF16-9F43DB9ED3EA}"/>
+
+        </Shortcut>
+
+        <RemoveFile Id="RemoveApplicationShortcut" Directory="ProgramMenuFolder" Name="Desktop Toasts" On="uninstall"/>
+        <RegistryValue Root="HKCU" Key="Software\FnSync" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+  </Fragment>
+
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+      <Component Id="ProductComponent">
+        <!-- TODO: Insert files, registry keys, and other resources here. -->
+        <File Source="$(var.FnSync.TargetPath)" />
+      </Component>
+      <ComponentRef Id="ApplicationShortcut"/>
+
+      <Component Id="BouncyCastle.Crypto.dll">
+        <File Source="$(var.FnSync.TargetDir)\BouncyCastle.Crypto.dll" />
+      </Component>
+      <Component Id="FnSync.exe.config">
+        <File Source="$(var.FnSync.TargetDir)\FnSync.exe.config" />
+      </Component>
+      <Component Id="Hardcodet.Wpf.TaskbarNotification.dll">
+        <File Source="$(var.FnSync.TargetDir)\Hardcodet.Wpf.TaskbarNotification.dll" />
+      </Component>
+      <Component Id="Microsoft.Toolkit.Uwp.Notifications.dll">
+        <File Source="$(var.FnSync.TargetDir)\Microsoft.Toolkit.Uwp.Notifications.dll" />
+      </Component>
+      <Component Id="Microsoft.Win32.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\Microsoft.Win32.Primitives.dll" />
+      </Component>
+      <Component Id="netstandard.dll">
+        <File Source="$(var.FnSync.TargetDir)\netstandard.dll" />
+      </Component>
+      <Component Id="Newtonsoft.Json.dll">
+        <File Source="$(var.FnSync.TargetDir)\Newtonsoft.Json.dll" />
+      </Component>
+      <Component Id="Ookii.Dialogs.Wpf.dll">
+        <File Source="$(var.FnSync.TargetDir)\Ookii.Dialogs.Wpf.dll" />
+      </Component>
+      <Component Id="QRCoder.dll">
+        <File Source="$(var.FnSync.TargetDir)\QRCoder.dll" />
+      </Component>
+      <Component Id="QueryString.NETCore.dll">
+        <File Source="$(var.FnSync.TargetDir)\QueryString.NETCore.dll" />
+      </Component>
+      <Component Id="System.AppContext.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.AppContext.dll" />
+      </Component>
+      <Component Id="System.Collections.Concurrent.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Collections.Concurrent.dll" />
+      </Component>
+      <Component Id="System.Collections.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Collections.dll" />
+      </Component>
+      <Component Id="System.Collections.NonGeneric.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Collections.NonGeneric.dll" />
+      </Component>
+      <Component Id="System.Collections.Specialized.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Collections.Specialized.dll" />
+      </Component>
+      <Component Id="System.ComponentModel.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ComponentModel.dll" />
+      </Component>
+      <Component Id="System.ComponentModel.EventBasedAsync.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ComponentModel.EventBasedAsync.dll" />
+      </Component>
+      <Component Id="System.ComponentModel.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ComponentModel.Primitives.dll" />
+      </Component>
+      <Component Id="System.ComponentModel.TypeConverter.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ComponentModel.TypeConverter.dll" />
+      </Component>
+      <Component Id="System.Console.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Console.dll" />
+      </Component>
+      <Component Id="System.Data.Common.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Data.Common.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.Contracts.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.Contracts.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.Debug.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.Debug.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.FileVersionInfo.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.FileVersionInfo.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.Process.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.Process.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.StackTrace.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.StackTrace.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.TextWriterTraceListener.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.TextWriterTraceListener.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.Tools.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.Tools.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.TraceSource.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.TraceSource.dll" />
+      </Component>
+      <Component Id="System.Diagnostics.Tracing.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Diagnostics.Tracing.dll" />
+      </Component>
+      <Component Id="System.Drawing.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Drawing.Primitives.dll" />
+      </Component>
+      <Component Id="System.Dynamic.Runtime.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Dynamic.Runtime.dll" />
+      </Component>
+      <Component Id="System.Globalization.Calendars.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Globalization.Calendars.dll" />
+      </Component>
+      <Component Id="System.Globalization.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Globalization.dll" />
+      </Component>
+      <Component Id="System.Globalization.Extensions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Globalization.Extensions.dll" />
+      </Component>
+      <Component Id="System.IO.Compression.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.Compression.dll" />
+      </Component>
+      <Component Id="System.IO.Compression.ZipFile.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.Compression.ZipFile.dll" />
+      </Component>
+      <Component Id="System.IO.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.dll" />
+      </Component>
+      <Component Id="System.IO.FileSystem.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.FileSystem.dll" />
+      </Component>
+      <Component Id="System.IO.FileSystem.DriveInfo.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.FileSystem.DriveInfo.dll" />
+      </Component>
+      <Component Id="System.IO.FileSystem.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.FileSystem.Primitives.dll" />
+      </Component>
+      <Component Id="System.IO.FileSystem.Watcher.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.FileSystem.Watcher.dll" />
+      </Component>
+      <Component Id="System.IO.IsolatedStorage.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.IsolatedStorage.dll" />
+      </Component>
+      <Component Id="System.IO.MemoryMappedFiles.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.MemoryMappedFiles.dll" />
+      </Component>
+      <Component Id="System.IO.Pipes.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.Pipes.dll" />
+      </Component>
+      <Component Id="System.IO.UnmanagedMemoryStream.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.IO.UnmanagedMemoryStream.dll" />
+      </Component>
+      <Component Id="System.Linq.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Linq.dll" />
+      </Component>
+      <Component Id="System.Linq.Expressions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Linq.Expressions.dll" />
+      </Component>
+      <Component Id="System.Linq.Parallel.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Linq.Parallel.dll" />
+      </Component>
+      <Component Id="System.Linq.Queryable.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Linq.Queryable.dll" />
+      </Component>
+      <Component Id="System.Net.Http.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Http.dll" />
+      </Component>
+      <Component Id="System.Net.NameResolution.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.NameResolution.dll" />
+      </Component>
+      <Component Id="System.Net.NetworkInformation.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.NetworkInformation.dll" />
+      </Component>
+      <Component Id="System.Net.Ping.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Ping.dll" />
+      </Component>
+      <Component Id="System.Net.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Primitives.dll" />
+      </Component>
+      <Component Id="System.Net.Requests.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Requests.dll" />
+      </Component>
+      <Component Id="System.Net.Security.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Security.dll" />
+      </Component>
+      <Component Id="System.Net.Sockets.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.Sockets.dll" />
+      </Component>
+      <Component Id="System.Net.WebHeaderCollection.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.WebHeaderCollection.dll" />
+      </Component>
+      <Component Id="System.Net.WebSockets.Client.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.WebSockets.Client.dll" />
+      </Component>
+      <Component Id="System.Net.WebSockets.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Net.WebSockets.dll" />
+      </Component>
+      <Component Id="System.ObjectModel.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ObjectModel.dll" />
+      </Component>
+      <Component Id="System.Reflection.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Reflection.dll" />
+      </Component>
+      <Component Id="System.Reflection.Extensions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Reflection.Extensions.dll" />
+      </Component>
+      <Component Id="System.Reflection.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Reflection.Primitives.dll" />
+      </Component>
+      <Component Id="System.Resources.Reader.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Resources.Reader.dll" />
+      </Component>
+      <Component Id="System.Resources.ResourceManager.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Resources.ResourceManager.dll" />
+      </Component>
+      <Component Id="System.Resources.Writer.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Resources.Writer.dll" />
+      </Component>
+      <Component Id="System.Runtime.CompilerServices.VisualC.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.CompilerServices.VisualC.dll" />
+      </Component>
+      <Component Id="System.Runtime.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.dll" />
+      </Component>
+      <Component Id="System.Runtime.Extensions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Extensions.dll" />
+      </Component>
+      <Component Id="System.Runtime.Handles.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Handles.dll" />
+      </Component>
+      <Component Id="System.Runtime.InteropServices.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.InteropServices.dll" />
+      </Component>
+      <Component Id="System.Runtime.InteropServices.RuntimeInformation.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.InteropServices.RuntimeInformation.dll" />
+      </Component>
+      <Component Id="System.Runtime.Numerics.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Numerics.dll" />
+      </Component>
+      <Component Id="System.Runtime.Serialization.Formatters.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Serialization.Formatters.dll" />
+      </Component>
+      <Component Id="System.Runtime.Serialization.Json.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Serialization.Json.dll" />
+      </Component>
+      <Component Id="System.Runtime.Serialization.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Serialization.Primitives.dll" />
+      </Component>
+      <Component Id="System.Runtime.Serialization.Xml.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Runtime.Serialization.Xml.dll" />
+      </Component>
+      <Component Id="System.Security.Claims.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Claims.dll" />
+      </Component>
+      <Component Id="System.Security.Cryptography.Algorithms.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Cryptography.Algorithms.dll" />
+      </Component>
+      <Component Id="System.Security.Cryptography.Csp.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Cryptography.Csp.dll" />
+      </Component>
+      <Component Id="System.Security.Cryptography.Encoding.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Cryptography.Encoding.dll" />
+      </Component>
+      <Component Id="System.Security.Cryptography.Primitives.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Cryptography.Primitives.dll" />
+      </Component>
+      <Component Id="System.Security.Cryptography.X509Certificates.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Cryptography.X509Certificates.dll" />
+      </Component>
+      <Component Id="System.Security.Principal.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.Principal.dll" />
+      </Component>
+      <Component Id="System.Security.SecureString.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Security.SecureString.dll" />
+      </Component>
+      <Component Id="System.Text.Encoding.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Text.Encoding.dll" />
+      </Component>
+      <Component Id="System.Text.Encoding.Extensions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Text.Encoding.Extensions.dll" />
+      </Component>
+      <Component Id="System.Text.RegularExpressions.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Text.RegularExpressions.dll" />
+      </Component>
+      <Component Id="System.Threading.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.dll" />
+      </Component>
+      <Component Id="System.Threading.Overlapped.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.Overlapped.dll" />
+      </Component>
+      <Component Id="System.Threading.Tasks.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.Tasks.dll" />
+      </Component>
+      <Component Id="System.Threading.Tasks.Parallel.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.Tasks.Parallel.dll" />
+      </Component>
+      <Component Id="System.Threading.Thread.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.Thread.dll" />
+      </Component>
+      <Component Id="System.Threading.ThreadPool.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.ThreadPool.dll" />
+      </Component>
+      <Component Id="System.Threading.Timer.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Threading.Timer.dll" />
+      </Component>
+      <Component Id="System.ValueTuple.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.ValueTuple.dll" />
+      </Component>
+      <Component Id="System.Xml.ReaderWriter.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.ReaderWriter.dll" />
+      </Component>
+      <Component Id="System.Xml.XDocument.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.XDocument.dll" />
+      </Component>
+      <Component Id="System.Xml.XmlDocument.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.XmlDocument.dll" />
+      </Component>
+      <Component Id="System.Xml.XmlSerializer.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.XmlSerializer.dll" />
+      </Component>
+      <Component Id="System.Xml.XPath.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.XPath.dll" />
+      </Component>
+      <Component Id="System.Xml.XPath.XDocument.dll">
+        <File Source="$(var.FnSync.TargetDir)\System.Xml.XPath.XDocument.dll" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
