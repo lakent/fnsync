@@ -91,13 +91,8 @@ namespace FnSync
 
         private void ReachLocalNetwork(byte[] data, int portIncrement)
         {
-#if DEBUG
-            string ip = "192.168.43.1";
-            string ipv6 = "ff02::2";
-#else
             string ip = "255.255.255.255";
             string ipv6 = "ff02::2";
-#endif
 
             try
             {
