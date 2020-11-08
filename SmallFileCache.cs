@@ -10,7 +10,7 @@ using Windows.Perception;
 
 namespace FnSync
 {
-    class SmallFileCache : IDisposable
+    public class SmallFileCache : IDisposable
     {
         private readonly string Folder;
 

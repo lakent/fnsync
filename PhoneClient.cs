@@ -51,7 +51,7 @@ namespace FnSync
         private string ErrorReason = null;
 #endif
 
-        public bool Alive => Client != null;
+        public bool IsAlive => Client != null;
 
         private void Init(Socket Client)
         {
@@ -480,6 +480,7 @@ namespace FnSync
                     {
                         client.messageWithBinary.Binary = client.ReadBytes();
                     }
+
                     PhoneMessageCenter.Singleton.Raise(
                         client.Id,
                         (string)client.messageWithBinary.Message[MSG_TYPE_KEY],

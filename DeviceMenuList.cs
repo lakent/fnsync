@@ -97,7 +97,7 @@ namespace FnSync
         {
             if (sender is MenuItem item && item.Tag is String id)
             {
-                if (AlivePhones.Singleton[id]?.Alive ?? false)
+                if (AlivePhones.Singleton[id]?.IsAlive ?? false)
                 {
                     WindowDeviceMananger.NewOne(id);
                 }
@@ -110,7 +110,7 @@ namespace FnSync
 
         private void UpdateState(MenuItem item, PhoneClient client)
         {
-            String Header = client.Alive ?
+            String Header = client.IsAlive ?
                 (string)Application.Current.FindResource("Online") + " - " + client.Name :
                 string.Format(
                     (string)Application.Current.FindResource("OfflineWithPhone"),

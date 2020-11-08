@@ -10,7 +10,7 @@ using System.Windows;
 
 namespace FnSync
 {
-    class SavedPhones : Dictionary<String, SavedPhones.Phone>
+    public class SavedPhones : Dictionary<String, SavedPhones.Phone>
     {
         public static readonly string ConfigRoot = GetConfigRootFolder();
         public static readonly string DevicesSubfolder = GetDeviceSubfolder();
@@ -109,7 +109,7 @@ namespace FnSync
 
             public DateTime FirstConnectedTime { get; private set; }
 
-            public bool Alive => AlivePhones.Singleton.Contains(Id) && AlivePhones.Singleton[Id].Alive;
+            public bool Alive => AlivePhones.Singleton.Contains(Id) && AlivePhones.Singleton[Id].IsAlive;
 
             protected override string ReadFromFile(string file)
             {

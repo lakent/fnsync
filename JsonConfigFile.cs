@@ -8,7 +8,7 @@ using System.Text;
 
 namespace FnSync
 {
-    class JsonConfigFile: IEnumerable<KeyValuePair<string, JToken>>
+    public class JsonConfigFile: IEnumerable<KeyValuePair<string, JToken>>
     {
         protected readonly String ConfigFile;
         private JObject Config = null;

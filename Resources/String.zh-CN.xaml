@@ -70,7 +70,7 @@
     <System:String x:Key="SelectADevice">选择一个设备</System:String>
     <System:String x:Key="History">历史</System:String>
     <System:String x:Key="NoHistory">（无历史记录）</System:String>
-    <System:String x:Key="DeleteNotificationHistory">删除历史</System:String>
+    <System:String x:Key="DeleteAllHistories">删除所有历史</System:String>
     <System:String x:Key="MarkAsImportant">标记为重要通知</System:String>
     <System:String x:Key="ImportantNotifications">重要通知</System:String>
     <System:String x:Key="Refresh">刷新</System:String>
@@ -111,4 +111,17 @@
     <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com</System:String>
     <System:String x:Key="Quit">退出程序</System:String>
     <System:String x:Key="Ignore">忽略此错误</System:String>
+
+    <System:String x:Key="FileManager">文件管理器</System:String>
+    <System:String x:Key="LoadingContent">加载中…</System:String>
+    <System:String x:Key="FileName">文件名</System:String>
+    <System:String x:Key="FileSize">大小</System:String>
+    <System:String x:Key="LastModified">修改时间</System:String>
+    <System:String x:Key="DeviceIsOffline">设备离线</System:String>
+    <System:String x:Key="BeSureToDelete">确定删除以下项目？</System:String>
+    <System:String x:Key="AndSomeMore" xml:space="preserve">
+等共 {0} 项。</System:String>
+    <System:String x:Key="ProvideANewName">请输入新名称：</System:String>
+    <System:String x:Key="IllegalFileName">文件名不能包含“\”和“/”。</System:String>
+    <System:String x:Key="NoFilePermission">没有权限</System:String>
 </ResourceDictionary>

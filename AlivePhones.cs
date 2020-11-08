@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ using Windows.Devices.PointOfService;
 
 namespace FnSync
 {
-    class AlivePhones
+    class AlivePhones : IEnumerable<PhoneClient>
     {
         public static readonly AlivePhones Singleton = new AlivePhones();
 
@@ -28,7 +29,8 @@ namespace FnSync
         }
 
         private long aliveCount = 0;
-        public long AliveCount {
+        public long AliveCount
+        {
             get
             {
                 return Interlocked.Read(ref aliveCount);
@@ -83,7 +85,7 @@ namespace FnSync
 
         public void DisconnectAll()
         {
-            foreach(var kv in map)
+            foreach (var kv in map)
             {
                 kv.Value.RetreatAndDispose();
             }
@@ -93,11 +95,21 @@ namespace FnSync
         {
             foreach (var kv in map)
             {
-                if (kv.Value.Alive)
+                if (kv.Value.IsAlive)
                 {
                     kv.Value.SendMsg(msg, msgType);
                 }
             }
+        }
+
+        public IEnumerator<PhoneClient> GetEnumerator()
+        {
+            return map.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
         }
     }
 }

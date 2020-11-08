@@ -1,0 +1,111 @@
+﻿<local:UserControlExtension x:Class="FnSync.ControlFileList"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:FnSync"
+             mc:Ignorable="d"
+             d:DesignHeight="250" d:DesignWidth="300">
+
+    <Control.Resources>
+        <local:LongToHumanReadableSizeConverter x:Key="LongToHumanReadableSizeConverter" />
+        <local:TimestampToDateTimeConverter x:Key="TimestampToDateTimeConverter" />
+        <local:FileIconConverter x:Key="FileIconConverter" />
+        <local:NonNullToVisibleConverter x:Key="NonNullToVisibleConverter" />
+
+        <ContextMenu x:Key="RightClickMenu" DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}, Mode=OneWay}">
+            <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}"/>
+            <!-- <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/> -->
+            <MenuItem Header="{DynamicResource Delete}" Command="{Binding DeleteCommand}"/>
+            <Separator/>
+            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
+        </ContextMenu>
+
+    </Control.Resources>
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <DataGrid x:Name="ListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding}" GridLinesVisibility="None" CanUserResizeRows="False" HeadersVisibility="Column" IsSynchronizedWithCurrentItem="True" EnableRowVirtualization="True" VirtualizingPanel.IsVirtualizing="True" SelectionUnit="FullRow" MouseDown="ListView_MouseDown" PreviewKeyDown="ListView_KeyDown" MouseDoubleClick="ListView_MouseDoubleClick" ContextMenu="{StaticResource RightClickMenu}" Tag="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ControlFileList}}}">
+            <DataGrid.Resources>
+                <Style TargetType="Label">
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=IsKeyboardFocusWithin}" Value="True"/>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=IsSelected}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Foreground" Value="White"/>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+
+                <Style TargetType="TextBox">
+                    <Style.Triggers>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, Path=IsKeyboardFocusWithin}" Value="True"/>
+                                <Condition Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}, Path=IsSelected}" Value="True"/>
+                            </MultiDataTrigger.Conditions>
+                            <Setter Property="Foreground" Value="White"/>
+                        </MultiDataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </Style.Triggers>
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                        </Trigger>
+                    </Style.Triggers>
+                    <Setter Property="BorderThickness" Value="0" />
+                </Style>
+            </DataGrid.RowStyle>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="" Width="SizeToCells" CanUserResize="False" IsReadOnly="True" CanUserSort="False" CanUserReorder="False">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding Converter={StaticResource FileIconConverter}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="{DynamicResource FileName}" Width="SizeToCells" SortMemberPath="name" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding name, Mode=OneWay}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" IsHitTestVisible="False" BorderThickness="0" Background="Transparent"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="{DynamicResource FileSize}" Width="SizeToCells" SortMemberPath="size" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding size, Mode=OneWay, Converter={StaticResource LongToHumanReadableSizeConverter}}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTemplateColumn Header="{DynamicResource LastModified}" Width="SizeToCells" SortMemberPath="last" CanUserSort="True">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding last, Mode=OneWay, Converter={StaticResource TimestampToDateTimeConverter}}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Label Content="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}, Converter={StaticResource NonNullToVisibleConverter}}"/>
+    </Grid>
+</local:UserControlExtension>

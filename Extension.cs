@@ -151,7 +151,7 @@ namespace FnSync
                     }
                     catch (Exception e)
                     {
-                        exception = e;
+                        exception = new Exception("Runtime Exception", e);
                     }
                 });
 

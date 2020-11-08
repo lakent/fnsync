@@ -40,7 +40,7 @@ namespace FnSync
             {
                 if (sb.Length > 0)
                 {
-                    sb.Append("Caused By:\n");
+                    sb.Append("\n\nCaused By:\n");
                 }
 
                 sb.Append(e.Message).Append('\n')

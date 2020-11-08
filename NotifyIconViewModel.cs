@@ -60,6 +60,21 @@ namespace FnSync
                 };
             }
         }
+        public ICommand FileManagerCommand
+        {
+            get
+            {
+                return new NotifyIconContextMenuCommand
+                {
+                    CommandAction = () =>
+                    {
+                        WindowFileManager.NewOne();
+                    },
+                    CanExecuteFunc = () => true
+                };
+            }
+        }
+
         public ICommand SettingCommand
         {
             get

@@ -71,7 +71,7 @@
     <System:String x:Key="BatteryLevel">Battery Level</System:String>
     <System:String x:Key="History">History</System:String>
     <System:String x:Key="NoHistory">(No History)</System:String>
-    <System:String x:Key="DeleteNotificationHistory">Delete History</System:String>
+    <System:String x:Key="DeleteAllHistories">Delete All Histories</System:String>
     <System:String x:Key="MarkAsImportant">Mark as Important</System:String>
     <System:String x:Key="ImportantNotifications">Important Notifications</System:String>
     <System:String x:Key="Refresh">Refresh</System:String>
@@ -112,4 +112,17 @@
     <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We will be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.</System:String>
     <System:String x:Key="Quit">Quit This Program</System:String>
     <System:String x:Key="Ignore">Ignore This Error</System:String>
+
+    <System:String x:Key="FileManager">File Manager</System:String>
+    <System:String x:Key="LoadingContent">Loading Content...</System:String>
+    <System:String x:Key="FileName">Name</System:String>
+    <System:String x:Key="FileSize">Size</System:String>
+    <System:String x:Key="LastModified">Last Modified</System:String>
+    <System:String x:Key="DeviceIsOffline">Device is offline</System:String>
+    <System:String x:Key="BeSureToDelete">Do you want to delete the following item(s)?</System:String>
+    <System:String x:Key="AndSomeMore" xml:space="preserve">
+etc. {0} items in total.</System:String>
+    <System:String x:Key="ProvideANewName">Enter a new name:</System:String>
+    <System:String x:Key="IllegalFileName">File name cannot contain "\" and "/".</System:String>
+    <System:String x:Key="NoFilePermission">No permission</System:String>
 </ResourceDictionary>

@@ -123,6 +123,18 @@
     <Compile Include="AutoDisposableTimer.cs" />
     <Compile Include="Casting.cs" />
     <Compile Include="ClipboardManager.cs" />
+    <Compile Include="ControlDeviceInfomation.xaml.cs">
+      <DependentUpon>ControlDeviceInfomation.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlFileList.xaml.cs">
+      <DependentUpon>ControlFileList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlFolderList.xaml.cs">
+      <DependentUpon>ControlFolderList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlHistory.xaml.cs">
+      <DependentUpon>ControlHistory.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DeviceMenuList.cs" />
     <Compile Include="FileTransmission.cs" />
     <Compile Include="MainConfig.cs" />
@@ -148,6 +160,7 @@
     <Compile Include="PhoneClient.cs" />
     <Compile Include="SpeedWatch.cs" />
     <Compile Include="Unirandom.cs" />
+    <Compile Include="UserControlExtension.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WindowConnect.xaml.cs">
       <DependentUpon>WindowConnect.xaml</DependentUpon>
@@ -157,6 +170,12 @@
     </Compile>
     <Compile Include="WindowFileAlreadyExists.xaml.cs">
       <DependentUpon>WindowFileAlreadyExists.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowFileManager.xaml.cs">
+      <DependentUpon>WindowFileManager.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowFileManagerRename.xaml.cs">
+      <DependentUpon>WindowFileManagerRename.xaml</DependentUpon>
     </Compile>
     <Compile Include="WindowFileReceive.xaml.cs">
       <DependentUpon>WindowFileReceive.xaml</DependentUpon>
@@ -228,6 +247,22 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ControlDeviceInfomation.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlFileList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlFolderList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Resources\NotifyIconResources.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -249,6 +284,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WindowFileAlreadyExists.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowFileManager.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="WindowFileManagerRename.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -304,6 +347,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="app.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\baseline_arrow_upward_black_24dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

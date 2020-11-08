@@ -19,6 +19,8 @@ namespace FnSync
         public const string MSG_TYPE_NEW_NOTIFICATION = "phone_notification_sync";
         public const string MSG_TYPE_SCREEN_LOCKED = "screen_locked";
 
+        public const string MSG_TYPE_UNSUPPORTED_OPERATION = "unsupported_operation";
+
         public static PhoneMessageCenter Singleton = new PhoneMessageCenter();
 
         private class Condition
@@ -248,11 +250,24 @@ namespace FnSync
 
         public void Raise(string id, string msgType, object msg, PhoneClient client)
         {
+            string lookUpType;
+
+            if( msgType == MSG_TYPE_UNSUPPORTED_OPERATION && msg is JObject jmsg)
+            {
+                if (!jmsg.ContainsKey("intention"))
+                    return;
+
+                lookUpType = (string)jmsg["intention"];
+            } else
+            {
+                lookUpType = msgType;
+            }
+
             List<ActionDescriptor> descriptors = new List<ActionDescriptor>();
 
             lock (this)
             {
-                Condition specific = new Condition(msgType, id);
+                Condition specific = new Condition(lookUpType, id);
                 if (Specifics.ContainsKey(specific))
                     descriptors.AddRange(Specifics[specific]);
 
@@ -260,7 +275,7 @@ namespace FnSync
                 if (AllTypes.ContainsKey(allType))
                     descriptors.AddRange(AllTypes[allType]);
 
-                Condition allId = new Condition(msgType, null);
+                Condition allId = new Condition(lookUpType, null);
                 if (AllIds.ContainsKey(allId))
                     descriptors.AddRange(AllIds[allId]);
 

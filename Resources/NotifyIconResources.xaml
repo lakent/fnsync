@@ -17,6 +17,7 @@
         <Separator x:Name="PhonesAbove"/>
         <MenuItem x:Name="ConnectOther" IsEnabled="True" Header="{DynamicResource ConnectOther}" Command="{Binding ConnectOtherCommand}" />
         <MenuItem IsEnabled="True" Header="{DynamicResource DeviceManager}" Command="{Binding DeviceManagerCommand}" />
+        <MenuItem IsEnabled="True" Header="{DynamicResource FileManager}" Command="{Binding FileManagerCommand}" />
         <MenuItem IsEnabled="True" Header="{DynamicResource Setting}" Command="{Binding SettingCommand}" />
         <Separator />
         <MenuItem Header="{DynamicResource Instruction}" Command="{Binding InstructionCommand}"/>
