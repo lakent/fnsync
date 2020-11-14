@@ -15,13 +15,13 @@
         <MenuItem x:Name="ConnectedPhonesTitle" IsEnabled="False" Header="{DynamicResource ConnectedPhones}"/>
         <MenuItem x:Name="ConnectedPhonesNone" IsEnabled="False" Header="{DynamicResource ConnectedPhonesNone}"/>
         <Separator x:Name="PhonesAbove"/>
+        <MenuItem IsEnabled="True" Header="{DynamicResource FileManager}" Command="{Binding FileManagerCommand}" />
+        <Separator />
         <MenuItem x:Name="ConnectOther" IsEnabled="True" Header="{DynamicResource ConnectOther}" Command="{Binding ConnectOtherCommand}" />
         <MenuItem IsEnabled="True" Header="{DynamicResource DeviceManager}" Command="{Binding DeviceManagerCommand}" />
-        <MenuItem IsEnabled="True" Header="{DynamicResource FileManager}" Command="{Binding FileManagerCommand}" />
         <MenuItem IsEnabled="True" Header="{DynamicResource Setting}" Command="{Binding SettingCommand}" />
         <Separator />
         <MenuItem Header="{DynamicResource Instruction}" Command="{Binding InstructionCommand}"/>
-        <Separator />
         <MenuItem Header="{DynamicResource Exit}" Command="{Binding ExitApplicationCommand}" />
     </ContextMenu>
 

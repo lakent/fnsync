@@ -34,16 +34,16 @@ namespace FnSync
                 if (msgType == MSG_TYPE_TEXT_CAST)
                 {
                     string text = (string)msg["text"];
-                    if (text.Length < 500)
+                    if (text.Length < 500 && !MainConfig.Config.TextCastAutoCopy )
                     {
-                        ToastTextCastShort(id, client.Name, text);
+                        ToastTextCastPrompt(id, client.Name, text);
                     }
                     else
                     {
-                        ToastTextCastLong(id, client.Name, text);
+                        ToastTextCastCopied(id, client.Name, text);
                         Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
                         {
-                            Clipboard.SetText(text);
+                            ClipboardManager.Singleton.SetClipboardText(text, true);
                         });
                     }
                 }
@@ -51,7 +51,7 @@ namespace FnSync
         }
 
         public static readonly string TEXT_RECEIVED = (string)Application.Current.FindResource("TextCastReceived");
-        private static void ToastTextCastShort(string clientId, string clientName, string text)
+        private static void ToastTextCastPrompt(string clientId, string clientName, string text)
         {
             ToastActionsCustom Actions = new ToastActionsCustom()
             {
@@ -121,9 +121,24 @@ namespace FnSync
         }
 
         public static readonly string TEXT_TOO_LONG_ALREADY_COPIED = (string)Application.Current.FindResource("TextTooLongAlreadyCopied");
-        private static void ToastTextCastLong(string clientId, string clientName, string FullText)
+        public static readonly string TEXT_ALREADY_COPIED = (string)Application.Current.FindResource("TextAlreadyCopied");
+        private static void ToastTextCastCopied(string clientId, string clientName, string FullText)
         {
-            FullText = FullText.Substring(0, 50) + " ...";
+            string PromptText;
+            if (FullText.Length >= 500)
+            {
+                FullText = FullText.Substring(0, 50) + " ...";
+                if( MainConfig.Config.TextCastAutoCopy)
+                {
+                    PromptText = TEXT_ALREADY_COPIED;
+                } else
+                {
+                    PromptText = TEXT_TOO_LONG_ALREADY_COPIED;
+                }
+            } else
+            {
+                PromptText = TEXT_ALREADY_COPIED;
+            }
 
             ToastContent toastContent = new ToastContent()
             {
@@ -144,7 +159,7 @@ namespace FnSync
                             },
                             new AdaptiveText()
                             {
-                                Text = TEXT_TOO_LONG_ALREADY_COPIED,
+                                Text = PromptText,
                             },
                             new AdaptiveText()
                             {

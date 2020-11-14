@@ -5,11 +5,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
-using System.Windows.Media.Animation;
-using Windows.Media.Core;
 
 namespace FnSync
 {
@@ -61,6 +58,9 @@ namespace FnSync
             public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wparam, IntPtr lparam);
         }
 
+
+        private static readonly string TagFormat = "FnSyncTag";
+
         private bool monitorClipboard = false;
         public bool MonitorClipboard
         {
@@ -101,7 +101,7 @@ namespace FnSync
         private readonly IntPtr MessageWindowHandle;
         private NativeMethods.WindowClass MessageWindowClass;
 
-        public ClipboardManager()
+        private ClipboardManager()
         {
             string WindowId = "FnSync_" + Guid.NewGuid();
 
@@ -120,7 +120,7 @@ namespace FnSync
 
             MessageWindowHandle = NativeMethods.CreateWindowEx(
                 0,
-                WindowId, "StubWindow",
+                WindowId, "FnSyncClipboardMonitorWindow",
                 0,
                 0, 0, 0, 0,
                 NativeMethods.HWND_MESSAGE,
@@ -131,13 +131,11 @@ namespace FnSync
 
             PhoneMessageCenter.Singleton.Register(
                 null,
-                MSG_TYPE_NEW_CLIPBOARD_DATA, 
-                SetClipboardText,
+                MSG_TYPE_NEW_CLIPBOARD_DATA,
+                SetClipboardTextCallback,
                 true
                 );
         }
-
-        private string LastText = "";
 
         private long LastClipboardChangedTime = 0;
         private void OnClipboardChanged()
@@ -158,10 +156,13 @@ namespace FnSync
                     {
                         if (Clipboard.ContainsText())
                         {
-                            LastText = Clipboard.GetText();
+                            IDataObject dataObject = Clipboard.GetDataObject();
+                            if (dataObject.GetData(TagFormat) != null)
+                                return;
+
                             JObject msg = new JObject
                             {
-                                ["text"] = LastText
+                                ["text"] = (string)dataObject.GetData(DataFormats.Text, true)
                             };
 
                             AlivePhones.Singleton.PushMsg(msg, MSG_TYPE_NEW_CLIPBOARD_DATA);
@@ -183,22 +184,35 @@ namespace FnSync
             return NativeMethods.DefWindowProc(hwnd, msg, wParam, lParam);
         }
 
-        private void SetClipboardText(string id, string msgType, object msgObject, PhoneClient client)
+        public void SetClipboardText(string Text, bool DontSync)
         {
-            if( !(msgObject is JObject msg))
+            DataObject dataObject = new DataObject(DataFormats.Text, Text);
+
+            if (DontSync)
+                dataObject.SetData(TagFormat, "", false);
+
+            for (int i = 0; i < 5; ++i)
+            {
+                try
+                {
+                    Clipboard.SetDataObject(dataObject, true);
+                    break;
+                }
+                catch { }
+
+                Thread.Sleep(10);
+            }
+        }
+
+        private void SetClipboardTextCallback(string id, string msgType, object msgObject, PhoneClient client)
+        {
+            if (!(msgObject is JObject msg))
             {
                 return;
             }
 
             String NewText = (string)msg["text"];
-            try
-            {
-                if (LastText != NewText)
-                {
-                    Clipboard.SetDataObject(NewText, true);
-                }
-            }
-            catch (Exception e) { }
+            SetClipboardText(NewText, true);
         }
     }
 }

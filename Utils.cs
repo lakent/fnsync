@@ -58,12 +58,62 @@ namespace FnSync
                 }
             }
 
+
             if (Builder.EndsWith("|"))
             {
                 Builder.Remove(Builder.Length - 1, 1);
             }
 
             return Builder.ToString();
+        }
+
+        public static String[] GetIpv4BroadcastAddress()
+        {
+            NetworkInterface[] Adapters = NetworkInterface.GetAllNetworkInterfaces();
+            HashSet<String> Result = new HashSet<string>();
+
+            foreach (NetworkInterface adapter in Adapters)
+            {
+                var ips = adapter.GetIPProperties().UnicastAddresses;
+                foreach (var ip in ips)
+                {
+                    if (IPAddress.IsLoopback(ip.Address) || ip.Address.AddressFamily != AddressFamily.InterNetwork)
+                    {
+                        continue;
+                    }
+
+                    int IpNumber = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(ip.Address.GetAddressBytes(), 0));
+                    int Prefix = unchecked((int)0x80000000) >> (ip.PrefixLength - 1);
+                    int Broadcast = IpNumber | ~Prefix;
+                    byte[] bytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(Broadcast));
+                    Result.Add(
+                        bytes[0].ToString() + '.' +
+                        bytes[1].ToString() + '.' +
+                        bytes[2].ToString() + '.' +
+                        bytes[3].ToString()
+                        );
+                }
+            }
+
+            return Result.ToArray<string>();
+        }
+
+        public static String[] GetIpv6BroadcastAddress()
+        {
+            NetworkInterface[] Adapters = NetworkInterface.GetAllNetworkInterfaces();
+            HashSet<String> Result = new HashSet<string>();
+
+            foreach (NetworkInterface adapter in Adapters)
+            {
+                try
+                {
+                    var Ipv6Index = adapter.GetIPProperties().GetIPv6Properties().Index;
+                    Result.Add("ff02::2%" + Ipv6Index);
+                }
+                catch (Exception e) { }
+            }
+
+            return Result.ToArray<string>();
         }
 
         public static void WriteAllBytes(String file, byte[] bs)
@@ -212,9 +262,9 @@ namespace FnSync
         private static ImageSource folder = null;
         public static ImageSource Folder
         {
-            get 
+            get
             {
-                if( folder == null)
+                if (folder == null)
                 {
                     folder = ByType(SIID_FOLDER);
                 }
@@ -226,9 +276,9 @@ namespace FnSync
         private static ImageSource unknown = null;
         public static ImageSource Unknown
         {
-            get 
+            get
             {
-                if( unknown == null)
+                if (unknown == null)
                 {
                     unknown = ByType(SIID_DOCNOASSOC);
                 }

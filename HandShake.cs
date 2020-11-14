@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Windows;
 using Windows.Media.Core;
 using Windows.UI.Xaml;
 
@@ -89,17 +90,36 @@ namespace FnSync
                 );
         }
 
+        private string[] Ipv4BroadcastAddresses = null;
+        private string[] Ipv6BroadcastAddresses = null;
+
+        private void RefreshBroadcastAddresses()
+        {
+            Ipv4BroadcastAddresses = Utils.GetIpv4BroadcastAddress();
+            Ipv6BroadcastAddresses = Utils.GetIpv6BroadcastAddress();
+        }
+
         private void ReachLocalNetwork(byte[] data, int portIncrement)
         {
-            string ip = "255.255.255.255";
-            string ipv6 = "ff02::2";
+            foreach (string ip in Ipv6BroadcastAddresses)
+                try
+                {
+                    udpClient6.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
 
-            try
-            {
-                udpClient6.Send(data, data.Length, ipv6, DEFAULT_PORT + portIncrement);
-                udpClient.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
-            }
-            catch (Exception e) { }
+            foreach (string ip in Ipv4BroadcastAddresses)
+                try
+                {
+                    udpClient.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
+                }
+                catch (Exception e)
+                {
+                    continue;
+                }
         }
 
         private void ReachTargets(byte[] data, SavedPhones.Phone[] targets, int portIncrement)
@@ -135,6 +155,8 @@ namespace FnSync
 
             new AutoDisposableTimer((state) =>
             {
+                RefreshBroadcastAddresses();
+
                 int remain = timeout;
                 int portIncrement = 0;
 

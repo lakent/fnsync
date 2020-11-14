@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using Windows.ApplicationModel;
 
@@ -69,5 +71,36 @@ namespace FnSync
                 System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri);
             }
         }
+
+        private void FixedListenPort_Checked(object sender, RoutedEventArgs e)
+        {
+            PortNumber.Text = PcListener.Singleton.Port.ToString();
+        }
+
+        private void FixedListenPort_Unchecked(object sender, RoutedEventArgs e)
+        {
+            PortNumber.Text = "0";
+        }
     }
+
+    [ValueConversion(typeof(int), typeof(bool))]
+    public class SpecificPortConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (!(value is int v))
+                return false;
+
+            return v != 0;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (!(value is bool b))
+                return 0;
+
+            return b ? 11223 : 0;
+        }
+    }
+
 }

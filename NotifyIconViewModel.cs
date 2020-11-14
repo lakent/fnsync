@@ -23,7 +23,7 @@ namespace FnSync
                     CanExecuteFunc = () => true,
                     CommandAction = () =>
                     {
-                        //MessageBox.Show("Unfinished feature", "Unfinished");
+                        WindowConnect.NewOne();
                     }
                 };
             }

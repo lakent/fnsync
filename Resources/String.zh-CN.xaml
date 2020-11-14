@@ -3,7 +3,7 @@
                     xmlns:System="clr-namespace:System;assembly=mscorlib">
     
     <System:String x:Key="FnSync">FnSync</System:String>
-    <System:String x:Key="FnSyncTooltip">FnSync - 与电脑同步</System:String>
+    <System:String x:Key="FnSyncTooltip">FnSync - 端口 {0}</System:String>
     <System:String x:Key="Exit">退出</System:String>
     <System:String x:Key="EnterConnectionCodeHere">输入连接码…</System:String>
     <System:String x:Key="Connect">连接</System:String>
@@ -35,6 +35,7 @@
 
     <System:String x:Key="TextCastReceived">收到一段文本</System:String>
     <System:String x:Key="TextTooLongAlreadyCopied">文本太长，已复制到剪切板</System:String>
+    <System:String x:Key="TextAlreadyCopied">已复制到剪切板</System:String>
 
     <System:String x:Key="About">关于</System:String>
     <System:String x:Key="ThisId">本机ID：</System:String>
@@ -87,6 +88,10 @@
     <System:String x:Key="HideOnStartup">启动时不显示连接窗口</System:String>
     <System:String x:Key="DontToastConnected">不显示“已连接”通知</System:String>
     <System:String x:Key="ClipboardSync">同步剪切板到手机（仅文本）</System:String>
+    <System:String x:Key="TextCastAutoCopy">收到文本后自动复制</System:String>
+    <System:String x:Key="FixedListenPort">监听固定端口</System:String>
+    <System:String x:Key="Port">端口</System:String>
+    <System:String x:Key="RequireRestart">* 重启程序生效。</System:String>
 
     <System:String x:Key="FileReceiving">文件接收</System:String>
     <System:String x:Key="SaveTo">保存到</System:String>
@@ -108,7 +113,7 @@
     <System:String x:Key="OK">确定</System:String>
 
     <System:String x:Key="ErrorEncountered">遇到错误</System:String>
-    <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com</System:String>
+    <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com。您也可以在 https://gitee.com/holmium/fnsync/issues 创建一个 Issue 。</System:String>
     <System:String x:Key="Quit">退出程序</System:String>
     <System:String x:Key="Ignore">忽略此错误</System:String>
 
@@ -124,4 +129,5 @@
     <System:String x:Key="ProvideANewName">请输入新名称：</System:String>
     <System:String x:Key="IllegalFileName">文件名不能包含“\”和“/”。</System:String>
     <System:String x:Key="NoFilePermission">没有权限</System:String>
+    <System:String x:Key="NumberOfItems">{0} 个文件夹, {1} 个文件</System:String>
 </ResourceDictionary>

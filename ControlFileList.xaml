@@ -106,6 +106,6 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Label Content="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}, Converter={StaticResource NonNullToVisibleConverter}}"/>
+        <!-- <Label Content="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}, Converter={StaticResource NonNullToVisibleConverter}}"/> -->
     </Grid>
 </local:UserControlExtension>

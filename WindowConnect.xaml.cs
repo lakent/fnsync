@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using QRCoder;
 using System;
 using System.Drawing;
@@ -8,11 +7,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.TextFormatting;
-using Windows.UI.Xaml.Media.Animation;
 
 namespace FnSync
 {
@@ -46,10 +42,6 @@ namespace FnSync
         {
             CurrentWindow = this;
             InitializeComponent();
-
-#if DEBUG
-            ConnectionCode.Text = "1111111111";
-#endif
             ConnectionCode.Focus();
 
             PhoneMessageCenter.Singleton.Register(
@@ -128,6 +120,7 @@ namespace FnSync
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
                 CloseIfConnecting
             );
+
             PhoneMessageCenter.Singleton.Unregister(
                 null,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTION_FAILED,
@@ -180,12 +173,21 @@ namespace FnSync
 
         private void OnKeyDownHandler(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Return)
+            switch (e.Key)
             {
-                if (ConnectButton.Visibility == Visibility.Visible)
-                {
-                    ConnectButton_Click(sender, e);
-                }
+                case Key.Return:
+                    if (ConnectButton.Visibility == Visibility.Visible)
+                    {
+                        ConnectButton_Click(sender, e);
+                    }
+                    break;
+
+                case Key.Escape:
+                    Close();
+                    break;
+
+                default:
+                    break;
             }
         }
 
@@ -214,6 +216,8 @@ namespace FnSync
             SwitchToEnter.Visibility = Visibility.Collapsed;
             ByQRCode.Visibility = Visibility.Collapsed;
             SwitchToScan.Visibility = Visibility.Visible;
+
+            ConnectionCode.Focus();
         }
 
         private void SwitchToScan_Click(object sender, RoutedEventArgs e)

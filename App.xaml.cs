@@ -23,9 +23,9 @@ namespace FnSync
     /// </summary>
     public partial class App : Application
     {
-        public static TaskbarIcon NotifyIcon = null;
+        public static TaskbarIcon NotifyIcon { get; protected set; } = null;
 
-        public static DeviceMenuList MenuList = null;
+        public static DeviceMenuList MenuList { get; protected set; } = null;
 
         private static void RefreshIcon()
         {
@@ -117,6 +117,7 @@ namespace FnSync
                 MainConfig.Config.HideOnStartup = true;
                 MainConfig.Config.DontToastConnected = false;
                 MainConfig.Config.ClipboardSync = true;
+                MainConfig.Config.TextCastAutoCopy = true;
 
                 MainConfig.Config.Update();
                 WindowInstruction.NewOne();
@@ -144,6 +145,11 @@ namespace FnSync
 
             Casting._Force = 0;
             FileTransmission._Force = 0;
+
+            App.NotifyIcon.ToolTipText = string.Format(
+                (string)App.Current.FindResource("FnSyncTooltip"),
+                PcListener.Singleton.Port
+                );
         }
 
         public static void ExitApp()

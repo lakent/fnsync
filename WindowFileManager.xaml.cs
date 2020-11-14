@@ -47,6 +47,5 @@ namespace FnSync
                 FolderTree.RefreshCurrentSelected();
             }
         }
-
     }
 }

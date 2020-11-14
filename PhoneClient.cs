@@ -1,6 +1,7 @@
 ﻿using Microsoft.Toolkit.Uwp.Notifications;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Engines;
 using System;
 using System.IO;
 using System.Linq;
@@ -45,13 +46,11 @@ namespace FnSync
         private bool OldConnection = false;
         private String TempotaryCodeHolder = null;
 
-        private bool PendingReplaced = true;
-
 #if DEBUG
         private string ErrorReason = null;
 #endif
 
-        public bool IsAlive => Client != null;
+        public bool IsAlive { get; protected set; } = false;
 
         private void Init(Socket Client)
         {
@@ -79,6 +78,8 @@ namespace FnSync
 
         public void Dispose()
         {
+            IsAlive = false;
+
             if (Client != null)
             {
                 try
@@ -91,40 +92,41 @@ namespace FnSync
                 Client?.Close();
                 Client = null;
 
-                PhoneMessageCenter.Singleton.Unregister(
-                    Id,
-                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_REMOVED,
-                    OnRemoved
-                    );
-
-                PhoneMessageCenter.Singleton.Unregister(
-                    Id,
-                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_NAME_CHANGED,
-                    OnNameChanged
-                );
-
-                if (!PendingReplaced)
+                if (this.Id != null)
                 {
-                    AlivePhones.Singleton.DecrementAlive();
+                    PhoneMessageCenter.Singleton.Unregister(
+                        Id,
+                        PhoneMessageCenter.MSG_FAKE_TYPE_ON_REMOVED,
+                        OnRemoved
+                        );
 
-                    PhoneMessageCenter.Singleton.Raise(
+                    PhoneMessageCenter.Singleton.Unregister(
                         Id,
-                        PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
-                        null,
-                        this
+                        PhoneMessageCenter.MSG_FAKE_TYPE_ON_NAME_CHANGED,
+                        OnNameChanged
                     );
-                }
-                else
-                {
-                    PhoneMessageCenter.Singleton.Raise(
-                        Id,
-                        PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTION_FAILED,
-                        null,
-                        this
-                    );
+
+                    PhoneClient CurrentClient = AlivePhones.Singleton[Id];
+                    if (CurrentClient == null)
+                    {
+                        PhoneMessageCenter.Singleton.Raise(
+                            Id,
+                            PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTION_FAILED,
+                            null,
+                            this
+                        );
+                    }
+                    else if (CurrentClient == this)
+                    {
+                        PhoneMessageCenter.Singleton.Raise(
+                            Id,
+                            PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
+                            null,
+                            this
+                        );
+                    }
                 }
             }
-
             //ToastLostConnection();
         }
 
@@ -145,14 +147,8 @@ namespace FnSync
 #if DEBUG
             ErrorReason = "Removed by user";
 #endif
-            RetreatAndDispose();
             AlivePhones.Singleton.Remove(Id);
-        }
-
-        public void ToBeReplaced()
-        {
-            PendingReplaced = true;
-            SelectTask.Singleton.RetreatAndDispose(this);
+            RetreatAndDispose();
         }
 
         protected override void Load()
@@ -348,13 +344,10 @@ namespace FnSync
                 it.InitSmallFileCache();
             });
 
-            AlivePhones.Singleton.AddOrUpdate(client.Id, client)?.ToBeReplaced();
-            AlivePhones.Singleton.IncrementAlive();
+            AlivePhones.Singleton.AddOrUpdate(client.Id, client)?.RetreatAndDispose();
+            client.IsAlive = true;
 
             SelectTask.Singleton.AddOrUpdate(client, true, false, 0, MessageLoop, false); // Asynchronously
-
-            // No longer being automatically replaced
-            client.PendingReplaced = false;
 
             PhoneMessageCenter.Singleton.Raise(
                 client.Id,

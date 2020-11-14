@@ -8,6 +8,11 @@
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         Title="{DynamicResource Setting}" Height="300" Width="500">
+
+    <Window.Resources>
+        <local:SpecificPortConverter x:Key="SpecificPortConverter" />
+    </Window.Resources>
+    
     <TabControl Background="Transparent" Margin="4">
         <TabItem Header="{DynamicResource General}">
             <StackPanel x:Name="Settings" Margin="8">
@@ -15,6 +20,16 @@
                 <CheckBox Margin="0,4" Content="{DynamicResource HideOnStartup}" IsChecked="{Binding HideOnStartup, Mode=TwoWay}"/>
                 <CheckBox Margin="0,4" Content="{DynamicResource DontToastConnected}" IsChecked="{Binding DontToastConnected, Mode=TwoWay}"/>
                 <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}" Checked="ClipboardSync_Checked"/>
+                <CheckBox Margin="0,4" x:Name="TextCastAutoCopy" Content="{DynamicResource TextCastAutoCopy}" IsChecked="{Binding TextCastAutoCopy, Mode=TwoWay}" />
+                <CheckBox Margin="0,4" x:Name="FixedListenPort" Content="{DynamicResource FixedListenPort}" IsChecked="{Binding FixedListenPort, Mode=OneWay, Converter={StaticResource SpecificPortConverter}}" Checked="FixedListenPort_Checked" Unchecked="FixedListenPort_Unchecked"/>
+                <StackPanel IsEnabled="{Binding IsChecked, ElementName=FixedListenPort}"  HorizontalAlignment="Left" Margin="32,0,0,0" Orientation="Horizontal">
+                    <TextBlock Text="{DynamicResource Port}"/>
+                    <TextBlock Text=" : " Margin="0,0,8,0"/>
+                    <TextBox x:Name="PortNumber" Width="70" Text="{Binding FixedListenPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <Label Margin="32,0,0,0">
+                    <TextBlock Text="{DynamicResource RequireRestart}" TextWrapping="WrapWithOverflow" />
+                </Label>
             </StackPanel>
         </TabItem>
 

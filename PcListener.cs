@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows;
 
 namespace FnSync
 {
@@ -19,6 +20,22 @@ namespace FnSync
         public int Port { get; private set; } = 0;
         private HandShake HandShaker = null;
 
+        private bool ListenOnPort(int p)
+        {
+            Port = p;
+
+            try
+            {
+                Listener.Bind(new IPEndPoint(IPAddress.IPv6Any, Port));
+                Listener.Listen(6);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         private void ReInit()
         {
             Listener?.Shutdown(SocketShutdown.Both);
@@ -29,22 +46,15 @@ namespace FnSync
                 DualMode = true
             };
 
-            do
+            int ConfigPort = MainConfig.Config.FixedListenPort;
+            if (ConfigPort > 0)
             {
-                Port = Unirandom.Next(10000, 60000);
-
-                try
-                {
-                    Listener.Bind(new IPEndPoint(IPAddress.IPv6Any, Port));
-                    Listener.Listen(6);
-                    break;
-                }
-                catch (Exception)
-                {
-                    continue;
-                }
-
-            } while (true);
+                while (!ListenOnPort((ConfigPort++) % 65536));
+            }
+            else
+            {
+                while (!ListenOnPort(Unirandom.Next(10000, 60000)));
+            }
 
             // http://www.lybecker.com/blog/2018/08/23/supporting-ipv4-and-ipv6-dual-mode-network-with-one-socket/
             HandShaker = new HandShake();
@@ -76,7 +86,8 @@ namespace FnSync
                 {
                     throw new ArgumentNullException();
                 }
-            } else
+            }
+            else
             {
                 if (code == null)
                 {

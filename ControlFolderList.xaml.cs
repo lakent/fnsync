@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -201,20 +202,40 @@ namespace FnSync
 
         protected abstract void RequestChildren();
 
+        private static readonly string NumberOfItems = (string)App.Current.FindResource("NumberOfItems");
+
+        private static string MakeItemsPrompt(int FolderCount, int FileCount)
+        {
+            return String.Format(NumberOfItems, FolderCount, FileCount);
+        }
+
         public void ProcessChildrenItems(IList<Item> folders)
         {
             Children.Clear();
 
+            int FolderCount = 0;
+            int FileCount = 0;
+
             foreach (Item f in folders)
             {
                 if (f.type == "dir")
+                {
                     Children.Add(new ControlFolderListPhoneFolderItem(this, Root, Storage, f.name, f.haschild));
+                    ++FolderCount;
+                }
 
                 else if (f.type == "storage")
+                {
                     Children.Add(new ControlFolderListPhoneStorageItem(Root, f.name, f.path, f.haschild));
+                    ++FolderCount;
+                }
+                else if( f.type == "file" )
+                {
+                    ++FileCount;
+                }
             }
 
-            Root.ThisControl.Prompt = null;
+            Root.NumberOfItemsPrompts.Add(folders, MakeItemsPrompt(FolderCount, FileCount));
 
             if (Children.Count == 1)
             {
@@ -290,6 +311,7 @@ namespace FnSync
 
         internal readonly Dictionary<Tuple<string, string>, ControlFolderListItemView> RequestMap = new Dictionary<Tuple<string, string>, ControlFolderListItemView>();
         internal readonly Dictionary<string, IList<Item>> RequestCache = new Dictionary<string, IList<Item>>();
+        internal readonly ConditionalWeakTable<IList<Item>, string> NumberOfItemsPrompts = new ConditionalWeakTable<IList<Item>, string>();
 
         public static readonly IList<Item> Empty = new ReadOnlyCollection<Item>(new List<Item>());
 
@@ -801,6 +823,18 @@ namespace FnSync
 
             this.CurrentRoot = Root;
             this.CurrentStorage = Storage;
+
+            if( items != null)
+            {
+                if (Root.NumberOfItemsPrompts.TryGetValue(items, out string p))
+                {
+                    Prompt = p;
+                }
+                else
+                {
+                    Prompt = null;
+                }
+            }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CurrentPath"));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ContentItems"));

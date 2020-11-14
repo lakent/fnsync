@@ -290,15 +290,14 @@ namespace FnSync
             {
                 Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
                 {
-                    Clipboard.SetText(queries["Copy"]);
+                    ClipboardManager.Singleton.SetClipboardText(queries["Copy"], false);
                 });
-            } 
-            
+            }
+
             if (queries.Contains("FileReceive_SaveAs"))
             {
                 FileTransmission.ParseQueryString(queries);
             }
-
         }
     }
 }

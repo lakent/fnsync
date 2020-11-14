@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,7 +10,28 @@ namespace FnSync
     class MainConfig: JsonConfigFile
     {
         public static readonly MainConfig Config = new MainConfig();
-        private MainConfig(): base(SavedPhones.ConfigRoot + "\\main.config") { }
+
+        private MainConfig(): base(SavedPhones.ConfigRoot + "\\main.config")
+        {
+            Dictionary<string, JToken> DefaultValues = new Dictionary<string, JToken>()
+            {
+                ["ThisId"] = "",
+                ["ConnectOnStartup"] = true,
+                ["HideOnStartup"] = true,
+                ["DontToastConnected"] = false,
+                ["ClipboardSync"] = true,
+                ["TextCastAutoCopy"] = true,
+                ["FixedListenPort"] = 0,
+            };
+
+            foreach(var item in DefaultValues)
+            {
+                if( this[item.Key] == null)
+                {
+                    this[item.Key] = item.Value;
+                }
+            }
+        }
 
         public string ThisId { 
             get {
@@ -66,5 +88,28 @@ namespace FnSync
             }
         }
 
+        public bool TextCastAutoCopy
+        {
+            get
+            {
+                return (bool)this["TextCastAutoCopy"];
+            }
+            set
+            {
+                this["TextCastAutoCopy"] = value;
+            }
+        }
+
+        public int FixedListenPort
+        {
+            get
+            {
+                return (int)this["FixedListenPort"];
+            }
+            set
+            {
+                this["FixedListenPort"] = Math.Min(Math.Max(0, value), 65535);
+            }
+        }
     }
 }

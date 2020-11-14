@@ -3,7 +3,7 @@
                     xmlns:System="clr-namespace:System;assembly=mscorlib">
 
     <System:String x:Key="FnSync">FnSync</System:String>
-    <System:String x:Key="FnSyncTooltip">FnSync - Sync with your PC</System:String>
+    <System:String x:Key="FnSyncTooltip">FnSync - Listenning on port {0}</System:String>
     <System:String x:Key="Exit">Exit</System:String>
     <System:String x:Key="EnterConnectionCodeHere">Enter Connection Code...</System:String>
     <System:String x:Key="Connect">Connect</System:String>
@@ -34,7 +34,8 @@
     <System:String x:Key="CopyText">Copy Text</System:String>
 
     <System:String x:Key="TextCastReceived">Text Received</System:String>
-    <System:String x:Key="TextTooLongAlreadyCopied">Text is already copied to the clipboard, because it is too show here</System:String>
+    <System:String x:Key="TextTooLongAlreadyCopied">Text is already copied to the clipboard, because it is too long to show here</System:String>
+    <System:String x:Key="TextAlreadyCopied">Already copied to the clipboard</System:String>
 
     <System:String x:Key="About">About</System:String>
     <System:String x:Key="ThisId">Local ID: </System:String>
@@ -88,6 +89,10 @@
     <System:String x:Key="HideOnStartup">Don't show Connect window on startup</System:String>
     <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
     <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>
+    <System:String x:Key="TextCastAutoCopy">Auto copy text when text is received</System:String>
+    <System:String x:Key="FixedListenPort">Listen on a specific port</System:String>
+    <System:String x:Key="Port">Port</System:String>
+    <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
 
     <System:String x:Key="FileReceiving">File Receiving</System:String>
     <System:String x:Key="SaveTo">Save to</System:String>
@@ -109,7 +114,7 @@
     <System:String x:Key="OK">OK</System:String>
 
     <System:String x:Key="ErrorEncountered">Error Encountered</System:String>
-    <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We will be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.</System:String>
+    <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We will be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.  You could also open an issue at https://gitee.com/holmium/fnsync/issues</System:String>
     <System:String x:Key="Quit">Quit This Program</System:String>
     <System:String x:Key="Ignore">Ignore This Error</System:String>
 
@@ -125,4 +130,5 @@ etc. {0} items in total.</System:String>
     <System:String x:Key="ProvideANewName">Enter a new name:</System:String>
     <System:String x:Key="IllegalFileName">File name cannot contain "\" and "/".</System:String>
     <System:String x:Key="NoFilePermission">No permission</System:String>
+    <System:String x:Key="NumberOfItems">{0} Folder(s), {1} File(s)</System:String>
 </ResourceDictionary>

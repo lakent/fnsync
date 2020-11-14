@@ -5,12 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Runtime;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Interop;
-using Windows.Devices.PointOfService;
 
 namespace FnSync
 {
@@ -28,23 +23,19 @@ namespace FnSync
             }
         }
 
-        private long aliveCount = 0;
         public long AliveCount
         {
             get
             {
-                return Interlocked.Read(ref aliveCount);
+                int Count = 0;
+                foreach(PhoneClient client in this)
+                {
+                    if (client.IsAlive)
+                        ++Count;
+                }
+
+                return Count;
             }
-        }
-
-        public void IncrementAlive()
-        {
-            Interlocked.Increment(ref aliveCount);
-        }
-
-        public void DecrementAlive()
-        {
-            Interlocked.Decrement(ref aliveCount);
         }
 
         public int Count => map.Count;
