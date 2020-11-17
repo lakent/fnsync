@@ -137,6 +137,25 @@ namespace FnSync
                 );
         }
 
+        private string GetClipboardText(IDataObject dataObject)
+        {
+            if (dataObject.GetDataPresent(DataFormats.UnicodeText, true))
+            {
+                object data = dataObject.GetData(DataFormats.UnicodeText, true);
+                if (data is string str)
+                    return str;
+            }
+
+            if (dataObject.GetDataPresent(DataFormats.Text, true))
+            {
+                object data = dataObject.GetData(DataFormats.Text, true);
+                if (data is string str)
+                    return str;
+            }
+
+            return null;
+        }
+
         private long LastClipboardChangedTime = 0;
         private void OnClipboardChanged()
         {
@@ -160,9 +179,13 @@ namespace FnSync
                             if (dataObject.GetData(TagFormat) != null)
                                 return;
 
+                            string text = GetClipboardText(dataObject);
+                            if (text == null)
+                                return;
+
                             JObject msg = new JObject
                             {
-                                ["text"] = (string)dataObject.GetData(DataFormats.Text, true)
+                                ["text"] = text
                             };
 
                             AlivePhones.Singleton.PushMsg(msg, MSG_TYPE_NEW_CLIPBOARD_DATA);
@@ -186,7 +209,8 @@ namespace FnSync
 
         public void SetClipboardText(string Text, bool DontSync)
         {
-            DataObject dataObject = new DataObject(DataFormats.Text, Text);
+            DataObject dataObject = new DataObject(DataFormats.UnicodeText, Text);
+            //dataObject.SetData(DataFormats.Text, Text);
 
             if (DontSync)
                 dataObject.SetData(TagFormat, "", false);

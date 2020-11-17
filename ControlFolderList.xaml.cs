@@ -184,7 +184,12 @@ namespace FnSync
         public ControlFolderListPhoneRootItem Root { get; protected set; }
         public ControlFolderListPhoneStorageItem Storage { get; protected set; }
 
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void CallPropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            this.PropertyChanged?.Invoke(sender, args);
+        }
 
         protected void RemoveDummy()
         {
@@ -229,7 +234,7 @@ namespace FnSync
                     Children.Add(new ControlFolderListPhoneStorageItem(Root, f.name, f.path, f.haschild));
                     ++FolderCount;
                 }
-                else if( f.type == "file" )
+                else if (f.type == "file")
                 {
                     ++FileCount;
                 }
@@ -315,8 +320,6 @@ namespace FnSync
 
         public static readonly IList<Item> Empty = new ReadOnlyCollection<Item>(new List<Item>());
 
-        public override event PropertyChangedEventHandler PropertyChanged;
-
         public PhoneClient Client { get; protected set; } = null;
         public ControlFolderList ThisControl { get; }
 
@@ -392,7 +395,7 @@ namespace FnSync
         private void ReconnectedCallback(string id, string msgType, object msgObject, PhoneClient client)
         {
             ResetWith(client);
-            ProcessNameChanged(client.Name);
+            OnNameChanged(client.Name);
         }
 
         private void DisconnectedCallback(string id, string msgType, object msgObject, PhoneClient client)
@@ -416,10 +419,10 @@ namespace FnSync
             RequestMap.Get(storage, path)?.Refresh();
         }
 
-        private void ProcessNameChanged(string NewName)
+        private void OnNameChanged(string NewName)
         {
             this.Name = NewName;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
+            CallPropertyChanged(this, new PropertyChangedEventArgs("Name"));
         }
 
         private void NameChangedCallback(string id, string msgType, object msgObject, PhoneClient client)
@@ -427,7 +430,7 @@ namespace FnSync
             if (!(msgObject is string name))
                 return;
 
-            ProcessNameChanged(name);
+            OnNameChanged(name);
         }
 
         private void NoPermissionCallback(string id, string msgType, object msgObject, PhoneClient client)
@@ -824,7 +827,7 @@ namespace FnSync
             this.CurrentRoot = Root;
             this.CurrentStorage = Storage;
 
-            if( items != null)
+            if (items != null)
             {
                 if (Root.NumberOfItemsPrompts.TryGetValue(items, out string p))
                 {
@@ -875,7 +878,11 @@ namespace FnSync
             }
             else if (DataContext is IEnumerable<PhoneClient> cs)
             {
-                Clients.AddRange(cs);
+                foreach (PhoneClient c in cs)
+                {
+                    if (c.IsAlive)
+                        Clients.Add(c);
+                }
             }
             else
             {
@@ -931,6 +938,7 @@ namespace FnSync
             {
                 if (child.Name == Subfolder)
                 {
+                    itemView.IsSelected = false;
                     child.IsExpanded = true;
                     child.IsSelected = true;
                     break;
@@ -952,6 +960,7 @@ namespace FnSync
 
             if (parent != null)
             {
+                itemView.IsSelected = false;
                 parent.IsExpanded = true;
                 parent.IsSelected = true;
             }
