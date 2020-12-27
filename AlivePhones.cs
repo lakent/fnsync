@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 
 namespace FnSync
 {
@@ -13,7 +11,7 @@ namespace FnSync
     {
         public static readonly AlivePhones Singleton = new AlivePhones();
 
-        private ConcurrentDictionary<string, PhoneClient> map = new ConcurrentDictionary<string, PhoneClient>();
+        private readonly ConcurrentDictionary<string, PhoneClient> map = new ConcurrentDictionary<string, PhoneClient>();
 
         public PhoneClient this[string id]
         {
@@ -78,7 +76,7 @@ namespace FnSync
         {
             foreach (var kv in map)
             {
-                kv.Value.RetreatAndDispose();
+                kv.Value.Dispose();
             }
         }
 

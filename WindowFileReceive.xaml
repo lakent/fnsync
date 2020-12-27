@@ -6,10 +6,12 @@
         xmlns:local="clr-namespace:FnSync"
         mc:Ignorable="d"
         SizeToContent="Height"
-        ResizeMode="CanMinimize"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
-        Title="{DynamicResource FileReceiving}" Width="500">
+        Loaded="Window_Loaded"
+        Title="{DynamicResource FileReceiving}" Width="600">
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

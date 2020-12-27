@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,19 +23,23 @@ namespace FnSync
     {
         public static void ShowException(Exception e)
         {
-            Application.Current.Dispatcher.InvokeAsync(() =>
-            {
-                new WindowUnhandledException(e).ShowDialog();
-            });
+            Environment.SetEnvironmentVariable("LAST_ERROR_STRING", BuildString(e));
+            Environment.SetEnvironmentVariable("LAST_ERROR_PID", Process.GetCurrentProcess().Id.ToString());
+            Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location, "-LE");
         }
 
-        public WindowUnhandledException(Exception e)
+        public WindowUnhandledException(Exception e) : this(BuildString(e))
+        {
+
+        }
+
+        public WindowUnhandledException(string e)
         {
             InitializeComponent();
-            Message.Text = BuildString(e);
+            Message.Text = e;
         }
 
-        private String BuildString(Exception e)
+        private static String BuildString(Exception e)
         {
             StringBuilder sb = new StringBuilder();
             while (e != null)
@@ -56,13 +62,18 @@ namespace FnSync
 
         private void QuitThis_Click(object sender, RoutedEventArgs e)
         {
+            Process.Start("taskkill", "/F /PID " + Environment.GetEnvironmentVariable("LAST_ERROR_PID"));
             Close();
-            App.ExitApp();
         }
 
         private void IgnoreThis_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            App.ExitApp();
         }
     }
 }

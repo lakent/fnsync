@@ -2,8 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace FnSync
@@ -215,20 +218,177 @@ namespace FnSync
             }
         }
 
+        public async Task<bool> OneShotGetBoolean(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, bool DefVal)
+        {
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            return msg.OptBool(Key, DefVal);
+        }
+
+        public async Task<long> OneShotGetLong(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, long DefVal)
+        {
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            return msg.OptLong(Key, DefVal);
+        }
+
+        public async Task<string> OneShotGetString(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, string DefVal)
+        {
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            return msg.OptString(Key, DefVal);
+        }
+
+        public async Task<JObject> OneShotMsgPart(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds)
+        {
+            Object msgObj = await OneShot(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            if( msgObj is JObject msg)
+            {
+                return msg;
+            } else if( msgObj is IMessageWithBinary mwb)
+            {
+                return mwb.Message;
+            } else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        public enum RequestStatus
+        {
+            SUCCESSFUL = 0,
+            TIMEOUT,
+            UNSUPPORTED_OPERATION,
+            DISCONNECTED,
+        }
+
+        public class PhoneDisconnectedException : Exception { }
+
+        public Task<Object> OneShot(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds)
+        {
+            TaskCompletionSource<Object> completionSource = new TaskCompletionSource<Object>();
+
+            OneShot(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds,
+                delegate (JObject msg, byte[] bin, Object msgObj, RequestStatus Status)
+            {
+                switch (Status)
+                {
+                    case RequestStatus.SUCCESSFUL:
+                        completionSource.SetResult(msgObj);
+                        break;
+
+                    case RequestStatus.UNSUPPORTED_OPERATION:
+                        completionSource.SetException(new NotSupportedException(MsgType));
+                        break;
+
+                    case RequestStatus.TIMEOUT:
+                        completionSource.SetException(new TimeoutException());
+                        break;
+
+                    case RequestStatus.DISCONNECTED:
+                        completionSource.SetException(new PhoneDisconnectedException());
+                        break;
+                }
+            }, false);
+
+            return completionSource.Task;
+        }
+
+        public void OneShot(PhoneClient Client, JObject MsgTo, string MsgToType, string ExpectedType, int TimeoutMillseconds, System.Action<JObject, byte[], Object, RequestStatus> OnDone, bool OnMainThread)
+        {
+            if (OnDone == null)
+            {
+                throw new ArgumentNullException("OnDone");
+            }
+
+            string RequestToken = Guid.NewGuid().ToString();
+            MsgTo["_request_token"] = RequestToken;
+
+            AutoDisposableTimer CleanUp = null;
+
+            JObject FinalMsg = null;
+            byte[] FinalBinary = null;
+            Object FinalObj = null;
+
+            void CheckAndExecute(string _, string msgType, object MsgObjFrom, PhoneClient __)
+            {
+                if (MsgObjFrom is JObject)
+                {
+                    FinalMsg = MsgObjFrom as JObject;
+                }
+                else if (MsgObjFrom is IMessageWithBinary)
+                {
+                    FinalMsg = (MsgObjFrom as IMessageWithBinary).Message;
+                    FinalBinary = (MsgObjFrom as IMessageWithBinary).Binary;
+                }
+                else
+                {
+                    return;
+                }
+
+                if (FinalMsg.OptString("_request_token", null) != RequestToken)
+                {
+                    return;
+                }
+
+                FinalObj = MsgObjFrom;
+                CleanUp?.Dispose(msgType);
+            }
+
+            void OnDisconnected(string _, string __, object ___, PhoneClient ____)
+            {
+                CleanUp?.Dispose(MSG_FAKE_TYPE_ON_DISCONNECTED);
+            }
+
+            Register(Client.Id, ExpectedType, CheckAndExecute, OnMainThread);
+            Register(Client.Id, MSG_FAKE_TYPE_ON_DISCONNECTED, OnDisconnected, OnMainThread);
+
+            try
+            {
+                Client.SendMsg(MsgTo, MsgToType);
+            } catch(SocketException e)
+            {
+                OnDone.Invoke(null, null, null, RequestStatus.DISCONNECTED);
+                return;
+            }
+            catch (ObjectDisposedException e)
+            {
+                OnDone.Invoke(null, null, null, RequestStatus.DISCONNECTED);
+                return;
+            }
+
+            CleanUp = new AutoDisposableTimer(null, TimeoutMillseconds, false);
+            CleanUp.DisposedEvent += delegate (object _, Object State)
+            {
+                Unregister(Client.Id, ExpectedType, CheckAndExecute);
+                Unregister(Client.Id, MSG_FAKE_TYPE_ON_DISCONNECTED, OnDisconnected);
+                if (MSG_TYPE_UNSUPPORTED_OPERATION.Equals(State))
+                    OnDone.Invoke(FinalMsg, FinalBinary, FinalObj, RequestStatus.UNSUPPORTED_OPERATION);
+                else if(MSG_FAKE_TYPE_ON_DISCONNECTED.Equals(State))
+                    OnDone.Invoke(null, null, null, RequestStatus.DISCONNECTED);
+                else if (State != null)
+                    OnDone.Invoke(FinalMsg, FinalBinary, FinalObj, RequestStatus.SUCCESSFUL);
+                else
+                    OnDone.Invoke(null, null, null, RequestStatus.TIMEOUT);
+            };
+
+            CleanUp.Start();
+        }
+
         private void InvockAll(IEnumerable<ActionDescriptor> set, string id, string msgType, object msg, PhoneClient client)
         {
             try
             {
                 foreach (ActionDescriptor descriptor in set)
                 {
-#if DEBUG
-                    Application.Current.Dispatcher.InvokeIfNecessaryWithThrow(delegate
-#else
-                    Application.Current.Dispatcher.InvokeIfNecessaryNoThrow(delegate
-#endif
+                    if (descriptor.OnMainThread)
+                    {
+                        App.FakeDispatcher.Invoke(delegate
+                        {
+                            descriptor.action.Invoke(id, msgType, msg, client);
+                            return null;
+                        });
+                    } else 
                     {
                         descriptor.action.Invoke(id, msgType, msg, client);
-                    }, descriptor.OnMainThread);
+                    };
                 }
             }
             catch (Exception e)
@@ -252,13 +412,14 @@ namespace FnSync
         {
             string lookUpType;
 
-            if( msgType == MSG_TYPE_UNSUPPORTED_OPERATION && msg is JObject jmsg)
+            if (msgType == MSG_TYPE_UNSUPPORTED_OPERATION && msg is JObject jmsg)
             {
                 if (!jmsg.ContainsKey("intention"))
                     return;
 
                 lookUpType = (string)jmsg["intention"];
-            } else
+            }
+            else
             {
                 lookUpType = msgType;
             }

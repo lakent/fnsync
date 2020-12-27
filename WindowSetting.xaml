@@ -113,6 +113,13 @@
                         </Hyperlink>
                         <LineBreak/>
 
+                        <Run Text="SecureCompatibleEncryptionExamples"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://github.com/luke-park/SecureCompatibleEncryptionExamples/blob/master/LICENSE" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
                     </Paragraph>
 
                 </FlowDocument>

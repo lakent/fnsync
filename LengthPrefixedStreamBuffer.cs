@@ -10,143 +10,152 @@ using System.Threading.Tasks;
 
 namespace FnSync
 {
-    public abstract class LengthPrefixedStreamBuffer
+    public abstract class LengthPrefixedStreamBuffer : IDisposable
     {
-        public class UnfinishedStreamException : Exception { }
+        public class StreamClosedException : IOException { }
 
-        protected byte[] buffer;
-        private int? PackageLength = null;
-
-        public int BufferUsed { get; protected set; }
+        private readonly NetworkStream Stream;
 
         protected EncryptionManager encryptionManager;
 
-        public LengthPrefixedStreamBuffer(int InitialCapacity, String code) : this(InitialCapacity, new EncryptionManager(code))
+        private class ReceiveQueueClass : QueuedAsyncTask<byte[], byte[]>
+        {
+            public readonly LengthPrefixedStreamBuffer BufferObject;
+            public ReceiveQueueClass(LengthPrefixedStreamBuffer BufferObject)
+            {
+                this.BufferObject = BufferObject;
+            }
+
+            protected override Task<byte[]> InputSource()
+            {
+                return BufferObject.ReadRawPackage();
+            }
+
+            protected override void OnDone(byte[] input, byte[] output)
+            {
+                BufferObject.PackageProcessing(input, output);
+            }
+
+            protected override byte[] TaskBody(byte[] Input)
+            {
+                return BufferObject.encryptionManager.Decrypt(Input, 0, Input.Length);
+            }
+
+            protected override void OnException(QueuedAsyncTask<byte[], byte[]> sender, Exception e)
+            {
+                BufferObject.Dispose();
+            }
+        }
+
+        protected readonly QueuedAsyncTask<byte[], byte[]> ReceiveQueue;
+
+        public LengthPrefixedStreamBuffer(NetworkStream Stream, String code) : this(Stream, new EncryptionManager(code))
         {
         }
 
-        public LengthPrefixedStreamBuffer(int InitialCapacity, EncryptionManager manager)
+        public LengthPrefixedStreamBuffer(NetworkStream Stream, EncryptionManager manager)
         {
-            buffer = new byte[InitialCapacity];
-            BufferUsed = 0;
+            this.Stream = Stream;
             encryptionManager = manager;
+
+            ReceiveQueue = new ReceiveQueueClass(this);
         }
 
-        private void Consume(int count)
+        public async Task<byte[]> ReadBytes(int len, byte[] buf = null)
         {
-            if (count > BufferUsed)
+            if (buf == null)
             {
-                count = BufferUsed;
+                buf = new byte[len];
             }
 
-            if (count == BufferUsed)
+            int read = 0;
+
+            while (read < len)
             {
-                BufferUsed = 0;
-            }
-            else
-            {
-                Array.Copy(buffer, count, buffer, 0, BufferUsed - count);
-                BufferUsed -= count;
+                bool DataAvailable;
+                try
+                {
+                    DataAvailable = Stream.DataAvailable;
+                }
+                catch (Exception e)
+                {
+                    throw new StreamClosedException();
+                }
+
+                int recv;
+                if (DataAvailable)
+                {
+                    recv = Stream.Read(buf, read, len - read);
+                }
+                else
+                {
+                    recv = await Stream.ReadAsync(buf, read, len - read);
+                }
+
+                if (recv == 0)
+                {
+                    throw new StreamClosedException();
+                }
+
+                read += recv;
             }
 
-            this.PackageLength = null;
+            return buf;
         }
 
-        protected abstract void Load();
+        private readonly byte[] LengthBuffer = new byte[4];
 
-        public bool StreamIsFinished()
+        private async Task<int> GetPackageLength()
         {
-            return GetPackageLengthNoThrow() >= 0;
+            byte[] buf = await ReadBytes(4, LengthBuffer);
+            return IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buf, 0));
         }
 
-        private int GetPackageLengthNoThrow()
+        private async Task<byte[]> ReadRawPackage()
         {
-            if (this.PackageLength != null)
-            {
-                return this.PackageLength.Value;
-            }
-
-            Load();
-
-            if (BufferUsed <= 4)
-            {
-                return -1;
-            }
-
-            int packageLength = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
-
-            if (packageLength + 4 > BufferUsed)
-            {
-                return -1;
-            }
-
-            this.PackageLength = packageLength;
-
-            return packageLength;
+            int len = await GetPackageLength();
+            byte[] buf = await ReadBytes(len);
+            return buf;
         }
 
-        private int GetPackageLength()
+        public async Task<string> ReadUncryptedString()
         {
-            int ret = GetPackageLengthNoThrow();
+            if (!ReceiveQueue.LoopStarted)
+                await ReceiveQueue.FetchOneFromSource();
 
-            if( ret < 0)
-            {
-                throw new UnfinishedStreamException();
-            }
-
+            QueuedAsyncTask<byte[], byte[]>.IOPair Pair = await ReceiveQueue.FetchOutputTaskOnce();
+            string ret = Encoding.UTF8.GetString(Pair.Input);
             return ret;
         }
 
-        public void Clear()
+        public async Task<JObject> ReadUncryptedJSON()
         {
-            BufferUsed = 0;
-            this.PackageLength = null;
+            return JObject.Parse(await ReadUncryptedString());
         }
 
-        public byte[] ReadUncryptedBytes()
+        public async Task<byte[]> ReadBytes()
         {
-            int len = GetPackageLength();
-            byte[] ret = new byte[len];
-            Array.Copy(buffer, 4, ret, 0, len);
-            Consume(len + 4);
+            if (!ReceiveQueue.LoopStarted)
+                await ReceiveQueue.FetchOneFromSource();
+
+            QueuedAsyncTask<byte[], byte[]>.IOPair Pair = await ReceiveQueue.FetchOutputTaskOnce();
+            byte[] ret = await Pair.Output;
             return ret;
         }
 
-        public string ReadUncryptedString()
+        public async Task<JObject> ReadJSON()
         {
-            int len = GetPackageLength();
-            string ret = Encoding.UTF8.GetString(buffer, 4, len);
-            Consume(len + 4);
-            return ret;
+            return EncryptionManager.ExtractJSON(await ReadBytes());
         }
 
-        public JObject ReadUncryptedJSON()
+        protected virtual void PackageProcessing(byte[] raw, byte[] decrypted)
         {
-            return JObject.Parse(ReadUncryptedString());
+            throw new ReceiveQueueClass.WontOperateThis();
         }
 
-        public byte[] ReadBytes()
+        public virtual void Dispose()
         {
-            int len = GetPackageLength();
-            byte[] ret = encryptionManager.Decrypt(buffer, 4, len);
-            Consume(len + 4);
-            return ret;
-        }
-
-        public string ReadString()
-        {
-            int len = GetPackageLength();
-            string ret = encryptionManager.DecryptToString(buffer, 4, len);
-            Consume(len + 4);
-            return ret;
-        }
-
-        public JObject ReadJSON()
-        {
-            int len = GetPackageLength();
-            JObject ret = encryptionManager.DecryptToJSON(buffer, 4, len);
-            Consume(len + 4);
-            return ret;
+            ReceiveQueue.Dispose();
         }
     }
 }

@@ -99,11 +99,13 @@
     <System:String x:Key="YouReceivedAFile">You just received a file. {1} in size</System:String>
     <System:String x:Key="YouReceivedFiles">You just received {0} files. Total {1} in size</System:String>
     <System:String x:Key="SaveAs">Save As</System:String>
-    <System:String x:Key="Files">Files: </System:String>
+    <System:String x:Key="Files">Files/Folders: </System:String>
     <System:String x:Key="Transferred">Transferred: </System:String>
     <System:String x:Key="Speed">Speed: </System:String>
     <System:String x:Key="Total">Total</System:String>
     <System:String x:Key="CancelFileTransferPrompt">Do you want to cancel transferring ?</System:String>
+    <System:String x:Key="GettingFileMetaData">Getting file meta data…</System:String>
+    <System:String x:Key="TransmitionFailed">Transmition Failed</System:String>
 
     <System:String x:Key="FileAlreadyExistsTitle">File Already Exists</System:String>
     <System:String x:Key="FileAlreadyExists">This file already exists: </System:String>
@@ -131,4 +133,5 @@ etc. {0} items in total.</System:String>
     <System:String x:Key="IllegalFileName">File name cannot contain "\" and "/".</System:String>
     <System:String x:Key="NoFilePermission">No permission</System:String>
     <System:String x:Key="NumberOfItems">{0} Folder(s), {1} File(s)</System:String>
+    <System:String x:Key="CopyToThisPc">Copy to PC</System:String>
 </ResourceDictionary>

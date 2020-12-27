@@ -8,7 +8,8 @@ namespace FnSync
 {
     static class NetworkChangedHandler
     {
-        private static long Last = 0;
+        private static AutoDisposableTimer Timer = null;
+        private static readonly object Locker = new object();
 
         public static void Init()
         {
@@ -18,11 +19,30 @@ namespace FnSync
 
         private static void AddressChangedCallback(object sender, EventArgs e)
         {
-            long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            if (AlivePhones.Singleton.Count > 0 && now - Interlocked.Read(ref Last) > PcListener.FIRST_ACCEPT_TIMEOUT_MILLS)
+            lock (Locker)
             {
-                Interlocked.Exchange(ref Last, now);
-                PcListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.PhoneList.ToArray());
+                Timer?.Dispose();
+
+                if (AlivePhones.Singleton.Count > 0)
+                {
+                    Timer = new AutoDisposableTimer(
+                        delegate (object state)
+                        {
+                            ClientListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.PhoneList.ToArray());
+                        }
+                        , 5000, false
+                    );
+
+                    Timer.DisposedEvent += delegate(object _, object __) 
+                    {
+                        lock (Locker)
+                        {
+                            Timer = null;
+                        }
+                    };
+
+                    Timer.Start();
+                }
             }
         }
     }

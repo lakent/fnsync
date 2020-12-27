@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
-using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -59,7 +58,7 @@ namespace FnSync
             JObject json = new JObject();
             json["peerid"] = MainConfig.Config.ThisId;
             json["peername"] = GetMachineName();
-            json["peerport"] = PcListener.Singleton.Port;
+            json["peerport"] = ClientListener.Singleton.Port;
             if (OldConnection) json["oldconnection"] = true;
 
             if (target != null && target.Length > 0)

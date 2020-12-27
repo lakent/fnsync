@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,12 +20,21 @@ namespace FnSync
     /// </summary>
     public partial class WindowFileManager : Window
     {
+        private static WindowFileManager ThisWindow = null;
         public static void NewOne()
         {
-            Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
+            App.FakeDispatcher.Invoke(() =>
             {
-                WindowFileManager window = new WindowFileManager();
-                window.Show();
+                if (ThisWindow != null)
+                {
+                    ThisWindow.Activate();
+                }
+                else
+                {
+                    WindowFileManager window = new WindowFileManager();
+                    window.Show();
+                }
+                return null;
             });
         }
 
@@ -32,6 +42,7 @@ namespace FnSync
         {
             InitializeComponent();
             FolderTree.DataContext = AlivePhones.Singleton;
+            ThisWindow = this;
         }
 
         private void UpButton_Click(object sender, RoutedEventArgs e)
@@ -46,6 +57,12 @@ namespace FnSync
                 e.Handled = true;
                 FolderTree.RefreshCurrentSelected();
             }
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            ThisWindow = null;
         }
     }
 }

@@ -23,7 +23,29 @@ namespace FnSync
             if (0 >= optVal) return false;
             return true;
         }
+
+        public static void SendSafe(this Socket self, byte[] buffer)
+        {
+            lock (self)
+            {
+                self.Send(buffer);
+            }
+        }
     }
+
+    public static class NetworkStreamExtension
+    {
+        public static Task WriteAsync(this NetworkStream s, byte[] buffer)
+        {
+            return s.WriteAsync(buffer, 0, buffer.Length);
+        }
+
+        public static void Write(this NetworkStream s, byte[] buffer)
+        {
+            s.Write(buffer, 0, buffer.Length);
+        }
+    }
+
     public static class ContextMenuExtension
     {
         public static MenuItem FindByName(this ContextMenu t, string name)
@@ -48,6 +70,11 @@ namespace FnSync
     {
         public static bool OptBool(this JObject jObject, string key, bool defval)
         {
+            if( jObject == null || key == null)
+            {
+                return defval;
+            }
+
             try
             {
                 if (jObject.ContainsKey(key))
@@ -64,6 +91,11 @@ namespace FnSync
 
         public static string OptString(this JObject jObject, string key, string defval)
         {
+            if( jObject == null || key == null)
+            {
+                return defval;
+            }
+
             try
             {
                 if (jObject.ContainsKey(key))
@@ -80,6 +112,11 @@ namespace FnSync
 
         public static long OptLong(this JObject jObject, string key, long defval)
         {
+            if( jObject == null || key == null)
+            {
+                return defval;
+            }
+
             try
             {
                 if (jObject.ContainsKey(key))
@@ -133,9 +170,9 @@ namespace FnSync
 
     static class DispatherExtension
     {
-        public static void InvokeIfNecessaryWithThrow(this Dispatcher dispatcher, Action action, bool Necessary = true)
+        public static void InvokeIfNecessaryWithThrow(this Dispatcher dispatcher, Action action, bool IsNecessary = true)
         {
-            if (dispatcher.CheckAccess() || !Necessary)
+            if (dispatcher.CheckAccess() || !IsNecessary)
             {
                 action?.Invoke();
             }

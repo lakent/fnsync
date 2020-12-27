@@ -41,6 +41,5 @@ namespace FnSync
             Start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             Bytes = 0;
         }
-
     }
 }

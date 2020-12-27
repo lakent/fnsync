@@ -37,7 +37,7 @@ namespace FnSync
                 typeof(ControlFileList)
             );
 
-        public string Folder
+        public string Folder // Current Folder
         {
             get
             {
@@ -216,6 +216,45 @@ namespace FnSync
                 }
 
                 return deleteCommand;
+            }
+        }
+
+        private class CopyToPcCommandClass : ICommand
+        {
+            private readonly ControlFileList FileList;
+            public CopyToPcCommandClass(ControlFileList FileList)
+            {
+                this.FileList = FileList;
+            }
+
+            public event EventHandler CanExecuteChanged;
+
+            public bool CanExecute(object parameter)
+            {
+                return FileList.ListView.SelectedItem != null && !string.IsNullOrWhiteSpace(FileList.Folder);
+            }
+
+            public void Execute(object parameter)
+            {
+                new WindowFileReceive(
+                    FileList.Client,
+                    FileList.ListView.SelectedItems,
+                    FileList.Folder
+                    ).Show();
+            }
+        }
+
+        private ICommand copyToPcCommand = null;
+        public ICommand CopyToPcCommand
+        {
+            get
+            {
+                if (copyToPcCommand == null)
+                {
+                    copyToPcCommand = new CopyToPcCommandClass(this);
+                }
+
+                return copyToPcCommand;
             }
         }
 

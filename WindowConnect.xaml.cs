@@ -23,7 +23,7 @@ namespace FnSync
 
         public static void NewOne()
         {
-            Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
+            App.FakeDispatcher.Invoke(() =>
             {
                 if (CurrentWindow == null)
                 {
@@ -33,6 +33,8 @@ namespace FnSync
                 {
                     CurrentWindow.Activate();
                 }
+
+                return null;
             });
         }
 
@@ -64,7 +66,7 @@ namespace FnSync
         private void RefreshQrCode()
         {
             string token = Guid.NewGuid().ToString();
-            PcListener.Singleton.SetCode(token);
+            ClientListener.Singleton.Code = token;
 
             JObject helloJson = HandShake.MakeHelloJson(
                 false,
@@ -161,13 +163,13 @@ namespace FnSync
             else
             {
                 SwitchCodeConnectiongState(true);
-                PcListener.Singleton.StartReachInitiatively(code, false, null);
+                ClientListener.Singleton.StartReachInitiatively(code, false, null);
             }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            PcListener.Singleton.StopReach();
+            ClientListener.Singleton.StopReach();
             SwitchCodeConnectiongState(false);
         }
 

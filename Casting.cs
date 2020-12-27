@@ -41,9 +41,10 @@ namespace FnSync
                     else
                     {
                         ToastTextCastCopied(id, client.Name, text);
-                        Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
+                        App.FakeDispatcher.Invoke(delegate
                         {
                             ClipboardManager.Singleton.SetClipboardText(text, true);
+                            return null;
                         });
                     }
                 }

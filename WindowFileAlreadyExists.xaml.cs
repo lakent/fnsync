@@ -21,10 +21,10 @@ namespace FnSync
     {
         public class ActionChangedEventArgs : EventArgs
         {
-            public readonly FileTransmission.FileAlreadyExistEventArgs.Handle Action;
+            public readonly FileTransmission.FileAlreadyExistEventArgs.Measure Action;
             public readonly bool ApplyToAll;
             public ActionChangedEventArgs(
-                FileTransmission.FileAlreadyExistEventArgs.Handle Action,
+                FileTransmission.FileAlreadyExistEventArgs.Measure Action,
                 bool ApplyToAll
                 )
             {
@@ -51,17 +51,17 @@ namespace FnSync
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            FileTransmission.FileAlreadyExistEventArgs.Handle action = FileTransmission.FileAlreadyExistEventArgs.Handle.SKIP;
+            FileTransmission.FileAlreadyExistEventArgs.Measure action = FileTransmission.FileAlreadyExistEventArgs.Measure.SKIP;
 
             if( Skip.IsChecked == true )
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Handle.SKIP;
+                action = FileTransmission.FileAlreadyExistEventArgs.Measure.SKIP;
             } else if( Overwrite.IsChecked == true)
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Handle.OVERWRITE;
+                action = FileTransmission.FileAlreadyExistEventArgs.Measure.OVERWRITE;
             } else if( Rename.IsChecked == true)
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Handle.RENAME;
+                action = FileTransmission.FileAlreadyExistEventArgs.Measure.RENAME;
             }
 
             ActionChanged?.Invoke(this, new ActionChangedEventArgs(action, ApplyToAll.IsChecked == true));

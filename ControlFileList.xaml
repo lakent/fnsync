@@ -17,6 +17,7 @@
             <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}"/>
             <!-- <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/> -->
             <MenuItem Header="{DynamicResource Delete}" Command="{Binding DeleteCommand}"/>
+            <MenuItem Header="{DynamicResource CopyToThisPc}" Command="{Binding CopyToPcCommand}"/>
             <Separator/>
             <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
         </ContextMenu>

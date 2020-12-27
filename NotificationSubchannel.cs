@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using System.Windows;
 using System.Windows.Documents;
 using Windows.Data.Xml.Dom;
@@ -21,7 +23,7 @@ namespace FnSync
     {
         public static readonly NotificationSubchannel Singleton = new NotificationSubchannel();
 
-        private readonly BlockingCollection<ToastNotification> Queue = new BlockingCollection<ToastNotification>(new ConcurrentQueue<ToastNotification>());
+        private readonly BufferBlock<ToastNotification> Queue = new BufferBlock<ToastNotification>();
 
         private NotificationSubchannel()
         {
@@ -52,7 +54,7 @@ namespace FnSync
 
         }
 
-        private void ThreadJob()
+        private async void ThreadJob()
         {
             ToastNotifier Notifier = ToastNotificationManager.CreateToastNotifier("holmium.FnSync.A7F49234CADC422229142EDC7D8932E");
 
@@ -61,15 +63,16 @@ namespace FnSync
 
             while (true)
             {
-                ToastNotification one = Queue.Take();
+                ToastNotification one = await Queue.ReceiveAsync();
 
 #if !DEBUG
                 try
                 {
 #endif
-                Notifier.Show(one);
+                    Notifier.Show(one);
 #if !DEBUG
-                } catch (Exception e) { }
+                }
+                catch (Exception e) { }
 #endif
 
                 if (Last != null)
@@ -83,8 +86,8 @@ namespace FnSync
                     }
                 }
 
-                Thread.Sleep(1000);
-                ToastNotification dup = Queue.Take();
+                await Task.Delay(1000);
+                ToastNotification dup = await Queue.ReceiveAsync();
                 LastDup = dup;
                 Last = one;
             }
@@ -127,18 +130,6 @@ namespace FnSync
         {
             string pattern = @"((https?:\/\/)?([0-9a-zA-Z][.0-9a-zA-Z]+\.([a-zA-Z]+|xn\-\-[0-9a-zA-Z]+)|([0-9]{1,3}\.){3}[0-9]{1,3})(:[0-9]{1,5})?(\/[0-9A-Za-z-\/\\.@:%_\+~#=?]*)?)|((?<=[^.\d])\d{4,}(?!\.)(?!\d))|((?<=[^.\d])\+?\d{1,3}[-\d]{4,})";
 
-            /*
-
-   at System.Text.RegularExpressions.Regex.Matches(String input)
-   at System.Text.RegularExpressions.Regex.Matches(String input, String pattern)
-   at FnSync.NotificationSubchannel.GetCopyableSeries(String Text, Int32 MaxNumber) in C:\Users\35482\Documents\My_File\VC\FnSync\NotificationSubchannel.cs:line 96
-   at FnSync.NotificationSubchannel.ToastPhoneNotification(String clientId, String clientName, JObject msg) in C:\Users\35482\Documents\My_File\VC\FnSync\NotificationSubchannel.cs:line 147
-   at FnSync.NotificationSubchannel.NotificationReceived(String id, String msgType, Object msgObject, PhoneClient client) in C:\Users\35482\Documents\My_File\VC\FnSync\NotificationSubchannel.cs:line 83
-   at FnSync.PhoneMessageCenter.<>c__DisplayClass17_1.<InvockAll>b__0() in C:\Users\35482\Documents\My_File\VC\FnSync\PhoneMessageCenter.cs:line 226
-   at FnSync.DispatherExtension.DispatchIfNecessaryWithThrow(Dispatcher dispatcher, Action action, Boolean Necessary) in C:\Users\35482\Documents\My_File\VC\FnSync\Extension.cs:line 122
-   at FnSync.PhoneMessageCenter.InvockAll(HashSet`1 set, String id, String msgType, Object msg, PhoneClient client) in C:\Users\35482\Documents\My_File\VC\FnSync\PhoneMessageCenter.cs:line 221
-
-             */
             var matches = Regex.Matches(Text, pattern);
 
             if (matches.Count == 0)
@@ -256,8 +247,8 @@ namespace FnSync
 
         public void Push(ToastNotification notification, ToastNotification dup)
         {
-            Queue.Add(notification);
-            Queue.Add(dup);
+            Queue.Post(notification);
+            Queue.Post(dup);
         }
     }
 
@@ -288,9 +279,10 @@ namespace FnSync
             QueryString queries = QueryString.Parse(invokedArgs);
             if (queries.Contains("Copy"))
             {
-                Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
+                App.FakeDispatcher.Invoke(() =>
                 {
                     ClipboardManager.Singleton.SetClipboardText(queries["Copy"], false);
+                    return null;
                 });
             }
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -157,7 +158,7 @@ namespace FnSync
         }
 
         private long LastClipboardChangedTime = 0;
-        private void OnClipboardChanged()
+        private async void OnClipboardChanged()
         {
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (now - LastClipboardChangedTime < 150)
@@ -167,33 +168,29 @@ namespace FnSync
 
             LastClipboardChangedTime = now;
 
-            new AutoDisposableTimer((state) =>
+            await Task.Delay(150);
+
+            try
             {
-                Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
+                if (Clipboard.ContainsText())
                 {
-                    try
+                    IDataObject dataObject = Clipboard.GetDataObject();
+                    if (dataObject.GetData(TagFormat) != null)
+                        return;
+
+                    string text = GetClipboardText(dataObject);
+                    if (text == null)
+                        return;
+
+                    JObject msg = new JObject
                     {
-                        if (Clipboard.ContainsText())
-                        {
-                            IDataObject dataObject = Clipboard.GetDataObject();
-                            if (dataObject.GetData(TagFormat) != null)
-                                return;
+                        ["text"] = text
+                    };
 
-                            string text = GetClipboardText(dataObject);
-                            if (text == null)
-                                return;
-
-                            JObject msg = new JObject
-                            {
-                                ["text"] = text
-                            };
-
-                            AlivePhones.Singleton.PushMsg(msg, MSG_TYPE_NEW_CLIPBOARD_DATA);
-                        }
-                    }
-                    catch (Exception e) { }
-                });
-            }, 150);
+                    AlivePhones.Singleton.PushMsg(msg, MSG_TYPE_NEW_CLIPBOARD_DATA);
+                }
+            }
+            catch (Exception e) { }
         }
 
         private IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)
@@ -207,7 +204,7 @@ namespace FnSync
             return NativeMethods.DefWindowProc(hwnd, msg, wParam, lParam);
         }
 
-        public void SetClipboardText(string Text, bool DontSync)
+        public async void SetClipboardText(string Text, bool DontSync)
         {
             DataObject dataObject = new DataObject(DataFormats.UnicodeText, Text);
             //dataObject.SetData(DataFormats.Text, Text);
@@ -224,7 +221,7 @@ namespace FnSync
                 }
                 catch { }
 
-                Thread.Sleep(10);
+                await Task.Delay(10);
             }
         }
 

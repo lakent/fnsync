@@ -180,12 +180,14 @@ namespace FnSync
         }
 
         private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+        private static readonly char[] InvalidFileNameCharsWithoutLinuxPathSlash = 
+            InvalidFileNameChars.Except(new char[] { '/' }).ToArray();
 
-        public static string ReplaceInvalidFileName(string src)
+        public static string ReplaceInvalidFileNameChars(string src, bool PreserveLinuxPathSlash = false)
         {
             StringBuilder sb = new StringBuilder(src);
 
-            foreach (char ch in InvalidFileNameChars)
+            foreach (char ch in (PreserveLinuxPathSlash ? InvalidFileNameCharsWithoutLinuxPathSlash : InvalidFileNameChars))
             {
                 sb.Replace(ch, '_');
             }

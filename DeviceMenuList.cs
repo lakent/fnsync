@@ -103,7 +103,7 @@ namespace FnSync
                 }
                 else if (SavedPhones.Singleton.ContainsKey(id))
                 {
-                    PcListener.Singleton.StartReachInitiatively(null, true, new SavedPhones.Phone[] { SavedPhones.Singleton[id] });
+                    ClientListener.Singleton.StartReachInitiatively(null, true, new SavedPhones.Phone[] { SavedPhones.Singleton[id] });
                 }
             }
         }

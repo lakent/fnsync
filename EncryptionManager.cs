@@ -8,6 +8,7 @@ using Org.BouncyCastle.Security;
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FnSync
 {
@@ -32,7 +33,7 @@ namespace FnSync
 
         // https://github.com/luke-park/SecureCompatibleEncryptionExamples/blob/master/C%23/SCEE.cs
 
-        private byte[] Encrypt(byte[] src)
+        public byte[] Encrypt(byte[] src)
         {
             // Generate a 96-bit nonce using a CSPRNG.
             SecureRandom rand = new SecureRandom();
@@ -55,7 +56,7 @@ namespace FnSync
             return ciphertextAndNonce;
         }
 
-        public byte[] EncryptString(string src)
+        public static byte[] ConvertToBytes(string src)
         {
             JObject pack = new JObject
             {
@@ -64,7 +65,17 @@ namespace FnSync
                 ["time"] = DateTimeOffset.Now.ToUnixTimeMilliseconds()
             };
 
-            return Encrypt(Encoding.UTF8.GetBytes(pack.ToString()));
+            return Encoding.UTF8.GetBytes(pack.ToString());
+        }
+
+        public static byte[] ConvertToBytes(JObject obj)
+        {
+            return ConvertToBytes(obj.ToString(Newtonsoft.Json.Formatting.None));
+        }
+
+        public byte[] EncryptString(string src)
+        {
+            return Encrypt(ConvertToBytes(src));
         }
 
         public byte[] EncryptJSON(JObject obj)
@@ -74,27 +85,26 @@ namespace FnSync
 
         public byte[] Decrypt(byte[] src, int start, int count)
         {
-            // Retrieve the nonce and ciphertext.
-            /*
-            byte[] iv = new byte[IV_SIZE_BYTES];
-            byte[] ciphertext = new byte[count - IV_SIZE_BYTES];
-            Array.Copy(src, start, iv, 0, IV_SIZE_BYTES);
-            Array.Copy(src, start + IV_SIZE_BYTES, ciphertext, 0, count - IV_SIZE_BYTES);
-            */
+            try
+            {
+                // Create the cipher instance and initialize.
+                GcmBlockCipher cipher = new GcmBlockCipher(new AesEngine());
+                //KeyParameter keyParam = ParameterUtilities.CreateKeyParameter("AES", key);
+                ParametersWithIV cipherParameters = new ParametersWithIV(keyParam, src, start, IV_SIZE_BYTES);
+                cipher.Init(false, cipherParameters);
 
-            // Create the cipher instance and initialize.
-            GcmBlockCipher cipher = new GcmBlockCipher(new AesEngine());
-            //KeyParameter keyParam = ParameterUtilities.CreateKeyParameter("AES", key);
-            ParametersWithIV cipherParameters = new ParametersWithIV(keyParam, src, start, IV_SIZE_BYTES);
-            cipher.Init(false, cipherParameters);
+                // Decrypt and return result.
+                int cipherTextLength = count - IV_SIZE_BYTES;
+                byte[] plaintext = new byte[cipher.GetOutputSize(cipherTextLength)];
+                int length = cipher.ProcessBytes(src, start + IV_SIZE_BYTES, cipherTextLength, plaintext, 0);
+                cipher.DoFinal(plaintext, length);
 
-            // Decrypt and return result.
-            int cipherTextLength = count - IV_SIZE_BYTES;
-            byte[] plaintext = new byte[cipher.GetOutputSize(cipherTextLength)];
-            int length = cipher.ProcessBytes(src, start + IV_SIZE_BYTES, cipherTextLength, plaintext, 0);
-            cipher.DoFinal(plaintext, length);
-
-            return plaintext;
+                return plaintext;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         public string DecryptToString(byte[] src, int start, int count)
@@ -102,9 +112,9 @@ namespace FnSync
             return DecryptToString(src, start, count, true);
         }
 
-        public string DecryptToString(byte[] src, int start, int count, bool checkTime)
+        public static string ExtractString(byte[] Decrypted, bool checkTime = true)
         {
-            JObject pack = JObject.Parse(Encoding.UTF8.GetString(Decrypt(src, start, count)));
+            JObject pack = JObject.Parse(Encoding.UTF8.GetString(Decrypted));
             long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
             string incomingData = pack["data"].ToString();
@@ -128,10 +138,22 @@ namespace FnSync
             return incomingData;
         }
 
-        public JObject DecryptToJSON(byte[] src, int start, int count)
+        public string DecryptToString(byte[] src, int start, int count, bool checkTime = true)
         {
-            string str = DecryptToString(src, start, count);
-            return str != null ? JObject.Parse(str) : null;    
+            byte[] Decrypted = Decrypt(src, start, count);
+            return ExtractString(Decrypted, checkTime);
+        }
+
+        public static JObject ExtractJSON(byte[] Decrypted, bool checkTime = true)
+        {
+            string str = ExtractString(Decrypted, checkTime);
+            return str != null ? JObject.Parse(str) : null;
+        }
+
+        public JObject DecryptToJSON(byte[] src, int start, int count, bool checkTime = true)
+        {
+            byte[] Decrypted = Decrypt(src, start, count);
+            return ExtractJSON(Decrypted, checkTime);
         }
 
         private static readonly char[] SET = "0123456789abcdef".ToCharArray();

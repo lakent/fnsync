@@ -7,13 +7,20 @@ using System.Threading.Tasks;
 
 namespace FnSync
 {
-    class AutoDisposableTimer
+    class AutoDisposableTimer : IDisposable
     {
-        private readonly Timer timer = null;
-        
-        public AutoDisposableTimer(TimerCallback callback, int delay)
+        private Timer timer = null;
+
+        public delegate void DisposedEventHandler(object sender, Object state);
+
+        public event DisposedEventHandler DisposedEvent;
+
+        private TimerCallback Callback = null;
+        private int DelayInMills = Timeout.Infinite;
+
+        public AutoDisposableTimer(TimerCallback callback, int DelayInMills, bool StartImmediately)
         {
-            timer = new Timer((state) =>
+            this.Callback = (state) =>
             {
                 try
                 {
@@ -21,9 +28,39 @@ namespace FnSync
                 }
                 finally
                 {
-                    timer?.Dispose();
+                    Dispose();
                 }
-            }, null, delay, Timeout.Infinite);
+            };
+
+            this.DelayInMills = DelayInMills;
+
+            if (StartImmediately)
+                Start();
+        }
+
+        public void Start()
+        {
+            timer = new Timer(this.Callback, null, DelayInMills, Timeout.Infinite);
+        }
+        
+        public AutoDisposableTimer(TimerCallback callback, int DelayInMills): this(callback, DelayInMills, true) {}
+
+        public void Dispose()
+        {
+            Dispose(null);
+        }
+
+        public void Dispose(Object state)
+        {
+            lock (this)
+            {
+                if (timer != null)
+                {
+                    timer?.Dispose();
+                    timer = null;
+                    DisposedEvent?.Invoke(this, state);
+                }
+            }
         }
     }
 }

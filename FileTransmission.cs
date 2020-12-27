@@ -6,14 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
-using Windows.UI.Xaml;
-using Application = System.Windows.Application;
 
 namespace FnSync
 {
@@ -21,11 +17,19 @@ namespace FnSync
     {
         public static int _Force = -1;
 
-        public const string MSG_TYPE_FILE_TRANSFER_REQUEST = "file_transfer_request";
+        public const string MSG_TYPE_FILE_TRANSFER_REQUEST_TO = "file_transfer_request_to";
+        public const string MSG_TYPE_FILE_TRANSFER_REQUEST_FROM = "file_transfer_request_from";
+        public const string MSG_TYPE_FILE_TRANSFER_REQUEST_KEY = "file_transfer_request_key";
+        public const string MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK = "file_transfer_request_key_ok";
+        public const string MSG_TYPE_FILE_TRANSFER_KEY_EXISTS = "file_transfer_key_exists";
+        public const string MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY = "file_transfer_key_exists_reply";
         public const string MSG_TYPE_FILE_TRANSFER_META = "file_transfer_meta";
-        public const string MSG_TYPE_FILE_TRANSFER_REWIND = "file_transfer_rewind";
+        public const string MSG_TYPE_FILE_TRANSFER_SEEK = "file_transfer_seek";
+        public const string MSG_TYPE_FILE_TRANSFER_SEEK_OK = "file_transfer_seek_ok";
         public const string MSG_TYPE_FILE_TRANSFER_DATA = "file_transfer_data";
         public const string MSG_TYPE_FILE_TRANSFER_END = "file_transfer_end";
+        public const string MSG_TYPE_FILE_CONTENT_GET = "file_content_get";
+        public const string MSG_TYPE_FILE_CONTENT = "file_content";
 
         private static readonly PendingsClass Pendings = new PendingsClass();
 
@@ -34,12 +38,73 @@ namespace FnSync
             public class Entry
             {
                 public string mime;
-                public string name;
+
+                private string _name;
+                public string name
+                {
+                    get { return _name; }
+                    set
+                    {
+                        if (value != null)
+                        {
+                            _name = value;
+                            ConvertedName = Utils.ReplaceInvalidFileNameChars(value);
+                        }
+                    }
+                }
+
+                public string ConvertedName { get; private set; } = null;
+
                 public long length;
-                public string key;
+                public string key = null;
+                public long last = -1;
+
+                //
+                // Summary:
+                //     File path under a specific folder on phone. It's a relative path including the filename
+                private string _path = null;
+                public string path
+                {
+                    get
+                    {
+                        return _path;
+                    }
+                    set
+                    {
+                        if (value != null)
+                        {
+                            ConvertedPath = Utils.ReplaceInvalidFileNameChars(value, true).Replace('/', '\\');
+                            _path = value;
+                        }
+                        else
+                        {
+                            ConvertedPath = null;
+                            _path = value;
+                        }
+                    }
+                }
+
+                public string ConvertedPath { get; private set; } = null;
+
+                public bool IsFolder => ConvertedPath != null && ConvertedPath.EndsWith("\\");
+                public bool IsUnderSubfolder
+                {
+                    get
+                    {
+                        if (ConvertedPath != null)
+                        {
+                            int SlashIndex = ConvertedPath.IndexOf("\\");
+
+                            if (SlashIndex >= 0 && SlashIndex != ConvertedPath.Length - 1)
+                                return true;
+                        }
+
+                        return false;
+                    }
+                }
             }
 
-            private Dictionary<string, Entry[]> map = new Dictionary<string, Entry[]>();
+            private readonly Dictionary<string, Entry[]> map = new Dictionary<string, Entry[]>();
 
             public PendingsClass()
             {
@@ -185,7 +250,7 @@ namespace FnSync
         {
             PhoneMessageCenter.Singleton.Register(
                 null,
-                MSG_TYPE_FILE_TRANSFER_REQUEST,
+                MSG_TYPE_FILE_TRANSFER_REQUEST_TO,
                 OnRequestReceived,
                 false
             );
@@ -295,18 +360,19 @@ namespace FnSync
                 return;
             }
 
-            Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
+            App.FakeDispatcher.Invoke(delegate
             {
                 new WindowFileReceive(
                     new FileTransmission(client, Pendings.GetAndRemove(PendingKey), total)
                     ).Show();
+                return null;
             });
         }
 
         ////////////////////////////////////////////////////////////////////////////////
 
 
-        private readonly PendingsClass.Entry[] Entries;
+        private PendingsClass.Entry[] Entries;
         private PhoneClient Client;
 
         public int FileCount => Entries.Length;
@@ -314,17 +380,18 @@ namespace FnSync
 
         private FileStream file = null;
         private long CurrnetReceived = 0;
-        private string CurrnetPath = null;
+        private string CurrnetLocalFilePath = null;
         private long TotalReceived = 0;
-        private readonly long TotalSize;
+        private long TotalSize;
 
         private long StartupTime = -1;
-        private long LastReceivedTime = long.MaxValue;
 
         private const int UnitSizeInBytes = 1024;
         private int UnitNumber = 10;
 
-        private readonly RequestCacheClass RequestCache;
+        private RequestCacheClass RequestCache;
+
+        private bool IsDisposed = false;
 
         public class ProgressChangedEventArgs : EventArgs
         {
@@ -343,12 +410,28 @@ namespace FnSync
                 this.TotalReceived = TotalReceived;
                 this.TotalSize = TotalSize;
 
-                this.Percent = (float)((double)Received / (double)Size) * 100f;
-                this.TotalPercent = (float)((double)TotalReceived / (double)TotalSize) * 100f;
+                if (Size != 0)
+                {
+                    this.Percent = (float)((double)Received / (double)Size) * 100f;
+                }
+                else
+                {
+                    this.Percent = 100;
+                }
+
+                if (TotalSize != 0)
+                {
+                    this.TotalPercent = (float)((double)TotalReceived / (double)TotalSize) * 100f;
+                }
+                else
+                {
+                    this.TotalPercent = 100;
+                }
 
                 this.BytesPerSec = BytesPerSec;
             }
         }
+
         public class NextFileEventArgs : EventArgs
         {
             public readonly int Current, Count;
@@ -363,7 +446,7 @@ namespace FnSync
         }
         public class FileAlreadyExistEventArgs : EventArgs
         {
-            public enum Handle
+            public enum Measure
             {
                 SKIP, OVERWRITE, RENAME
             }
@@ -371,12 +454,12 @@ namespace FnSync
             public readonly string Dest;
 
             public string NewName;
-            public Handle Action;
+            public Measure Action;
 
             public FileAlreadyExistEventArgs(string dest)
             {
                 this.Dest = dest;
-                this.Action = Handle.SKIP;
+                this.Action = Measure.SKIP;
             }
         }
 
@@ -384,18 +467,26 @@ namespace FnSync
         public delegate void NextFileEventHandler(object sender, NextFileEventArgs e);
         public delegate void FileAlreadyExistEventHandler(object sender, FileAlreadyExistEventArgs e);
 
-        public event PercentageChangedEventHandler ProgressChanged;
-        public event NextFileEventHandler NextFile;
-        public event FileAlreadyExistEventHandler FileAlreadyExist;
-        public event EventHandler Finished;
+        public event PercentageChangedEventHandler ProgressChangedEvent;
+        public event NextFileEventHandler OnNextFileEvent;
+        public event FileAlreadyExistEventHandler FileAlreadyExistEvent;
+        public event EventHandler OnFinishedEvent;
+        public event EventHandler OnErrorEvent;
 
-        private readonly Thread WatcherThread;
-        private readonly Thread WriteThread;
-        private readonly Dispatcher WriteDispatcher;
-
-        public FileTransmission(PhoneClient client, PendingsClass.Entry[] entries, long TotalSize = -1)
+        private enum TransmitionStageClass
         {
-            this.Client = client;
+            NONE = 0,
+            GETTING_KEY,
+            ONE_CHUNK_RECEIVE,
+            MULTIPLE_CHUNK_RECEIVE
+        }
+
+        private TransmitionStageClass TransmitionStage = TransmitionStageClass.NONE;
+
+        private readonly string FileRootOnPhone;
+
+        private void InitFromEntries(PendingsClass.Entry[] entries, long TotalSize = -1)
+        {
             this.Entries = entries;
             if (TotalSize < 0)
             {
@@ -409,155 +500,188 @@ namespace FnSync
             this.RequestCache = new RequestCacheClass();
 
             PhoneMessageCenter.Singleton.Register(
-                client.Id,
+                Client.Id,
                 MSG_TYPE_FILE_TRANSFER_DATA,
                 OnBlobReceived,
                 false
             );
 
             PhoneMessageCenter.Singleton.Register(
-                client.Id,
+                Client.Id,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
                 OnReconnected,
                 false
             );
 
-            WatcherThread = new Thread(() => WatchJob());
-            WatcherThread.Start();
-
-            WriteThread = new Thread(() =>
-            {
-                Dispatcher.Run();
-            });
-
-            WriteThread.Start();
-
-            Dispatcher dispatcher = null;
-            while (dispatcher == null)
-            {
-                Thread.Sleep(5);
-                dispatcher = Dispatcher.FromThread(WriteThread);
-            }
-
-            WriteDispatcher = dispatcher;
+            PhoneMessageCenter.Singleton.Register(
+                Client.Id,
+                PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
+                OnDisconnected,
+                false
+            );
         }
 
-        private void WatchJob()
+        public FileTransmission(PhoneClient client, PendingsClass.Entry[] entries, long TotalSize = -1, string FileRootOnPhone = null)
         {
-            while (LastReceivedTime != long.MinValue)
+            this.Client = client;
+            this.FileRootOnPhone = FileRootOnPhone;
+
+            if (this.FileRootOnPhone != null && !this.FileRootOnPhone.EndsWith("/"))
             {
-                Thread.Sleep(5000);
-                long now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                if (now - LastReceivedTime > 5000)
+                this.FileRootOnPhone += "/";
+            }
+
+            InitFromEntries(entries, TotalSize);
+        }
+
+        private object WatchJobToken = null;
+        private async void WatchJob()
+        {
+            object token = new object();
+            WatchJobToken = token;
+
+            const int IntervalMills = 200;
+            long LastReceivedTotal = long.MinValue;
+
+            while (WatchJobToken == token)
+            {
+                await Task.Delay(IntervalMills);
+                if (LastReceivedTotal == TotalReceived)
                 {
                     Client?.SendMsgNoThrow(PhoneClient.MSG_TYPE_HELLO);
                 }
+                else
+                {
+                    LastReceivedTotal = TotalReceived;
+                }
             }
+        }
+
+        private void CancelWatchJob()
+        {
+            WatchJobToken = null;
         }
 
         private void RequestNext(int count)
         {
-            Client.WriteString(RequestCache.Get(count, UnitNumber * UnitSizeInBytes));
+            Client.WriteQueued(RequestCache.Get(count, UnitNumber * UnitSizeInBytes));
         }
 
-        private string LastFolder = null;
+        private string DestLocalFolder = null;
 
         private int FileIndex = -1;
         private PendingsClass.Entry CurrentEntry = null;
-        public void StartNext(string folder, string name)
+
+        public void SetLocalFolder(string LocalFolder)
         {
-            if (folder == null && LastFolder == null)
+            DestLocalFolder = LocalFolder;
+            if (!DestLocalFolder.EndsWith("\\"))
+            {
+                DestLocalFolder += "\\";
+            }
+        }
+
+        public enum TransmissionStatus
+        {
+            INITIAL = -1,
+            SUCCESSFUL = 0,
+            FAILED,
+            SKIPPED,
+            RESET_CURRENT,
+        }
+
+        private void RevertToPreviousState()
+        {
+            file.Close();
+            TotalReceived -= CurrnetReceived;
+            CurrnetReceived = 0;
+            --FileIndex;
+        }
+
+        private async Task OneChunkReceive()
+        {
+            if (String.IsNullOrWhiteSpace(FileRootOnPhone) ||
+                String.IsNullOrWhiteSpace(CurrentEntry.ConvertedPath))
+            {
+                throw new ArgumentException("FileRootOnPhone & CurrentEntry.path");
+            }
+
+            TransmitionStage = TransmitionStageClass.ONE_CHUNK_RECEIVE;
+            object MsgObject = await PhoneMessageCenter.Singleton.OneShot(
+                Client,
+                new JObject()
+                {
+                    ["path"] = FileRootOnPhone + CurrentEntry.path,
+                },
+                MSG_TYPE_FILE_CONTENT_GET,
+                MSG_TYPE_FILE_CONTENT,
+                5000
+                );
+
+            IMessageWithBinary Msg = MsgObject as IMessageWithBinary;
+            WriteBinaryToFile(Msg.Binary, 0);
+        }
+
+        private async Task GetKey(bool Force = false)
+        {
+            if (String.IsNullOrWhiteSpace(CurrentEntry.key) || Force)
+            {
+                if (String.IsNullOrWhiteSpace(FileRootOnPhone) ||
+                    String.IsNullOrWhiteSpace(CurrentEntry.ConvertedPath))
+                {
+                    throw new ArgumentException("FileRootOnPhone & CurrentEntry.ConvertedPath");
+                }
+
+                string key = await PhoneMessageCenter.Singleton.OneShotGetString(
+                    Client,
+                    new JObject()
+                    {
+                        ["path"] = FileRootOnPhone + CurrentEntry.path,
+                        //["stub_size"] = UnitSizeInBytes * UnitNumber
+                    },
+                    MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
+                    MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
+                    5000,
+                    "key",
+                    null
+                    );
+
+                if (string.IsNullOrWhiteSpace(key))
+                {
+                    throw new ArgumentException("CurrentEntry.key");
+                }
+
+                CurrentEntry.key = key;
+            }
+
+            RequestCache.Key = CurrentEntry.key;
+        }
+
+        private void MultipleChunksReceive()
+        {
+            TransmitionStage = TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE;
+            RequestNext(10);
+        }
+
+        private string SpecifiedName = null;
+
+        public async void StartNext(
+            string SpecifyName = null,
+            TransmissionStatus LastStatus = TransmissionStatus.INITIAL
+            )
+        {
+            TransmitionStage = TransmitionStageClass.NONE;
+            this.SpecifiedName = SpecifyName;
+
+            if (IsDisposed)
+            {
+                return;
+            }
+
+            if (DestLocalFolder == null)
             {
                 throw new ArgumentNullException();
             }
-
-            WriteDispatcher.InvokeAsyncCatchable(delegate
-            {
-                if (folder != null)
-                {
-                    LastFolder = folder;
-                }
-                else
-                {
-                    folder = LastFolder;
-                }
-
-                while (true)
-                {
-                    if (++FileIndex >= Entries.Length)
-                    {
-                        LastReceivedTime = long.MinValue;
-
-                        Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
-                        {
-                            Finished?.Invoke(this, null);
-                        });
-
-                        return;
-                    }
-
-                    CurrentEntry = Entries[FileIndex];
-                    RequestCache.Key = CurrentEntry.key;
-                    CurrnetReceived = 0;
-
-                    string filename = name ?? CurrentEntry.name;
-                    filename = Utils.ReplaceInvalidFileName(filename);
-                    string path = folder + (folder.EndsWith("\\") ? "" : "\\") + filename;
-
-                    Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
-                    {
-                        NextFile?.Invoke(
-                            this,
-                            new NextFileEventArgs(
-                                FileIndex + 1,
-                                Entries.Length,
-                                CurrentEntry.name
-                                )
-                            );
-                    });
-
-                    if (File.Exists(path) || Directory.Exists(path))
-                    {
-                        FileAlreadyExistEventArgs args = new FileAlreadyExistEventArgs(path);
-                        Application.Current.Dispatcher.Invoke(delegate
-                        {
-                            FileAlreadyExist?.Invoke(this, args);
-                        });
-
-                        switch (args.Action)
-                        {
-                            case FileAlreadyExistEventArgs.Handle.SKIP:
-                                continue;
-
-                            case FileAlreadyExistEventArgs.Handle.OVERWRITE:
-                                break;
-
-                            case FileAlreadyExistEventArgs.Handle.RENAME:
-                                if (args.NewName == null)
-                                {
-                                    continue;
-                                }
-                                path = folder + (folder.EndsWith("\\") ? "" : "\\") + args.NewName;
-                                break;
-                        }
-                    }
-
-                    CurrnetPath = path;
-
-                    try
-                    {
-                        file = File.Open(CurrnetPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                    }
-                    catch (Exception e)
-                    {
-                        continue;
-                    }
-
-                    file.SetLength(CurrentEntry.length);
-                    RequestNext(10);
-                    break;
-                }
-            });
 
             if (StartupTime < 0)
                 StartupTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -567,11 +691,231 @@ namespace FnSync
 
             if (speed1 == null)
                 speed1 = new SpeedWatch();
+
+            switch (LastStatus)
+            {
+                case TransmissionStatus.SKIPPED:
+                    // Skipped
+                    TotalSize -= CurrentEntry.length;
+                    break;
+
+                case TransmissionStatus.FAILED:
+                    // Failed transmition
+                    DeleteCurrentFileIfNotCompleted();
+                    break;
+
+                case TransmissionStatus.SUCCESSFUL:
+                    // Successful transmition
+                    if (file != null)
+                    {
+                        file.Close();
+                        File.SetLastWriteTime(
+                            CurrnetLocalFilePath,
+                            DateTimeOffset.FromUnixTimeMilliseconds(CurrentEntry.last).LocalDateTime
+                        );
+                        File.SetLastAccessTime(
+                            CurrnetLocalFilePath,
+                            DateTimeOffset.FromUnixTimeMilliseconds(CurrentEntry.last).LocalDateTime
+                        );
+
+                        if (!String.IsNullOrWhiteSpace(CurrentEntry.key))
+                        {
+                            Client.SendMsg(
+                                new JObject()
+                                {
+                                    ["key"] = CurrentEntry.key
+                                },
+                                MSG_TYPE_FILE_TRANSFER_END
+                            );
+                        }
+                    }
+                    break;
+
+                case TransmissionStatus.INITIAL:
+                    WatchJob();
+                    break;
+
+                case TransmissionStatus.RESET_CURRENT:
+                    RevertToPreviousState();
+                    break;
+            }
+
+            ++FileIndex;
+
+            if (FileIndex >= Entries.Length)
+            {
+                CancelWatchJob();
+
+                App.FakeDispatcher.Invoke(delegate
+                {
+                    OnFinishedEvent?.Invoke(this, null);
+                    return null;
+                });
+
+                return;
+            }
+
+            App.FakeDispatcher.Invoke(delegate
+            {
+                OnNextFileEvent?.Invoke(
+                        this,
+                        new NextFileEventArgs(
+                            FileIndex + 1,
+                            Entries.Length,
+                            string.IsNullOrWhiteSpace(CurrentEntry.path) ? CurrentEntry.name : CurrentEntry.path
+                            )
+                        );
+                return null;
+            });
+
+            CurrnetReceived = 0;
+            CurrentEntry = Entries[FileIndex];
+
+            try
+            {
+                if (CurrentEntry.IsFolder)
+                {   // A Folder
+                    Directory.CreateDirectory(DestLocalFolder + CurrentEntry.ConvertedPath);
+                    StartNext(null, TransmissionStatus.SUCCESSFUL);
+                    return;
+                }
+                else
+                {   // A File
+                    string FinalDestLocalName = SpecifiedName ?? CurrentEntry.ConvertedName;
+
+                    string DestLocalPath;
+                    string Subfolder = "";
+                    if (CurrentEntry.IsUnderSubfolder)
+                    {
+                        Subfolder = Path.GetDirectoryName(CurrentEntry.ConvertedPath) + '\\';
+                    }
+
+                    DestLocalPath = DestLocalFolder + Subfolder + FinalDestLocalName;
+
+                    if (LastStatus != TransmissionStatus.RESET_CURRENT &&
+                        (File.Exists(DestLocalPath) || Directory.Exists(DestLocalPath)))
+                    {
+                        FileAlreadyExistEventArgs args = new FileAlreadyExistEventArgs(DestLocalPath);
+
+                        CancelWatchJob();
+                        await App.FakeDispatcher.Invoke(delegate
+                        {
+                            FileAlreadyExistEvent?.Invoke(this, args);
+                            return null;
+                        });
+                        WatchJob();
+
+                        switch (args.Action)
+                        {
+                            case FileAlreadyExistEventArgs.Measure.SKIP:
+                                StartNext(null, TransmissionStatus.SKIPPED);
+                                return;
+
+                            case FileAlreadyExistEventArgs.Measure.OVERWRITE:
+                                break;
+
+                            case FileAlreadyExistEventArgs.Measure.RENAME:
+                                if (args.NewName == null)
+                                {
+                                    StartNext(null, TransmissionStatus.FAILED);
+                                    return;
+                                }
+
+                                DestLocalPath = DestLocalFolder + Subfolder + args.NewName;
+                                break;
+                        }
+                    }
+
+                    CurrnetLocalFilePath = DestLocalPath;
+
+                    file = File.Open(CurrnetLocalFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+                    file.SetLength(CurrentEntry.length);
+
+                    if (CurrentEntry.length == 0)
+                    {
+                        StartNext(null, TransmissionStatus.SUCCESSFUL);
+                    }
+                    else if (CurrentEntry.length <= Math.Max(UnitSizeInBytes * UnitNumber, 100 * 1024) &&
+                        String.IsNullOrWhiteSpace(CurrentEntry.key))
+                    {
+                        await OneChunkReceive();
+                        StartNext(null, TransmissionStatus.SUCCESSFUL);
+                    }
+                    else
+                    {
+                        TransmitionStage = TransmitionStageClass.GETTING_KEY;
+                        await GetKey();
+                        MultipleChunksReceive();
+                    }
+                }
+            }
+            catch (TimeoutException e)
+            {
+
+            }
+            catch (PhoneMessageCenter.PhoneDisconnectedException e)
+            {
+
+            }
+            catch (Exception e)
+            {
+                StartNext(null, TransmissionStatus.FAILED);
+            }
         }
 
         private SpeedWatch speed = null;
         private SpeedWatch speed1 = null;
-        private double MaxSpeed = 0;
+        private double LargestSpeed = 0;
+        private void WriteBinaryToFile(byte[] Binary, long Offset)
+        {
+            int length = Binary.Length;
+
+            file.Position = Offset;
+            file.Write(Binary, 0, length);
+
+            CurrnetReceived += length;
+            TotalReceived += length;
+
+            speed.Add(length);
+            speed1.Add(length);
+
+            double BytesPerSec = speed.BytesPerSec(250);
+
+            if (BytesPerSec >= 0)
+            {
+                App.FakeDispatcher.Invoke(delegate
+                {
+                    ProgressChangedEvent?.Invoke(
+                    this,
+                    new ProgressChangedEventArgs(
+                        CurrnetReceived, CurrentEntry.length,
+                        TotalReceived, TotalSize,
+                        BytesPerSec)
+                    );
+                    return null;
+                });
+
+                speed.Reset();
+            }
+
+            double BytesPer1 = speed1.BytesPerSec(1500);
+            if (BytesPer1 >= 0)
+            {
+                if (BytesPer1 > LargestSpeed)
+                {
+                    LargestSpeed = BytesPer1;
+                    UnitNumber += 3;
+                }
+                else
+                {
+                    //UnitNumber = Math.Max(UnitNumber / 2, 1);
+                }
+
+                speed1.Reset();
+            }
+        }
+
         private void OnBlobReceived(string id, string msgType, object msgObj, PhoneClient client)
         {
             if (!(msgObj is MessageWithBinary msg))
@@ -587,56 +931,16 @@ namespace FnSync
             {
                 if (length > CurrentEntry.length - CurrnetReceived)
                     return;
+
+                start = CurrnetReceived;
             }
             else
             {
                 if (start + length > CurrentEntry.length)
                     return;
-
-                file.Seek(start, SeekOrigin.Begin);
             }
 
-            CurrnetReceived += length;
-            TotalReceived += length;
-
-            speed.Add(length);
-            speed1.Add(length);
-
-            file.Write(msg.Binary, 0, length);
-
-            double BytesPerSec = speed.BytesPerSec(250);
-
-            if (BytesPerSec >= 0)
-            {
-                Application.Current.Dispatcher.InvokeAsyncCatchable(delegate
-                {
-                    ProgressChanged?.Invoke(
-                        this,
-                        new ProgressChangedEventArgs(
-                            CurrnetReceived, CurrentEntry.length,
-                            TotalReceived, TotalSize,
-                            BytesPerSec)
-                        );
-                });
-
-                speed.Reset();
-            }
-
-            double BytesPer1 = speed1.BytesPerSec(1500);
-            if (BytesPer1 >= 0)
-            {
-                if (BytesPer1 > MaxSpeed)
-                {
-                    MaxSpeed = BytesPer1;
-                    UnitNumber += 2;
-                }
-                else
-                {
-                    //UnitNumber = Math.Max(UnitNumber / 2, 1);
-                }
-
-                speed1.Reset();
-            }
+            WriteBinaryToFile(msg.Binary, start);
 
             if (CurrnetReceived < CurrentEntry.length)
             {
@@ -644,36 +948,112 @@ namespace FnSync
             }
             else
             {
-                file.Close();
-                Client.SendMsg(
-                    new JObject()
-                    {
-                        ["key"] = CurrentEntry.key
-                    },
-                    MSG_TYPE_FILE_TRANSFER_END
-                );
-
-                StartNext(null, null);
+                StartNext(null, TransmissionStatus.SUCCESSFUL);
             }
-
-            LastReceivedTime = DateTimeOffset.Now.ToUnixTimeMilliseconds();
         }
 
-        private void OnReconnected(string id, string msgType, object msgObj, PhoneClient client)
+        private async void OnReconnected(string id, string msgType, object msgObj, PhoneClient client)
         {
             this.Client = client;
+
             if (CurrentEntry != null)
             {
-                Client.SendMsg(
-                    new JObject()
-                    {
-                        ["key"] = CurrentEntry.key,
-                        ["position"] = CurrnetReceived
-                    },
-                    MSG_TYPE_FILE_TRANSFER_REWIND
-                );
+                await Task.Delay(1000);
+                if (this.Client != client)
+                {
+                    // Phones may reconnect multiple times within this 1 second delayed above.
+                    return;
+                }
 
-                RequestNext(10);
+                try
+                {
+                    switch (TransmitionStage)
+                    {
+                        case TransmitionStageClass.GETTING_KEY:
+                        case TransmitionStageClass.ONE_CHUNK_RECEIVE:
+                            StartNext(SpecifiedName, TransmissionStatus.RESET_CURRENT);
+                            break;
+
+                        case TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE:
+                            if (string.IsNullOrWhiteSpace(CurrentEntry.path))
+                            {
+                                throw new Exception();
+                            }
+
+                            bool KeyIsExist = await PhoneMessageCenter.Singleton.OneShotGetBoolean(
+                                client,
+                                new JObject()
+                                {
+                                    ["path"] = CurrentEntry.path,
+                                },
+                                MSG_TYPE_FILE_TRANSFER_KEY_EXISTS,
+                                MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY,
+                                5000,
+                                "exists",
+                                false
+                                );
+
+                            if (!KeyIsExist)
+                            {
+                                await GetKey(true);
+                            }
+
+                            long SeekResult = await PhoneMessageCenter.Singleton.OneShotGetLong(
+                                client,
+                                new JObject()
+                                {
+                                    ["key"] = CurrentEntry.key,
+                                    ["position"] = CurrnetReceived
+                                },
+                                MSG_TYPE_FILE_TRANSFER_SEEK,
+                                MSG_TYPE_FILE_TRANSFER_SEEK_OK,
+                                5000,
+                                "position",
+                                -1
+                                );
+
+                            if (SeekResult != CurrnetReceived)
+                            {
+                                throw new Exception();
+                            }
+
+                            file.Position = SeekResult;
+
+                            RequestNext(10);
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+                catch (TimeoutException e)
+                {
+                    return;
+                }
+                catch (PhoneMessageCenter.PhoneDisconnectedException e)
+                {
+                    return;
+                }
+                catch (Exception e)
+                {
+                    App.FakeDispatcher.Invoke(delegate
+                    {
+                        OnErrorEvent?.Invoke(this, null);
+                        return null;
+                    });
+                    return;
+                }
+            }
+        }
+
+        private void OnDisconnected(string id, string msgType, object msgObj, PhoneClient client)
+        {
+            if (CurrentEntry != null)
+            {
+                if (TransmitionStage == TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE && string.IsNullOrWhiteSpace(CurrentEntry.path))
+                {
+                    OnErrorEvent?.Invoke(this, null);
+                }
             }
         }
 
@@ -681,19 +1061,36 @@ namespace FnSync
         {
             foreach (PendingsClass.Entry entry in Entries)
             {
-                Client.SendMsg(
-                    new JObject()
-                    {
-                        ["key"] = entry.key
-                    },
-                    MSG_TYPE_FILE_TRANSFER_END
-                );
+                if (!string.IsNullOrWhiteSpace(entry.key))
+                {
+                    Client.SendMsg(
+                        new JObject()
+                        {
+                            ["key"] = entry.key
+                        },
+                        MSG_TYPE_FILE_TRANSFER_END
+                    );
+                }
+            }
+        }
+
+        public void DeleteCurrentFileIfNotCompleted()
+        {
+            if (CurrentEntry != null && CurrnetReceived < CurrentEntry.length && CurrnetLocalFilePath != null && !Directory.Exists(CurrnetLocalFilePath) && File.Exists(CurrnetLocalFilePath))
+            {
+                try
+                {
+                    File.Delete(CurrnetLocalFilePath);
+                }
+                catch (Exception e) { }
             }
         }
 
         public void Dispose()
         {
-            LastReceivedTime = long.MinValue;
+            IsDisposed = true;
+
+            CancelWatchJob();
 
             PhoneMessageCenter.Singleton.Unregister(
                 Client.Id,
@@ -707,9 +1104,13 @@ namespace FnSync
                 OnBlobReceived
             );
 
-            EndAll();
+            PhoneMessageCenter.Singleton.Unregister(
+                Client.Id,
+                PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
+                OnDisconnected
+            );
 
-            WriteDispatcher.InvokeShutdown();
+            EndAll();
 
             try
             {
@@ -717,14 +1118,7 @@ namespace FnSync
             }
             catch (Exception e) { }
 
-            if (CurrentEntry != null && CurrnetReceived < CurrentEntry.length && CurrnetPath != null && !Directory.Exists(CurrnetPath) && File.Exists(CurrnetPath))
-            {
-                try
-                {
-                    File.Delete(CurrnetPath);
-                }
-                catch (Exception e) { }
-            }
+            DeleteCurrentFileIfNotCompleted();
         }
     }
 }

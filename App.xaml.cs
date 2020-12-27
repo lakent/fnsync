@@ -26,6 +26,7 @@ namespace FnSync
         public static TaskbarIcon NotifyIcon { get; protected set; } = null;
 
         public static DeviceMenuList MenuList { get; protected set; } = null;
+        public static FakeDispatcher FakeDispatcher = null;
 
         private static void RefreshIcon()
         {
@@ -52,6 +53,7 @@ namespace FnSync
                     break;
             }
         }
+
         void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             WindowUnhandledException.ShowException(e.Exception);
@@ -69,6 +71,14 @@ namespace FnSync
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            if (e.Args.Contains("-LE"))
+            {
+                new WindowUnhandledException(Environment.GetEnvironmentVariable("LAST_ERROR_STRING")).Show();
+                return;
+            }
+
+            FakeDispatcher = FakeDispatcher.Init();
 
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(OnAppDomainUnhandledException);
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
@@ -132,7 +142,7 @@ namespace FnSync
                         ToastConnectingKnown(MainConfig.Config.HideOnStartup);
                     }
 
-                    PcListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values.ToArray<SavedPhones.Phone>());
+                    ClientListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values.ToArray<SavedPhones.Phone>());
                 }
 
                 if (!MainConfig.Config.HideOnStartup || SavedCount == 0)
@@ -148,7 +158,7 @@ namespace FnSync
 
             App.NotifyIcon.ToolTipText = string.Format(
                 (string)App.Current.FindResource("FnSyncTooltip"),
-                PcListener.Singleton.Port
+                ClientListener.Singleton.Port
                 );
         }
 

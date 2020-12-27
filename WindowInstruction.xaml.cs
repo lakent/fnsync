@@ -24,17 +24,7 @@ namespace FnSync
         public static WindowInstruction CurrentWindow { get; protected set; } = null;
         public static void NewOne()
         {
-            Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
-            {
-                if (CurrentWindow == null)
-                {
-                    new WindowInstruction().Show();
-                }
-                else
-                {
-                    CurrentWindow.Activate();
-                }
-            });
+            App.FakeDispatcher.Invoke(() => { if (CurrentWindow == null) { new WindowInstruction().Show(); } else { CurrentWindow.Activate(); } return null; });
         }
 
         public WindowInstruction()

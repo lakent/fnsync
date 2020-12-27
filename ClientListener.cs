@@ -8,15 +8,15 @@ using System.Windows;
 
 namespace FnSync
 {
-    class PcListener
+    class ClientListener
     {
-        public static readonly PcListener Singleton = new PcListener();
+        public static readonly ClientListener Singleton = new ClientListener();
 
         public static readonly int FIRST_ACCEPT_TIMEOUT_MILLS = 20 * 1000;
 
-        private String Code = null;
+        public String Code = null;
 
-        private Socket Listener = null;
+        private TcpListener Listener = null;
         public int Port { get; private set; } = 0;
         private HandShake HandShaker = null;
 
@@ -26,8 +26,9 @@ namespace FnSync
 
             try
             {
-                Listener.Bind(new IPEndPoint(IPAddress.IPv6Any, Port));
-                Listener.Listen(6);
+                Listener = new TcpListener(new IPEndPoint(IPAddress.IPv6Any, Port));
+                Listener.Server.DualMode = true;
+                Listener.Start(10);
                 return true;
             }
             catch (Exception)
@@ -38,30 +39,24 @@ namespace FnSync
 
         private void ReInit()
         {
-            Listener?.Shutdown(SocketShutdown.Both);
-            Listener?.Close();
-
-            Listener = new Socket(SocketType.Stream, ProtocolType.Tcp)
-            {
-                DualMode = true
-            };
+            Listener?.Stop();
 
             int ConfigPort = MainConfig.Config.FixedListenPort;
             if (ConfigPort > 0)
             {
-                while (!ListenOnPort((ConfigPort++) % 65536));
+                while (!ListenOnPort((ConfigPort++) % 65536)) ;
             }
             else
             {
-                while (!ListenOnPort(Unirandom.Next(10000, 60000)));
+                while (!ListenOnPort(Unirandom.Next(10000, 60000))) ;
             }
 
             // http://www.lybecker.com/blog/2018/08/23/supporting-ipv4-and-ipv6-dual-mode-network-with-one-socket/
             HandShaker = new HandShake();
-            SelectTask.Singleton.AddOrUpdate(Listener, true, false, 0, OnAccpet, false);
+            StartAccept();
         }
 
-        private PcListener()
+        private ClientListener()
         {
             ReInit();
             NetworkChangedHandler.Init();
@@ -71,11 +66,6 @@ namespace FnSync
         {
             //WindowConnect.ControlCallback.OnDisconnected(null);
             HandShaker.Cancel();
-        }
-
-        public void SetCode(string code)
-        {
-            this.Code = code;
         }
 
         public void StartReachInitiatively(String code, bool OldConnection, SavedPhones.Phone[] targets)
@@ -101,17 +91,25 @@ namespace FnSync
             HandShaker.Reach(FIRST_ACCEPT_TIMEOUT_MILLS, OldConnection, targets);
         }
 
-        private SelectTask.Result OnAccpet(Object target, bool read, bool write, bool error)
+        private async void StartAccept()
         {
-            if (error) { ReInit(); return SelectTask.Result.RETREAT; }
-
-            if (read)
+            while (true)
             {
-                Socket client = Listener.Accept();
-                new PhoneClient(client, Code);
-            }
+                try
+                {
+                    TcpClient Client = await Listener.AcceptTcpClientAsync();
 
-            return SelectTask.Result.KEEP;
+                    if (Client != null)
+                    {
+                        PhoneClient.CreateClient(Client, Code);
+                    }
+                }
+                catch (Exception e)
+                {
+                    ReInit();
+                    return;
+                }
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
 using Ookii.Dialogs.Wpf;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,20 +21,47 @@ namespace FnSync
     /// </summary>
     public partial class WindowFileReceive : Window
     {
-        private readonly FileTransmission Transmission;
+        private FileTransmission Transmission = null;
+        private readonly List<ControlFolderListItemView.Item> PendingItems;
+        private readonly PhoneClient Client = null;
+        private readonly string RootOnPhone = null;
         private bool PromptOnClose = false;
+        private bool IsClosing = false;
+        private bool IsClosed = false;
 
-        public WindowFileReceive(FileTransmission transmission)
+        private WindowFileReceive()
         {
-            this.Transmission = transmission;
             InitializeComponent();
             this.ContentRendered += Rendered;
         }
 
-        private void OnPercentageChanged(object sender, FileTransmission.ProgressChangedEventArgs e)
+        public WindowFileReceive(FileTransmission transmission) : this()
+        {
+            this.Transmission = transmission;
+        }
+
+        public WindowFileReceive(PhoneClient Client, IList items, string RootOnPhone) : this()
+        {
+            this.Client = Client;
+
+            this.PendingItems = new List<ControlFolderListItemView.Item>(items.Count);
+
+            foreach (object item in items)
+            {
+                if (item is ControlFolderListItemView.Item i)
+                {
+                    this.PendingItems.Add(i);
+                }
+            }
+
+            this.RootOnPhone = RootOnPhone.EndsWith("/") ? RootOnPhone : RootOnPhone + '/';
+        }
+
+        private void OnPercentageChangedEventHandler(object sender, FileTransmission.ProgressChangedEventArgs e)
         {
             Percent.Value = Convert.ToInt32(e.Percent);
             PercentTotal.Value = Convert.ToInt32(e.TotalPercent);
+            this.TaskbarItemInfo.ProgressValue = e.TotalPercent / 100;
 
             Speed.Content = Utils.ToHumanReadableSize((long)(e.BytesPerSec)) + "/s";
 
@@ -43,17 +72,31 @@ namespace FnSync
             AllBytesTotal.Content = Utils.ToHumanReadableSize(e.TotalSize);
         }
 
-        private void OnFinished(object sender, EventArgs e)
+        private void OnFinishedEventHandler(object sender, EventArgs e)
         {
             PromptOnClose = false;
-            Close();
+            if (!IsClosing)
+                Close();
         }
 
-        private void OnNextFile(object sender, FileTransmission.NextFileEventArgs e)
+        private void OnNextFileEventHandler(object sender, FileTransmission.NextFileEventArgs e)
         {
             FilesAlready.Content = e.Current.ToString();
             FilesTotal.Content = e.Count.ToString();
             SaveTo.Text = e.dest;
+        }
+
+        private void OnErrorHandler(object sender, EventArgs e)
+        {
+            MessageBox.Show(
+                (string)FindResource("TransmitionFailed"),
+                (string)FindResource("Prompt"),
+                MessageBoxButton.OK,
+                MessageBoxImage.Exclamation
+                );
+
+            PromptOnClose = false;
+            Close();
         }
 
         private WindowFileAlreadyExists.ActionChangedEventArgs FileAlreadyExistsArgs = null;
@@ -64,11 +107,11 @@ namespace FnSync
             string namepart = Path.GetFileNameWithoutExtension(dest);
             string extension = Path.GetExtension(dest);
 
-            for( int i = 2; i <= int.MaxValue; ++i)
+            for (int i = 2; i <= int.MaxValue; ++i)
             {
                 string newname = $"{namepart} ({i}){extension}";
                 string path = Path.Combine(dirpart, newname);
-                if( !Directory.Exists(path) && !File.Exists(path))
+                if (!Directory.Exists(path) && !File.Exists(path))
                 {
                     return newname;
                 }
@@ -78,26 +121,30 @@ namespace FnSync
         }
 
         private void FileAlreadyExistHandler(object sender, FileTransmission.FileAlreadyExistEventArgs e)
-        { 
-            if( Transmission.FileCount == 1)
+        {
+            if (Transmission.FileCount == 1)
             {
-                e.Action = FileTransmission.FileAlreadyExistEventArgs.Handle.OVERWRITE;
+                e.Action = FileTransmission.FileAlreadyExistEventArgs.Measure.OVERWRITE;
                 return;
-            } else
+            }
+            else
             {
-                if( FileAlreadyExistsArgs?.ApplyToAll == true)
+                if (FileAlreadyExistsArgs?.ApplyToAll == true)
                 {
                     e.Action = FileAlreadyExistsArgs.Action;
-                } else
+                }
+                else
                 {
+                    this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Paused;
                     WindowFileAlreadyExists window = new WindowFileAlreadyExists(e.Dest);
                     window.ActionChanged += ActionChangedEventHandler;
                     window.ShowDialog();
+                    this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
 
                     e.Action = FileAlreadyExistsArgs.Action;
                 }
 
-                if(e.Action == FileTransmission.FileAlreadyExistEventArgs.Handle.RENAME)
+                if (e.Action == FileTransmission.FileAlreadyExistEventArgs.Measure.RENAME)
                 {
                     e.NewName = MakeNewName(e.Dest);
                 }
@@ -111,7 +158,8 @@ namespace FnSync
 
         protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
         {
-            if ( PromptOnClose && MessageBox.Show(
+            IsClosing = true;
+            if (PromptOnClose && MessageBox.Show(
                     (string)FindResource("CancelFileTransferPrompt"),
                     (string)FindResource("Cancelling"),
                     MessageBoxButton.YesNo,
@@ -121,10 +169,12 @@ namespace FnSync
                 )
             {
                 e.Cancel = true;
+                IsClosing = false;
                 return;
             }
 
-            Transmission.Dispose();
+            Transmission?.Dispose();
+            IsClosed = true;
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -132,22 +182,27 @@ namespace FnSync
             Close();
         }
 
-        private void Rendered(object sender, EventArgs e)
+        private void StartTramsmission()
         {
-            this.Transmission.ProgressChanged += OnPercentageChanged;
-            this.Transmission.Finished += OnFinished;
-            this.Transmission.NextFile += OnNextFile;
-            this.Transmission.FileAlreadyExist += FileAlreadyExistHandler;
+            PercentTotal.IsIndeterminate = false;
+            this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+            this.Transmission.ProgressChangedEvent += OnPercentageChangedEventHandler;
+            this.Transmission.OnFinishedEvent += OnFinishedEventHandler;
+            this.Transmission.OnNextFileEvent += OnNextFileEventHandler;
+            this.Transmission.FileAlreadyExistEvent += FileAlreadyExistHandler;
+            this.Transmission.OnErrorEvent += OnErrorHandler;
 
             SaveTo.Text = string.Format((string)FindResource("SaveTo"), "");
 
             if (this.Transmission.FileCount == 1)
             {
-                SaveFileDialog dlg = new SaveFileDialog();
-                dlg.FileName = Transmission.FirstName; // Default file name
-                //dlg.DefaultExt = ".text"; // Default file extension
-                dlg.Filter = "*|*"; // Filter files by extension
-                dlg.OverwritePrompt = true;
+                SaveFileDialog dlg = new SaveFileDialog
+                {
+                    FileName = Transmission.FirstName, // Default file name
+                    //dlg.DefaultExt = ".text"; // Default file extension
+                    Filter = "*|*", // Filter files by extension
+                    OverwritePrompt = true
+                };
 
                 // Show save file dialog box
                 bool? result = dlg.ShowDialog();
@@ -157,10 +212,9 @@ namespace FnSync
                 {
                     // Save document
                     string filename = dlg.FileName;
-                    this.Transmission.StartNext(
-                        Path.GetDirectoryName(filename),
-                        Path.GetFileName(filename)
-                        );
+                    this.Transmission.SetLocalFolder(Path.GetDirectoryName(filename));
+                    this.Transmission.StartNext(Path.GetFileName(filename));
+                    PromptOnClose = true;
                 }
                 else
                 {
@@ -169,16 +223,17 @@ namespace FnSync
             }
             else
             {
-                VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
-                dialog.Description = (string)FindResource("SaveTo");
-                dialog.UseDescriptionForTitle = true; // This applies to the Vista style dialog only, not the old dialog.
-                if (!VistaFolderBrowserDialog.IsVistaFolderDialogSupported)
-                    MessageBox.Show(this, "Because you are not using Windows Vista or later, the regular folder browser dialog will be used. Please use Windows Vista to see the new dialog.", "Sample folder browser dialog");
+                VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog
+                {
+                    Description = (string)FindResource("SaveTo"),
+                    UseDescriptionForTitle = true
+                };
+
                 if ((bool)dialog.ShowDialog(this))
                 {
-                    string folder = dialog.SelectedPath;
-
-                    this.Transmission.StartNext(folder, null);
+                    this.Transmission.SetLocalFolder(dialog.SelectedPath);
+                    this.Transmission.StartNext();
+                    PromptOnClose = true;
                 }
                 else
                 {
@@ -186,7 +241,126 @@ namespace FnSync
                 }
             }
 
-            PromptOnClose = true;
+        }
+
+        private async void GetFileMetaData()
+        {
+            SaveTo.Text = (string)FindResource("GettingFileMetaData");
+
+            List<FileTransmission.PendingsClass.Entry> ResultEntries = new List<FileTransmission.PendingsClass.Entry>();
+
+            foreach (ControlFolderListItemView.Item item in this.PendingItems)
+            {
+                if (item.type == "dir")
+                {
+                    string FolderPathOnPhone =
+                        item.path.EndsWith("/") ? item.path : item.path + '/';
+
+                    ResultEntries.Add(new FileTransmission.PendingsClass.Entry
+                    {
+                        key = null,
+                        length = 0,
+                        mime = null,
+                        name = item.name,
+                        path = FolderPathOnPhone,
+                        last = item.last
+                    });
+
+                    JObject List = null;
+                    try
+                    {
+                        List = await PhoneMessageCenter.Singleton.OneShotMsgPart(
+                            Client,
+                            new JObject()
+                            {
+                                ["path"] = RootOnPhone + item.path,
+                                ["recursive"] = true
+                            },
+                            ControlFolderListPhoneRootItem.MSG_TYPE_LIST_FOLDER,
+                            ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT,
+                            60000
+                        );
+                    }
+                    catch (Exception e)
+                    {
+                        Close();
+                    }
+
+                    JArray ListPart = (JArray)List["files"];
+                    List<ControlFolderListItemView.Item> Files = ListPart.ToObject<List<ControlFolderListItemView.Item>>();
+
+                    foreach (ControlFolderListItemView.Item i in Files)
+                    {
+                        if (i.type == "dir")
+                        {
+                            ResultEntries.Add(new FileTransmission.PendingsClass.Entry
+                            {
+                                key = null,
+                                length = 0,
+                                mime = null,
+                                name = i.name,
+                                path = FolderPathOnPhone + (i.path.EndsWith("/") ? i.path : i.path + '/'),
+                                last = item.last
+                            });
+                        }
+                        else if (i.type == "file")
+                        {
+                            ResultEntries.Add(new FileTransmission.PendingsClass.Entry
+                            {
+                                key = null,
+                                length = i.size,
+                                mime = null,
+                                name = i.name,
+                                path = FolderPathOnPhone + i.path,
+                                last = item.last
+                            });
+                        }
+                    }
+                }
+                else if (item.type == "file")
+                {
+                    ResultEntries.Add(new FileTransmission.PendingsClass.Entry
+                    {
+                        key = null,
+                        length = item.size,
+                        mime = null,
+                        name = item.name,
+                        path = item.path,
+                        last = item.last
+                    });
+                }
+
+                if (IsClosed)
+                {
+                    return;
+                }
+            }
+
+            this.Transmission = new FileTransmission(Client, ResultEntries.ToArray(), -1, RootOnPhone);
+
+            StartTramsmission();
+        }
+
+        private void Rendered(object sender, EventArgs e)
+        {
+            this.TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo();
+            if (this.Transmission != null)
+            {
+                StartTramsmission();
+            }
+            else if (this.PendingItems != null && this.PendingItems.Any())
+            {
+                PercentTotal.IsIndeterminate = true;
+                this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
+                GetFileMetaData();
+            }
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.MinWidth = this.ActualWidth;
+            this.MinHeight = this.ActualHeight;
+            this.MaxHeight = this.ActualHeight;
         }
     }
 }

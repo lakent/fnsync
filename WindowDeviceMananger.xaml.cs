@@ -26,7 +26,7 @@ namespace FnSync
         public static WindowDeviceMananger CurrentWindow { get; protected set; } = null;
         public static void NewOne(string id)
         {
-            Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
+            App.FakeDispatcher.Invoke(() =>
             {
                 if (CurrentWindow == null)
                 {
@@ -34,8 +34,7 @@ namespace FnSync
                     window.Show();
                     if (id != null)
                     {
-                        window.SelectDevice(id);
-                        window.DeviceList.Focus();
+                        window.SelectDevice(id); window.DeviceList.Focus();
                     }
                 }
                 else
@@ -43,10 +42,10 @@ namespace FnSync
                     CurrentWindow.Activate();
                     if (id != null)
                     {
-                        CurrentWindow.SelectDevice(id);
-                        CurrentWindow.DeviceList.Focus();
+                        CurrentWindow.SelectDevice(id); CurrentWindow.DeviceList.Focus();
                     }
                 }
+                return null;
             });
         }
 

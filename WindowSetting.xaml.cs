@@ -22,17 +22,7 @@ namespace FnSync
         public static WindowSetting CurrentWindow { get; protected set; } = null;
         public static void NewOne()
         {
-            Application.Current.Dispatcher.InvokeAsyncCatchable(() =>
-            {
-                if (CurrentWindow == null)
-                {
-                    new WindowSetting().Show();
-                }
-                else
-                {
-                    CurrentWindow.Activate();
-                }
-            });
+            App.FakeDispatcher.Invoke(() => { if (CurrentWindow == null) { new WindowSetting().Show(); } else { CurrentWindow.Activate(); } return null; });
         }
 
         public WindowSetting()
@@ -74,7 +64,7 @@ namespace FnSync
 
         private void FixedListenPort_Checked(object sender, RoutedEventArgs e)
         {
-            PortNumber.Text = PcListener.Singleton.Port.ToString();
+            PortNumber.Text = ClientListener.Singleton.Port.ToString();
         }
 
         private void FixedListenPort_Unchecked(object sender, RoutedEventArgs e)
