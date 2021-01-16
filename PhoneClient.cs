@@ -287,8 +287,8 @@ namespace FnSync
                 ClientObject.ReceiveTimeout = 5000;
                 await HandShakeStep1_GetPhoneId();
                 await HandShakeStep2_Authenticate();
-                await HandShakeStep3_WaitingForAccepted();
                 ClientObject.ReceiveTimeout = 0;
+                await HandShakeStep3_WaitingForAccepted();
                 EnterLoop();
             }
             catch (Exception e)

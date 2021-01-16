@@ -78,8 +78,6 @@ namespace FnSync
                 return;
             }
 
-            FakeDispatcher = FakeDispatcher.Init();
-
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(OnAppDomainUnhandledException);
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
@@ -89,6 +87,8 @@ namespace FnSync
                 Environment.Exit(Environment.ExitCode);
                 return;
             }
+
+            FakeDispatcher = FakeDispatcher.Init();
 
             DesktopNotificationManagerCompat.RegisterAumidAndComServer<FnSyncNotificationActivator>("holmium.FnSync.A7F49234-CADC-4222-9291-42EDC7D8932E");
             DesktopNotificationManagerCompat.RegisterActivator<FnSyncNotificationActivator>();

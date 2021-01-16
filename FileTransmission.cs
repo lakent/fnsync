@@ -709,13 +709,20 @@ namespace FnSync
                     if (file != null)
                     {
                         file.Close();
+
+                        DateTime time = DateTimeOffset.FromUnixTimeMilliseconds(CurrentEntry.last).LocalDateTime;
+
                         File.SetLastWriteTime(
                             CurrnetLocalFilePath,
-                            DateTimeOffset.FromUnixTimeMilliseconds(CurrentEntry.last).LocalDateTime
+                            time
+                        );
+                        File.SetCreationTime(
+                            CurrnetLocalFilePath,
+                            time
                         );
                         File.SetLastAccessTime(
                             CurrnetLocalFilePath,
-                            DateTimeOffset.FromUnixTimeMilliseconds(CurrentEntry.last).LocalDateTime
+                            time
                         );
 
                         if (!String.IsNullOrWhiteSpace(CurrentEntry.key))
