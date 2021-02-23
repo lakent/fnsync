@@ -81,7 +81,7 @@ namespace FnSync
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(OnAppDomainUnhandledException);
             this.Dispatcher.UnhandledException += OnDispatcherUnhandledException;
 
-            if (!SingleInstanceLock.IsInstance())
+            if (!SingleInstanceLock.IsSingleInstance())
             {
                 Shutdown();
                 Environment.Exit(Environment.ExitCode);
@@ -142,7 +142,7 @@ namespace FnSync
                         ToastConnectingKnown(MainConfig.Config.HideOnStartup);
                     }
 
-                    ClientListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values.ToArray<SavedPhones.Phone>());
+                    PhoneListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values);
                 }
 
                 if (!MainConfig.Config.HideOnStartup || SavedCount == 0)
@@ -151,14 +151,14 @@ namespace FnSync
                 }
             }
 
-            ClipboardManager.Singleton.MonitorClipboard = MainConfig.Config.ClipboardSync;
+            ClipboardManager.Singleton.MonitorClipboardOn = MainConfig.Config.ClipboardSync;
 
             Casting._Force = 0;
-            FileTransmission._Force = 0;
+            FileReceive._Force = 0;
 
             App.NotifyIcon.ToolTipText = string.Format(
                 (string)App.Current.FindResource("FnSyncTooltip"),
-                ClientListener.Singleton.Port
+                PhoneListener.Singleton.Port
                 );
         }
 

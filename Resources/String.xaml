@@ -94,7 +94,12 @@
     <System:String x:Key="Port">Port</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
 
-    <System:String x:Key="FileReceiving">File Receiving</System:String>
+    <System:String x:Key="FileOperation">File Operation</System:String>
+    <System:String x:Key="Cut">Cut</System:String>
+    <System:String x:Key="Copy">Copy</System:String>
+    <System:String x:Key="FileOperation_InsidePhone">File Operation ({0} from Phone to Phone)</System:String>
+    <System:String x:Key="FileOperation_PhoneToPc">File Operation ({0} from Phone to PC)</System:String>
+    <System:String x:Key="FileOperation_PcToPhone">File Operation ({0} from PC to Phone)</System:String>
     <System:String x:Key="SaveTo">Save to</System:String>
     <System:String x:Key="YouReceivedAFile">You just received a file. {1} in size</System:String>
     <System:String x:Key="YouReceivedFiles">You just received {0} files. Total {1} in size</System:String>
@@ -104,19 +109,22 @@
     <System:String x:Key="Speed">Speed: </System:String>
     <System:String x:Key="Total">Total</System:String>
     <System:String x:Key="CancelFileTransferPrompt">Do you want to cancel transferring ?</System:String>
-    <System:String x:Key="GettingFileMetaData">Getting file meta data…</System:String>
+    <System:String x:Key="GettingFileMetaData">Getting file meta data …</System:String>
     <System:String x:Key="TransmitionFailed">Transmition Failed</System:String>
+    <System:String x:Key="Failed">Failed</System:String>
+    <System:String x:Key="Skipped">Skipped</System:String>
+    <System:String x:Key="Succeed">Succeed</System:String>
 
     <System:String x:Key="FileAlreadyExistsTitle">File Already Exists</System:String>
-    <System:String x:Key="FileAlreadyExists">This file already exists: </System:String>
+    <System:String x:Key="FileAlreadyExists">This file/folder already exists: </System:String>
     <System:String x:Key="SkipThisFile">Skip</System:String>
     <System:String x:Key="OverwriteThisFile">Overwrite</System:String>
-    <System:String x:Key="RenameThisFile">Rename (Append suffix (1), (2) or (3) etc.)</System:String>
+    <System:String x:Key="RenameThisFile">Rename (Append suffix (1), (2) or (3) etc. to name)</System:String>
     <System:String x:Key="ApplyToAll">Apply to all</System:String>
     <System:String x:Key="OK">OK</System:String>
 
     <System:String x:Key="ErrorEncountered">Error Encountered</System:String>
-    <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We will be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.  You could also open an issue at https://gitee.com/holmium/fnsync/issues</System:String>
+    <System:String x:Key="ErrorLabel">Sorry, we have encountered an error. We would be very appreciated if you could send us the following message. Our email is fnsync_app@outlook.com.  You could also open an issue at https://gitee.com/holmium/fnsync/issues</System:String>
     <System:String x:Key="Quit">Quit This Program</System:String>
     <System:String x:Key="Ignore">Ignore This Error</System:String>
 
@@ -134,4 +142,9 @@ etc. {0} items in total.</System:String>
     <System:String x:Key="NoFilePermission">No permission</System:String>
     <System:String x:Key="NumberOfItems">{0} Folder(s), {1} File(s)</System:String>
     <System:String x:Key="CopyToThisPc">Copy to PC</System:String>
+    <System:String x:Key="CutInsidePhone">Cut (Inside Phone) …</System:String>
+    <System:String x:Key="CopyInsidePhone">Copy (Inside Phone) …</System:String>
+    <System:String x:Key="PasteHereInsidePhone">Paste to current folder</System:String>
+    <System:String x:Key="PasteToInsidePhone">Paste to selected folder</System:String>
+    <System:String x:Key="RefreshMediaStore">Refresh Media Store for selected file</System:String>
 </ResourceDictionary>

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,9 +9,9 @@ using System.Windows;
 
 namespace FnSync
 {
-    class ClientListener
+    class PhoneListener
     {
-        public static readonly ClientListener Singleton = new ClientListener();
+        public static readonly PhoneListener Singleton = new PhoneListener();
 
         public static readonly int FIRST_ACCEPT_TIMEOUT_MILLS = 20 * 1000;
 
@@ -56,7 +57,7 @@ namespace FnSync
             StartAccept();
         }
 
-        private ClientListener()
+        private PhoneListener()
         {
             ReInit();
             NetworkChangedHandler.Init();
@@ -68,8 +69,13 @@ namespace FnSync
             HandShaker.Cancel();
         }
 
-        public void StartReachInitiatively(String code, bool OldConnection, SavedPhones.Phone[] targets)
+        public void StartReachInitiatively(String code, bool OldConnection, IEnumerable<SavedPhones.Phone> targets)
         {
+            if( targets != null && !targets.Any())
+            {
+                return;
+            }
+
             if (!OldConnection)
             {
                 if (code == null)

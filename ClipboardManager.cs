@@ -63,7 +63,7 @@ namespace FnSync
         private static readonly string TagFormat = "FnSyncTag";
 
         private bool monitorClipboard = false;
-        public bool MonitorClipboard
+        public bool MonitorClipboardOn
         {
             get
             {

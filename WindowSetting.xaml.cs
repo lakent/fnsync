@@ -51,7 +51,7 @@ namespace FnSync
         private void ClipboardSync_Checked(object sender, RoutedEventArgs e)
         {
             CheckBox cb = sender as CheckBox;
-            ClipboardManager.Singleton.MonitorClipboard = cb.IsChecked ?? false;
+            ClipboardManager.Singleton.MonitorClipboardOn = cb.IsChecked ?? false;
         }
 
         private void HyperLink_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
@@ -64,7 +64,7 @@ namespace FnSync
 
         private void FixedListenPort_Checked(object sender, RoutedEventArgs e)
         {
-            PortNumber.Text = ClientListener.Singleton.Port.ToString();
+            PortNumber.Text = PhoneListener.Singleton.Port.ToString();
         }
 
         private void FixedListenPort_Unchecked(object sender, RoutedEventArgs e)

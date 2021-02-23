@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         SizeToContent="Height"
-        WindowStartupLocation="CenterOwner" Icon="Resources/icon.ico" 
+        WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         Title="{DynamicResource FileAlreadyExistsTitle}" Width="500">
     <StackPanel Margin="8">

@@ -14,12 +14,19 @@
         <local:NonNullToVisibleConverter x:Key="NonNullToVisibleConverter" />
 
         <ContextMenu x:Key="RightClickMenu" DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}, Mode=OneWay}">
-            <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}"/>
-            <!-- <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}" CommandParameter="{Binding DataContext, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/> -->
-            <MenuItem Header="{DynamicResource Delete}" Command="{Binding DeleteCommand}"/>
+            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
+            <Separator/>
             <MenuItem Header="{DynamicResource CopyToThisPc}" Command="{Binding CopyToPcCommand}"/>
             <Separator/>
-            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
+            <MenuItem Header="{DynamicResource CutInsidePhone}" Command="{Binding CutInsideCommand}"/>
+            <MenuItem Header="{DynamicResource CopyInsidePhone}" Command="{Binding CopyInsideCommand}"/>
+            <MenuItem Header="{DynamicResource PasteHereInsidePhone}" Command="{Binding PasteHereInsideCommand}"/>
+            <MenuItem Header="{DynamicResource PasteToInsidePhone}" Command="{Binding PasteToInsideCommand}"/>
+            <Separator/>
+            <MenuItem Header="{DynamicResource RefreshMediaStore}" Command="{Binding RefreshMediaStoreCommand}"/>
+            <Separator/>
+            <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}"/>
+            <MenuItem Header="{DynamicResource Delete}" Command="{Binding DeleteCommand}"/>
         </ContextMenu>
 
     </Control.Resources>
@@ -91,7 +98,7 @@
                 <DataGridTemplateColumn Header="{DynamicResource FileSize}" Width="SizeToCells" SortMemberPath="size" CanUserSort="True">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Label Content="{Binding size, Mode=OneWay, Converter={StaticResource LongToHumanReadableSizeConverter}}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
+                            <Label Content="{Binding Mode=OneWay, Converter={StaticResource LongToHumanReadableSizeConverter}}" VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" HorizontalContentAlignment="Right"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

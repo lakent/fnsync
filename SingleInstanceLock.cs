@@ -12,7 +12,7 @@ namespace FnSync
     {
         private static readonly string PATH = SavedPhones.ConfigRoot + "\\INSTANCE_LOCK";
         private static FileStream LockFile = null;
-        public static bool IsInstance()
+        public static bool IsSingleInstance()
         {
             if( LockFile != null )
             {

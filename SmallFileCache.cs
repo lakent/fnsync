@@ -16,7 +16,7 @@ namespace FnSync
 
         private string GenFilePath(string key, string suffix)
         {
-            return Folder + Regex.Replace(key.ToLower(), @"[^a-z0-9._]{1}", "_") + 
+            return Folder + Regex.Replace(key.ToLower(), @"[^a-z0-9._]{1}", "_") +
                 (suffix != null ? "." + suffix.ToLower() : "");
         }
 
@@ -24,7 +24,7 @@ namespace FnSync
         {
             this.Folder = Folder;
 
-            if( !this.Folder.EndsWith("\\"))
+            if (!this.Folder.EndsWith("\\"))
             {
                 this.Folder += "\\";
             }
@@ -45,7 +45,14 @@ namespace FnSync
         public String GetOrPutFromBytes(String key, byte[] bytes, string suffix, bool ForceSave)
         {
             string path = GenFilePath(key, suffix);
-            if( ForceSave || !File.Exists(path))
+            bool FileExist = File.Exists(path);
+
+            if (bytes == null && !FileExist)
+            {
+                return null;
+            }
+
+            if (ForceSave || !FileExist)
             {
                 SaveBytes(path, bytes);
             }
@@ -58,7 +65,8 @@ namespace FnSync
             try
             {
                 Directory.Delete(Folder, true);
-            } catch (Exception e) { }
+            }
+            catch (Exception e) { }
         }
 
         ~SmallFileCache()

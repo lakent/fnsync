@@ -129,6 +129,9 @@
     <Compile Include="ControlFileList.xaml.cs">
       <DependentUpon>ControlFileList.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ControlFileListCommands.xaml.cs">
+      <DependentUpon>ControlFileList.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ControlFolderList.xaml.cs">
       <DependentUpon>ControlFolderList.xaml</DependentUpon>
     </Compile>
@@ -137,7 +140,10 @@
     </Compile>
     <Compile Include="DeviceMenuList.cs" />
     <Compile Include="FakeDispatcher.cs" />
-    <Compile Include="FileTransmission.cs" />
+    <Compile Include="FileCopyInside.cs" />
+    <Compile Include="FileSend.cs" />
+    <Compile Include="FileTransmissionBase.cs" />
+    <Compile Include="FileReceive.cs" />
     <Compile Include="MainConfig.cs" />
     <Compile Include="QueuedAsyncTask.cs" />
     <Compile Include="SmallFileCache.cs" />
@@ -150,7 +156,7 @@
     <Compile Include="MessageWithBinary.cs" />
     <Compile Include="NetworkChangedHandler.cs" />
     <Compile Include="NotificationSubchannel.cs" />
-    <Compile Include="ClientListener.cs" />
+    <Compile Include="PhoneListener.cs" />
     <Compile Include="PhoneMessageCenter.cs" />
     <Compile Include="RecordedPkgMapping.cs" />
     <Compile Include="SavedPhones.cs" />
@@ -177,8 +183,8 @@
     <Compile Include="WindowFileManagerRename.xaml.cs">
       <DependentUpon>WindowFileManagerRename.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowFileReceive.xaml.cs">
-      <DependentUpon>WindowFileReceive.xaml</DependentUpon>
+    <Compile Include="WindowFileOperation.xaml.cs">
+      <DependentUpon>WindowFileOperation.xaml</DependentUpon>
     </Compile>
     <Compile Include="WindowInstruction.xaml.cs">
       <DependentUpon>WindowInstruction.xaml</DependentUpon>
@@ -298,7 +304,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WindowFileReceive.xaml">
+    <Page Include="WindowFileOperation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

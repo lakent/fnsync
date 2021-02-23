@@ -1,16 +1,15 @@
-﻿<Window x:Class="FnSync.WindowFileReceive"
+﻿<Window x:Class="FnSync.WindowFileOperation"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FnSync"
         mc:Ignorable="d"
-        SizeToContent="Height"
         ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         Loaded="Window_Loaded"
-        Title="{DynamicResource FileReceiving}" Width="600">
+        Title="{DynamicResource FileOperation}" Width="600" Height="400">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -20,10 +19,11 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Label Grid.Row="0">
-            <TextBlock x:Name="SaveTo" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch"/>
+            <TextBlock x:Name="CurrentFile" TextTrimming="CharacterEllipsis" HorizontalAlignment="Stretch"/>
         </Label>
         <Grid HorizontalAlignment="Stretch" Grid.Row="1">
             <Grid.ColumnDefinitions >
@@ -71,7 +71,8 @@
             </StackPanel>
         </Grid>
         <ProgressBar Grid.Row="5" x:Name="PercentTotal" Margin="8" Height="32" Maximum="100" Value="0"/>
-        <Grid HorizontalAlignment="Center" Grid.Row="6">
+        <TextBox x:Name="Logs" Grid.Row="6" Margin="8, 0" IsReadOnly="True"  IsReadOnlyCaretVisible="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        <Grid HorizontalAlignment="Center" Grid.Row="7">
             <Grid.ColumnDefinitions >
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>

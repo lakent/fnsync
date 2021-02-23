@@ -44,16 +44,16 @@ namespace FnSync
 
     public abstract class ControlFolderListItemView : IControlFolderListItemView, IDisposable
     {
-        public class Item
+        public class UiItem
         {
             public string type { get; set; }
-            public string path { get; set; }
+            public string path { get; set; } /* Relative Path */
             public string name { get; set; }
             public bool haschild { get; set; }
             public long size { get; set; }
             public long last { get; set; }
 
-            public static int Comparison(Item x, Item y)
+            public static int Comparison(UiItem x, UiItem y)
             {
                 if (x == null && y == null)
                 {
@@ -80,7 +80,7 @@ namespace FnSync
                 }
             }
 
-            public static void ImcrementalUpdate(IList<Item> Target, IList<Item> From)
+            public static void ImcrementalUpdate(IList<UiItem> Target, IList<UiItem> From)
             {
                 if (!From.Any())
                 {
@@ -93,10 +93,10 @@ namespace FnSync
 
                     while (ti < Target.Count && fi < From.Count)
                     {
-                        Item t = Target[ti];
-                        Item f = From[fi];
+                        UiItem t = Target[ti];
+                        UiItem f = From[fi];
 
-                        int comparing = Item.Comparison(t, f);
+                        int comparing = UiItem.Comparison(t, f);
                         if (comparing < 0)
                         {
                             Target.RemoveAt(ti);
@@ -214,14 +214,14 @@ namespace FnSync
             return String.Format(NumberOfItems, FolderCount, FileCount);
         }
 
-        public void ProcessChildrenItems(IList<Item> folders)
+        public void ProcessChildrenItems(IList<UiItem> folders)
         {
             Children.Clear();
 
             int FolderCount = 0;
             int FileCount = 0;
 
-            foreach (Item f in folders)
+            foreach (UiItem f in folders)
             {
                 if (f.type == "dir")
                 {
@@ -315,10 +315,10 @@ namespace FnSync
         public const string MSG_TYPE_FILE_MANAGER_NO_PERMISSION = "file_manager_no_permission";
 
         internal readonly Dictionary<Tuple<string, string>, ControlFolderListItemView> RequestMap = new Dictionary<Tuple<string, string>, ControlFolderListItemView>();
-        internal readonly Dictionary<string, IList<Item>> RequestCache = new Dictionary<string, IList<Item>>();
-        internal readonly ConditionalWeakTable<IList<Item>, string> NumberOfItemsPrompts = new ConditionalWeakTable<IList<Item>, string>();
+        internal readonly Dictionary<string, IList<UiItem>> RequestCache = new Dictionary<string, IList<UiItem>>();
+        internal readonly ConditionalWeakTable<IList<UiItem>, string> NumberOfItemsPrompts = new ConditionalWeakTable<IList<UiItem>, string>();
 
-        public static readonly IList<Item> Empty = new ReadOnlyCollection<Item>(new List<Item>());
+        public static readonly IList<UiItem> Empty = new ReadOnlyCollection<UiItem>(new List<UiItem>());
 
         public PhoneClient Client { get; protected set; } = null;
         public ControlFolderList ThisControl { get; }
@@ -338,7 +338,7 @@ namespace FnSync
                 return;
 
             JArray list = (JArray)msg["storage"];
-            List<Item> storage = list.ToObject<List<Item>>();
+            List<UiItem> storage = list.ToObject<List<UiItem>>();
 
             RequestCache[this.Path] = storage;
 
@@ -378,9 +378,9 @@ namespace FnSync
 
             JArray list = (JArray)msg["files"];
 
-            List<Item> folders = list.ToObject<List<Item>>();
+            List<UiItem> folders = list.ToObject<List<UiItem>>();
 
-            folders.Sort(Item.Comparison);
+            folders.Sort(UiItem.Comparison);
 
             RequestCache[path] = folders;
 
@@ -455,7 +455,7 @@ namespace FnSync
 
             if (RequestCache.ContainsKey(ViewPath))
             {
-                IList<Item> Cache = RequestCache[ViewPath];
+                IList<UiItem> Cache = RequestCache[ViewPath];
 
                 if (Dummied)
                 {
@@ -728,7 +728,7 @@ namespace FnSync
         private readonly List<ControlFolderListPhoneRootItem> Roots = new List<ControlFolderListPhoneRootItem>();
 
         public string CurrentPath { get; protected set; } = null;
-        public IList<ControlFolderListItemView.Item> ContentItems { get; protected set; }
+        public IList<ControlFolderListItemView.UiItem> ContentItems { get; protected set; }
         public PhoneClient CurrentClient { get; protected set; } = null;
         public ControlFolderListPhoneRootItem CurrentRoot { get; protected set; } = null;
         public string CurrentStorage { get; protected set; } = null;
@@ -788,7 +788,7 @@ namespace FnSync
             string Storage,
             PhoneClient client,
             string path,
-            IList<ControlFolderListItemView.Item> items
+            IList<ControlFolderListItemView.UiItem> items
             )
         {
             bool FullyLoad = this.CurrentPath != path;
@@ -802,7 +802,7 @@ namespace FnSync
                 }
                 else
                 {
-                    this.ContentItems = new ObservableCollection<ControlFolderListItemView.Item>(items);
+                    this.ContentItems = new ObservableCollection<ControlFolderListItemView.UiItem>(items);
                 }
             }
             else
@@ -811,10 +811,10 @@ namespace FnSync
                 {
                     if (this.ContentItems == null)
                     {
-                        this.ContentItems = new ObservableCollection<ControlFolderListItemView.Item>();
+                        this.ContentItems = new ObservableCollection<ControlFolderListItemView.UiItem>();
                     }
 
-                    ControlFolderListItemView.Item.ImcrementalUpdate(this.ContentItems, items);
+                    ControlFolderListItemView.UiItem.ImcrementalUpdate(this.ContentItems, items);
                 }
             }
 

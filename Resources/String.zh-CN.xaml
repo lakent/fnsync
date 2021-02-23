@@ -93,7 +93,12 @@
     <System:String x:Key="Port">端口</System:String>
     <System:String x:Key="RequireRestart">* 重启程序生效。</System:String>
 
-    <System:String x:Key="FileReceiving">文件接收</System:String>
+    <System:String x:Key="FileOperation">文件操作</System:String>
+    <System:String x:Key="Cut">剪切</System:String>
+    <System:String x:Key="Copy">复制</System:String>
+    <System:String x:Key="FileOperation_InsidePhone">文件操作 (手机内{0})</System:String>
+    <System:String x:Key="FileOperation_PhoneToPc">文件操作 (手机{0}到电脑)</System:String>
+    <System:String x:Key="FileOperation_PcToPhone">文件操作 (电脑{0}到手机)</System:String>
     <System:String x:Key="SaveTo">保存到</System:String>
     <System:String x:Key="YouReceivedAFile">接收到一个文件，大小 {1}</System:String>
     <System:String x:Key="YouReceivedFiles">接受到 {0} 个文件，总大小 {1}</System:String>
@@ -103,16 +108,19 @@
     <System:String x:Key="Speed">速率：</System:String>
     <System:String x:Key="Total">总计</System:String>
     <System:String x:Key="CancelFileTransferPrompt">是否取消文件传输？</System:String>
-    <System:String x:Key="GettingFileMetaData">正在获取文件信息…</System:String>
+    <System:String x:Key="GettingFileMetaData">正在获取文件信息 …</System:String>
 
     <System:String x:Key="FileAlreadyExistsTitle">文件已存在</System:String>
-    <System:String x:Key="FileAlreadyExists">此文件已存在：</System:String>
+    <System:String x:Key="FileAlreadyExists">此文件/文件夹已存在：</System:String>
     <System:String x:Key="SkipThisFile">跳过</System:String>
     <System:String x:Key="OverwriteThisFile">覆盖</System:String>
     <System:String x:Key="RenameThisFile">重命名（加 (1)、(2)、(3)等后缀）</System:String>
     <System:String x:Key="ApplyToAll">应用到所有文件</System:String>
     <System:String x:Key="OK">确定</System:String>
     <System:String x:Key="TransmitionFailed">传输失败</System:String>
+    <System:String x:Key="Failed">失败</System:String>
+    <System:String x:Key="Skipped">跳过</System:String>
+    <System:String x:Key="Succeed">成功</System:String>
 
     <System:String x:Key="ErrorEncountered">遇到错误</System:String>
     <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com。您也可以在 https://gitee.com/holmium/fnsync/issues 创建一个 Issue 。</System:String>
@@ -133,4 +141,9 @@
     <System:String x:Key="NoFilePermission">没有权限</System:String>
     <System:String x:Key="NumberOfItems">{0} 个文件夹, {1} 个文件</System:String>
     <System:String x:Key="CopyToThisPc">复制到电脑</System:String>
+    <System:String x:Key="CutInsidePhone">剪切(手机内) …</System:String>
+    <System:String x:Key="CopyInsidePhone">复制(手机内) …</System:String>
+    <System:String x:Key="PasteHereInsidePhone">粘贴到当前文件夹</System:String>
+    <System:String x:Key="PasteToInsidePhone">粘贴到所选文件夹</System:String>
+    <System:String x:Key="RefreshMediaStore">为所选文件刷新媒体缓存</System:String>
 </ResourceDictionary>

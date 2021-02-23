@@ -239,13 +239,15 @@ namespace FnSync
         public async Task<JObject> OneShotMsgPart(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds)
         {
             Object msgObj = await OneShot(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
-            if( msgObj is JObject msg)
+            if (msgObj is JObject msg)
             {
                 return msg;
-            } else if( msgObj is IMessageWithBinary mwb)
+            }
+            else if (msgObj is IMessageWithBinary mwb)
             {
                 return mwb.Message;
-            } else
+            }
+            else
             {
                 throw new InvalidOperationException();
             }
@@ -343,7 +345,8 @@ namespace FnSync
             try
             {
                 Client.SendMsg(MsgTo, MsgToType);
-            } catch(SocketException e)
+            }
+            catch (SocketException e)
             {
                 OnDone.Invoke(null, null, null, RequestStatus.DISCONNECTED);
                 return;
@@ -361,7 +364,7 @@ namespace FnSync
                 Unregister(Client.Id, MSG_FAKE_TYPE_ON_DISCONNECTED, OnDisconnected);
                 if (MSG_TYPE_UNSUPPORTED_OPERATION.Equals(State))
                     OnDone.Invoke(FinalMsg, FinalBinary, FinalObj, RequestStatus.UNSUPPORTED_OPERATION);
-                else if(MSG_FAKE_TYPE_ON_DISCONNECTED.Equals(State))
+                else if (MSG_FAKE_TYPE_ON_DISCONNECTED.Equals(State))
                     OnDone.Invoke(null, null, null, RequestStatus.DISCONNECTED);
                 else if (State != null)
                     OnDone.Invoke(FinalMsg, FinalBinary, FinalObj, RequestStatus.SUCCESSFUL);
@@ -374,9 +377,9 @@ namespace FnSync
 
         private void InvockAll(IEnumerable<ActionDescriptor> set, string id, string msgType, object msg, PhoneClient client)
         {
-            try
+            foreach (ActionDescriptor descriptor in set)
             {
-                foreach (ActionDescriptor descriptor in set)
+                try
                 {
                     if (descriptor.OnMainThread)
                     {
@@ -385,15 +388,19 @@ namespace FnSync
                             descriptor.action.Invoke(id, msgType, msg, client);
                             return null;
                         });
-                    } else 
+                    }
+                    else
                     {
                         descriptor.action.Invoke(id, msgType, msg, client);
                     };
                 }
-            }
-            catch (Exception e)
-            {
-                return;
+                catch (Exception e)
+                {
+#if DEBUG
+                    WindowUnhandledException.ShowException(e);
+#endif
+                    return;
+                }
             }
         }
 

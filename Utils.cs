@@ -58,6 +58,9 @@ namespace FnSync
                 }
             }
 
+#if DEBUG
+            Builder.Append("192.168.43.2").Append("|");
+#endif
 
             if (Builder.EndsWith("|"))
             {
@@ -86,12 +89,21 @@ namespace FnSync
                     int Prefix = unchecked((int)0x80000000) >> (ip.PrefixLength - 1);
                     int Broadcast = IpNumber | ~Prefix;
                     byte[] bytes = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(Broadcast));
-                    Result.Add(
+
+                    string IpStr =
                         bytes[0].ToString() + '.' +
                         bytes[1].ToString() + '.' +
                         bytes[2].ToString() + '.' +
-                        bytes[3].ToString()
-                        );
+                        bytes[3].ToString();
+
+#if DEBUG
+                    if(IpStr.StartsWith("10."))
+                    {
+                        continue;
+                    }
+#endif
+
+                    Result.Add(IpStr);
                 }
             }
 

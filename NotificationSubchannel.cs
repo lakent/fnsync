@@ -288,7 +288,7 @@ namespace FnSync
 
             if (queries.Contains("FileReceive_SaveAs"))
             {
-                FileTransmission.ParseQueryString(queries);
+                FileReceive.ParseQueryString(queries);
             }
         }
     }

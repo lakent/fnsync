@@ -56,6 +56,9 @@ namespace FnSync
 
         public PhoneClient TryGet(string id)
         {
+            if (id == null)
+                return null;
+
             PhoneClient phone;
             if (map.TryGetValue(id, out phone))
             {

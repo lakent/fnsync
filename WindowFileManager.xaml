@@ -8,7 +8,7 @@
         Title="{DynamicResource FileManager}"
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico"
-        Height="450" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
+        Height="580" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>

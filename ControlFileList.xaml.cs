@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,7 +38,7 @@ namespace FnSync
                 typeof(ControlFileList)
             );
 
-        public string Folder // Current Folder
+        public string Folder // Current Folder On Phone
         {
             get
             {
@@ -78,220 +79,27 @@ namespace FnSync
         public ControlFileList()
         {
             InitializeComponent();
+
+            RenameCommand = new RenameCommandClass(this);
+            DeleteCommand = new DeleteCommandClass(this);
+            CopyToPcCommand = new CopyToPcCommandClass(this);
+            RefreshCommand = new RefreshCommandClass(this);
+            CutInsideCommand = new CutInsideCommandClass(this);
+            CopyInsideCommand = new CopyInsideCommandClass(this);
+            PasteHereInsideCommand = new PasteHereInsideCommandClass(this);
+            PasteToInsideCommand = new PasteToInsideCommandClass(this);
+            RefreshMediaStoreCommand = new RefreshMediaStoreCommandClass(this);
         }
 
-        private class RenameCommandClass : ICommand
-        {
-            private readonly ControlFileList FileList;
-            public RenameCommandClass(ControlFileList FileList)
-            {
-                this.FileList = FileList;
-            }
-
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object parameter)
-            {
-                return FileList.ListView.SelectedItems.Count == 1 && !string.IsNullOrWhiteSpace(FileList.Folder) && FileList.ListView.SelectedItem is ControlFolderListItemView.Item item && (item.type == "dir" || item.type == "file");
-            }
-
-            public void RenameSubmit(object sender, RenameSubmitEventArgs Args)
-            {
-                JObject msg = new JObject()
-                {
-                    ["folder"] = FileList.Folder,
-                    ["old"] = Args.OldName,
-                    ["new"] = Args.NewName,
-                    ["storage"] = FileList.FolderList.CurrentStorage
-                };
-
-                FileList.Client.SendMsg(msg, ControlFolderListPhoneRootItem.MSG_TYPE_FILE_RENAME);
-            }
-
-            public void Execute(object parameter)
-            {
-                if (!(FileList.ListView.SelectedItem is ControlFolderListItemView.Item item))
-                    return;
-
-
-                WindowFileManagerRename dialog = new WindowFileManagerRename(item.name);
-                dialog.RenameSubmit += RenameSubmit;
-
-                dialog.ShowDialog();
-            }
-        }
-
-        private ICommand renameCommand = null;
-        public ICommand RenameCommand
-        {
-            get
-            {
-                if (renameCommand == null)
-                {
-                    renameCommand = new RenameCommandClass(this);
-                }
-
-                return renameCommand;
-            }
-        }
-
-        private class DeleteCommandClass : ICommand
-        {
-            private readonly ControlFileList FileList;
-            public DeleteCommandClass(ControlFileList FileList)
-            {
-                this.FileList = FileList;
-            }
-
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object parameter)
-            {
-                return FileList.ListView.SelectedItem != null && !string.IsNullOrWhiteSpace(FileList.Folder);
-            }
-
-            private string JoinItems(string delimiter, int max)
-            {
-                StringBuilder sb = new StringBuilder();
-
-                int Count = FileList.ListView.SelectedItems.Count;
-
-                for (int i = 0; i < max && i < Count; ++i)
-                {
-                    if (FileList.ListView.SelectedItems[i] is ControlFolderListItemView.Item item)
-                    {
-                        sb.Append(item.name).Append(delimiter);
-                    }
-                }
-
-                return sb.ToString();
-            }
-
-            public void Execute(object parameter)
-            {
-                int Count = FileList.ListView.SelectedItems.Count;
-
-                if (MessageBox.Show(
-                    string.Format(
-                        "{0}\n\n{1}{2}",
-                        (string)App.Current.FindResource("BeSureToDelete"),
-                        JoinItems("\n", 5),
-                        Count > 5 ? string.Format((string)App.Current.FindResource("AndSomeMore"), Count) : ""
-                        ),
-                    (string)App.Current.FindResource("Prompt"),
-                    MessageBoxButton.YesNo,
-                    MessageBoxImage.Question,
-                    MessageBoxResult.No
-                ) == MessageBoxResult.Yes
-                    )
-                {
-                    JObject msg = new JObject();
-                    msg["folder"] = FileList.Folder;
-                    msg["storage"] = FileList.FolderList.CurrentStorage;
-
-                    JArray names = new JArray();
-                    foreach (object obj in FileList.ListView.SelectedItems)
-                    {
-                        if (obj is ControlFolderListItemView.Item item && (item.type == "dir" || item.type == "file"))
-                        {
-                            names.Add(item.name);
-                        }
-                    }
-
-                    msg["names"] = names;
-
-                    FileList.Client.SendMsg(msg, ControlFolderListPhoneRootItem.MSG_TYPE_FILE_DELETE);
-                }
-            }
-        }
-
-        private ICommand deleteCommand = null;
-        public ICommand DeleteCommand
-        {
-            get
-            {
-                if (deleteCommand == null)
-                {
-                    deleteCommand = new DeleteCommandClass(this);
-                }
-
-                return deleteCommand;
-            }
-        }
-
-        private class CopyToPcCommandClass : ICommand
-        {
-            private readonly ControlFileList FileList;
-            public CopyToPcCommandClass(ControlFileList FileList)
-            {
-                this.FileList = FileList;
-            }
-
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object parameter)
-            {
-                return FileList.ListView.SelectedItem != null && !string.IsNullOrWhiteSpace(FileList.Folder);
-            }
-
-            public void Execute(object parameter)
-            {
-                new WindowFileReceive(
-                    FileList.Client,
-                    FileList.ListView.SelectedItems,
-                    FileList.Folder
-                    ).Show();
-            }
-        }
-
-        private ICommand copyToPcCommand = null;
-        public ICommand CopyToPcCommand
-        {
-            get
-            {
-                if (copyToPcCommand == null)
-                {
-                    copyToPcCommand = new CopyToPcCommandClass(this);
-                }
-
-                return copyToPcCommand;
-            }
-        }
-
-        private class RefreshCommandClass : ICommand
-        {
-            private readonly ControlFileList FileList;
-            public RefreshCommandClass(ControlFileList FileList)
-            {
-                this.FileList = FileList;
-            }
-
-            public event EventHandler CanExecuteChanged;
-
-            public bool CanExecute(object parameter)
-            {
-                return true;
-            }
-
-            public void Execute(object parameter)
-            {
-                FileList.FolderList.RefreshCurrentSelected();
-            }
-        }
-
-        private ICommand refreshCommand = null;
-        public ICommand RefreshCommand
-        {
-            get
-            {
-                if (refreshCommand == null)
-                {
-                    refreshCommand = new RefreshCommandClass(this);
-                }
-
-                return refreshCommand;
-            }
-        }
+        public ICommand RenameCommand { get; }
+        public ICommand DeleteCommand { get; }
+        public ICommand CopyToPcCommand { get; }
+        public ICommand RefreshCommand { get; }
+        public ICommand CutInsideCommand { get; }
+        public ICommand CopyInsideCommand { get; }
+        public ICommand PasteHereInsideCommand { get; }
+        public ICommand PasteToInsideCommand { get; }
+        public ICommand RefreshMediaStoreCommand { get; }
 
         private void ListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -318,7 +126,7 @@ namespace FnSync
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (!(sender is DataGrid list) || e == null ||
-                !(list.SelectedItem is ControlFolderListItemView.Item item) ||
+                !(list.SelectedItem is ControlFolderListItemView.UiItem item) ||
                 (item.type != "dir" && item.type != "storage")
                 )
                 return;
@@ -331,7 +139,7 @@ namespace FnSync
         {
             if (!(sender is DataGrid list) || e == null ||
                 list.SelectedItems.Count != 1 ||
-                !(list.SelectedItem is ControlFolderListItemView.Item item)
+                !(list.SelectedItem is ControlFolderListItemView.UiItem item)
                 )
                 return;
 
@@ -350,15 +158,27 @@ namespace FnSync
         }
     }
 
-    [ValueConversion(typeof(long), typeof(String))]
+    [ValueConversion(typeof(ControlFolderListItemView.UiItem), typeof(String))]
     public class LongToHumanReadableSizeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is long v))
+
+            if (!(value is ControlFolderListItemView.UiItem item))
                 return "";
 
-            return Utils.ToHumanReadableSize(v);
+            if (item.type == "dir")
+            {
+                return "";
+            }
+            else if (item.type == "storage")
+            {
+                return "";
+            }
+            else
+            {
+            return Utils.ToHumanReadableSize(item.size);
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -384,12 +204,12 @@ namespace FnSync
         }
     }
 
-    [ValueConversion(typeof(long), typeof(DateTime))]
+    [ValueConversion(typeof(ControlFolderListItemView.UiItem), typeof(DateTime))]
     public class FileIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is ControlFolderListItemView.Item item))
+            if (!(value is ControlFolderListItemView.UiItem item))
                 return null;
 
             if (item.type == "dir")

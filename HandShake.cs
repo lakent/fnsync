@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -53,15 +54,15 @@ namespace FnSync
             }
         }
 
-        public static JObject MakeHelloJson(bool OldConnection, string token, string[] target)
+        public static JObject MakeHelloJson(bool OldConnection, string token, IEnumerable<string> target)
         {
             JObject json = new JObject();
             json["peerid"] = MainConfig.Config.ThisId;
             json["peername"] = GetMachineName();
-            json["peerport"] = ClientListener.Singleton.Port;
+            json["peerport"] = PhoneListener.Singleton.Port;
             if (OldConnection) json["oldconnection"] = true;
 
-            if (target != null && target.Length > 0)
+            if (target != null && target.Any())
             {
                 json.Add("target", JArray.FromObject(target));
             }
@@ -71,21 +72,21 @@ namespace FnSync
             return json;
         }
 
-        private static byte[] MakePackage(bool OldConnection, string token, SavedPhones.Phone[] target)
+        private static byte[] MakePackage(bool OldConnection, string token, IEnumerable<SavedPhones.Phone> target)
         {
-            string[] t = null;
+            List<string> TargetIds = null;
             if (target != null)
             {
-                t = new string[target.Length];
+                TargetIds = new List<string>();
 
-                for (int i = 0; i < target.Length; ++i)
+                foreach(SavedPhones.Phone t in target)
                 {
-                    t[i] = target[i].Id;
+                    TargetIds.Add(t.Id);
                 }
             }
 
             return Encoding.UTF8.GetBytes(
-                MakeHelloJson(OldConnection, token, t).ToString(Newtonsoft.Json.Formatting.None)
+                MakeHelloJson(OldConnection, token, TargetIds).ToString(Newtonsoft.Json.Formatting.None)
                 );
         }
 
@@ -121,7 +122,7 @@ namespace FnSync
                 }
         }
 
-        private void ReachTargets(byte[] data, SavedPhones.Phone[] targets, int portIncrement)
+        private void ReachTargets(byte[] data, IEnumerable<SavedPhones.Phone> targets, int portIncrement)
         {
             foreach (SavedPhones.Phone phone in targets)
             {
@@ -144,7 +145,7 @@ namespace FnSync
             }
         }
 
-        public void Reach(int timeout, bool OldConnection, SavedPhones.Phone[] targets)
+        public void Reach(int timeout, bool OldConnection, IEnumerable<SavedPhones.Phone> targets)
         {
             int ThisRound = Interlocked.Increment(ref Round);
 

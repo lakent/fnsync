@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FnSync.FileTransmission;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,12 +20,12 @@ namespace FnSync
     /// </summary>
     public partial class WindowFileAlreadyExists : Window
     {
-        public class ActionChangedEventArgs : EventArgs
+        public class ExistAction : EventArgs
         {
             public readonly FileTransmission.FileAlreadyExistEventArgs.Measure Action;
             public readonly bool ApplyToAll;
-            public ActionChangedEventArgs(
-                FileTransmission.FileAlreadyExistEventArgs.Measure Action,
+            public ExistAction(
+                FileAlreadyExistEventArgs.Measure Action,
                 bool ApplyToAll
                 )
             {
@@ -33,7 +34,7 @@ namespace FnSync
             }
         }
 
-        public delegate void ActionChangedEventHandler(object sender, ActionChangedEventArgs e);
+        public delegate void ActionChangedEventHandler(object sender, ExistAction e);
 
         public event ActionChangedEventHandler ActionChanged;
         public WindowFileAlreadyExists(string dest)
@@ -51,20 +52,20 @@ namespace FnSync
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            FileTransmission.FileAlreadyExistEventArgs.Measure action = FileTransmission.FileAlreadyExistEventArgs.Measure.SKIP;
+            FileAlreadyExistEventArgs.Measure action = FileAlreadyExistEventArgs.Measure.SKIP;
 
             if( Skip.IsChecked == true )
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Measure.SKIP;
+                action = FileAlreadyExistEventArgs.Measure.SKIP;
             } else if( Overwrite.IsChecked == true)
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Measure.OVERWRITE;
+                action = FileAlreadyExistEventArgs.Measure.OVERWRITE;
             } else if( Rename.IsChecked == true)
             {
-                action = FileTransmission.FileAlreadyExistEventArgs.Measure.RENAME;
+                action = FileAlreadyExistEventArgs.Measure.RENAME;
             }
 
-            ActionChanged?.Invoke(this, new ActionChangedEventArgs(action, ApplyToAll.IsChecked == true));
+            ActionChanged?.Invoke(this, new ExistAction(action, ApplyToAll.IsChecked == true));
 
             AllowClose = true;
             Close();

@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.Preview.Notes;
 
 namespace FnSync
 {
     static class NetworkChangedHandler
     {
-        private static AutoDisposableTimer Timer = null;
-        private static readonly object Locker = new object();
+        private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
 
         public static void Init()
         {
@@ -17,32 +18,48 @@ namespace FnSync
                          NetworkAddressChangedEventHandler(AddressChangedCallback);
         }
 
-        private static void AddressChangedCallback(object sender, EventArgs e)
+        private static async void AddressChangedCallback(object sender, EventArgs e)
         {
-            lock (Locker)
+            const int DELAY_MILLS = 5000;
+
+            if (Lock.CurrentCount == 0)
             {
-                Timer?.Dispose();
+                return;
+            }
 
-                if (AlivePhones.Singleton.Count > 0)
+            await Lock.WaitAsync();
+
+            Task FinalDelay = Task.Delay(DELAY_MILLS);
+
+            try
+            {
+                List<KeyValuePair<PhoneClient, Task<bool>>> Results = new List<KeyValuePair<PhoneClient, Task<bool>>>();
+
+                foreach (PhoneClient c in AlivePhones.Singleton)
                 {
-                    Timer = new AutoDisposableTimer(
-                        delegate (object state)
-                        {
-                            ClientListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.PhoneList.ToArray());
-                        }
-                        , 5000, false
-                    );
-
-                    Timer.DisposedEvent += delegate(object _, object __) 
-                    {
-                        lock (Locker)
-                        {
-                            Timer = null;
-                        }
-                    };
-
-                    Timer.Start();
+                    Results.Add(
+                        new KeyValuePair<PhoneClient, Task<bool>>(c, c.ProbeAlive(DELAY_MILLS))
+                        );
                 }
+
+                List<SavedPhones.Phone> Targets = new List<SavedPhones.Phone>();
+
+                foreach (KeyValuePair<PhoneClient, Task<bool>> p in Results)
+                {
+                    bool r = await p.Value;
+                    if (!r)
+                    {
+                        Targets.Add(SavedPhones.Singleton[p.Key.Id]);
+                    }
+                }
+
+                PhoneListener.Singleton.StartReachInitiatively(null, true, Targets);
+
+                await FinalDelay;
+            }
+            finally
+            {
+                Lock.Release();
             }
         }
     }

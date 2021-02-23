@@ -66,7 +66,7 @@ namespace FnSync
         private void RefreshQrCode()
         {
             string token = Guid.NewGuid().ToString();
-            ClientListener.Singleton.Code = token;
+            PhoneListener.Singleton.Code = token;
 
             JObject helloJson = HandShake.MakeHelloJson(
                 false,
@@ -163,13 +163,13 @@ namespace FnSync
             else
             {
                 SwitchCodeConnectiongState(true);
-                ClientListener.Singleton.StartReachInitiatively(code, false, null);
+                PhoneListener.Singleton.StartReachInitiatively(code, false, null);
             }
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            ClientListener.Singleton.StopReach();
+            PhoneListener.Singleton.StopReach();
             SwitchCodeConnectiongState(false);
         }
 

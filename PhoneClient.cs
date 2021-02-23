@@ -328,8 +328,6 @@ namespace FnSync
 
         private async Task HandShakeStep2_Authenticate()
         {
-            /* Main Thread */
-
             /*
              {  // json ENCRYPTED
                 phoneid:"some_id",
@@ -428,10 +426,10 @@ namespace FnSync
             ReceiveQueue.StartLoop();
         }
 
-        MessageWithBinary messageWithBinary = new MessageWithBinary().Reset();
+        private MessageWithBinary messageWithBinary = null;
         protected override void PackageProcessing(byte[] raw, byte[] decrypted)
         {
-            if (messageWithBinary.Message != null)
+            if (messageWithBinary != null)
             {
                 messageWithBinary.Binary = decrypted;
 
@@ -442,13 +440,18 @@ namespace FnSync
                     this
                 );
 
-                messageWithBinary = new MessageWithBinary().Reset();
+                messageWithBinary = null;
             }
             else
             {
                 JObject msg = EncryptionManager.ExtractJSON(decrypted);
-                if (msg.OptBool("withbinary", false))
+                if(msg == null)
                 {
+
+                }
+                else if (msg.OptBool("withbinary", false))
+                {
+                    messageWithBinary = new MessageWithBinary().Reset();
                     messageWithBinary.Message = msg;
                 }
                 else
@@ -461,6 +464,33 @@ namespace FnSync
                     );
                 }
             }
+        }
+
+        public async Task<bool> ProbeAlive(int DelayMills)
+        {
+            try
+            {
+                await PhoneMessageCenter.Singleton.OneShot(
+                   this,
+                   new JObject(),
+                   MSG_TYPE_HELLO,
+                   MSG_TYPE_NONCE,
+                   DelayMills
+                   );
+
+                return true;
+            } catch (Exception e)
+            {
+                Dispose();
+                return false;
+            }
+        }
+
+        public async Task<bool> ProbeAlive(int DelayMills, Action<bool> action)
+        {
+            bool result = await ProbeAlive(DelayMills);
+            action.Invoke(result);
+            return result;
         }
     }
 }

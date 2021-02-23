@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.BC;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -243,38 +244,26 @@ namespace FnSync
         }
     }
 
-    /*
-    static class SettingsExtension
+    static class IListExtension
     {
-        private static void Save(Settings self)
+        public static IList<T> CloneToTypedList<T>(this IList self)
         {
-            if (self.IsSynchronized)
+            if(self is IList<T> TypedList)
             {
-                self.Save();
+                return TypedList.ToList();
             }
-            else
+
+            List<T> list = new List<T>(self.Count);
+
+            foreach(object item in self)
             {
-                lock (self)
+                if(item is T typed)
                 {
-                    self.Save();
+                    list.Add(typed);
                 }
             }
-        }
 
-        public static void SaveInLine(this Settings self)
-        {
-            try
-            {
-                Save(self);
-            }
-            catch (ConfigurationErrorsException e)
-            {
-                new AutoDisposableTimer(delegate
-                {
-                    Save(self);
-                }, 1000);
-            }
+            return list;
         }
     }
-    */
 }
