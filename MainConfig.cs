@@ -22,6 +22,10 @@ namespace FnSync
                 ["ClipboardSync"] = true,
                 ["TextCastAutoCopy"] = true,
                 ["FixedListenPort"] = 0,
+                ["AdditionalIPs"] = "",
+
+
+                // Don't assign null
             };
 
             foreach(var item in DefaultValues)
@@ -109,6 +113,16 @@ namespace FnSync
             set
             {
                 this["FixedListenPort"] = Math.Min(Math.Max(0, value), 65535);
+            }
+        }
+
+        public string AdditionalIPs { 
+            get {
+                return (string)this["AdditionalIPs"];
+            }
+            set
+            {
+                this["AdditionalIPs"] = value;
             }
         }
     }

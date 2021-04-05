@@ -442,7 +442,7 @@ namespace FnSync
 
         private async Task OneChunkReceive(ReceiveEntry entry)
         {
-            if (String.IsNullOrWhiteSpace(FileRootOnPhone) ||
+            if (String.IsNullOrWhiteSpace(FileRootOnSource) ||
                 String.IsNullOrWhiteSpace(entry.ConvertedPath))
             {
                 throw new ArgumentException("FileRootOnPhone & entry.path");
@@ -453,7 +453,7 @@ namespace FnSync
                 Client,
                 new JObject()
                 {
-                    ["path"] = FileRootOnPhone + entry.path,
+                    ["path"] = FileRootOnSource + entry.path,
                 },
                 MSG_TYPE_FILE_CONTENT_GET,
                 MSG_TYPE_FILE_CONTENT,
@@ -468,7 +468,7 @@ namespace FnSync
         {
             if (String.IsNullOrWhiteSpace(entry.key) || Force)
             {
-                if (String.IsNullOrWhiteSpace(FileRootOnPhone) ||
+                if (String.IsNullOrWhiteSpace(FileRootOnSource) ||
                     String.IsNullOrWhiteSpace(entry.ConvertedPath))
                 {
                     throw new ArgumentException("FileRootOnPhone & entry.ConvertedPath");
@@ -478,7 +478,7 @@ namespace FnSync
                     Client,
                     new JObject()
                     {
-                        ["path"] = FileRootOnPhone + entry.path,
+                        ["path"] = FileRootOnSource + entry.path,
                         //["stub_size"] = UnitSizeInBytes * UnitNumber
                     },
                     MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
@@ -557,7 +557,7 @@ namespace FnSync
             if (!(msgObj is MessageWithBinary msg))
                 return;
 
-            if ((string)msg.Message["key"] != CurrentEntry.key)
+            if ((string)msg.Message["key"] != CurrentEntry?.key)
                 return;
 
             long start = msg.Message.OptLong("position", -1);

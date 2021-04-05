@@ -48,6 +48,13 @@ namespace FnSync
                     }
 
                     string str = ip.Address.ToString();
+
+#if DEBUG
+                    if(str.StartsWith("10."))
+                    {
+                        continue;
+                    }
+#endif
                     if (ip.Address.IsIPv6LinkLocal && str.Contains("%"))
                     {
                         str = str.Substring(0, str.IndexOf('%'));
@@ -57,10 +64,6 @@ namespace FnSync
 
                 }
             }
-
-#if DEBUG
-            Builder.Append("192.168.43.2").Append("|");
-#endif
 
             if (Builder.EndsWith("|"))
             {

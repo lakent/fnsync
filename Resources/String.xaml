@@ -93,6 +93,8 @@
     <System:String x:Key="FixedListenPort">Listen on a specific port</System:String>
     <System:String x:Key="Port">Port</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
+    <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>
+    <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and can be used when your phone is connecting to this PC. Use semicolon(;) as delimiter.</System:String>
 
     <System:String x:Key="FileOperation">File Operation</System:String>
     <System:String x:Key="Cut">Cut</System:String>

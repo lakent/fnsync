@@ -183,7 +183,7 @@ namespace FnSync
 
             //
             // Summary:
-            //     File path under a specific folder on phone. It's a relative path including the filename
+            //     File path under a specific folder on source. It's a relative path including the filename
             public virtual string path { get; set; }
             public virtual string ConvertedPath
             {
@@ -311,7 +311,7 @@ namespace FnSync
             public bool IsInitialzed => EntryList != null;
 
             protected PhoneClient Client;
-            protected string FileRootOnPhone;
+            protected string FileRootOnSource;
             public string FirstName
             {
                 get => EntryList[0].ConvertedName;
@@ -417,11 +417,11 @@ namespace FnSync
                 }
 
                 Client = client;
-                this.FileRootOnPhone = FileRootOnPhone;
+                this.FileRootOnSource = FileRootOnPhone;
 
-                if (this.FileRootOnPhone != null && !this.FileRootOnPhone.EndsWith("/"))
+                if (this.FileRootOnSource != null && !this.FileRootOnSource.EndsWith("/"))
                 {
-                    this.FileRootOnPhone += "/";
+                    this.FileRootOnSource += "/";
                 }
 
                 EntryList = (E[])Entries;

@@ -3,6 +3,7 @@ using QRCoder;
 using System;
 using System.Drawing;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,6 +64,30 @@ namespace FnSync
             RefreshQrCode();
         }
 
+        private string GetAdditionalIPs()
+        {
+            string[] ips = MainConfig.Config.AdditionalIPs.Split(new char[] { ';', '|' });
+            StringBuilder Builder = new StringBuilder();
+            IPAddress address;
+
+            foreach (string ip in ips)
+            {
+                string ipTrimed = ip.Trim();
+                if(IPAddress.TryParse(ipTrimed, out address))
+                {
+                    Builder.Append(ip).Append("|");
+                }
+            }
+
+            if (Builder.EndsWith("|"))
+            {
+                Builder.Remove(Builder.Length - 1, 1);
+                Builder.Insert(0, "|");
+            }
+
+            return Builder.ToString();
+        }
+
         private void RefreshQrCode()
         {
             string token = Guid.NewGuid().ToString();
@@ -74,7 +99,7 @@ namespace FnSync
                 null
             );
 
-            helloJson["ips"] = Utils.GetAllInterface(false);
+            helloJson["ips"] = Utils.GetAllInterface(false) + GetAdditionalIPs();
             /*
             helloJson["i"] = Utils.GetAllInterface(false);
             helloJson["l"] = Utils.GetAllInterface(true);

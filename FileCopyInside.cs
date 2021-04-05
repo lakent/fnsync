@@ -109,7 +109,7 @@ namespace FnSync
                 Client,
                 new JObject()
                 {
-                    ["src"] = FileRootOnPhone + CurrentEntry.path,
+                    ["src"] = FileRootOnSource + CurrentEntry.path,
                     ["to"] = DestinationFolder,
                     ["exist_action"] = ExistAction
                 },

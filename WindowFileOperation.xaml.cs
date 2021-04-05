@@ -25,7 +25,7 @@ namespace FnSync
         private IBase Transmission = null;
         private readonly IList<ControlFolderListItemView.UiItem> PendingItems;
         private readonly PhoneClient Client = null;
-        private readonly string RootOnPhone = null;
+        private readonly string RootFolderOnSource = null;
         private readonly string DestFolder = null;
         private bool PromptOnClose = false;
         private bool CloseAutomatically = true;
@@ -108,7 +108,7 @@ namespace FnSync
         {
             this.Client = Client;
             this.PendingItems = items;
-            this.RootOnPhone = RootOnPhone;
+            this.RootFolderOnSource = RootOnPhone;
         }
 
 
@@ -356,7 +356,7 @@ namespace FnSync
 
             try
             {
-                await this.Transmission.Init(Client, PendingItems, -1, RootOnPhone);
+                await this.Transmission.Init(Client, PendingItems, -1, RootFolderOnSource);
             }
             catch (Exception e)
             {

@@ -71,7 +71,7 @@ namespace FnSync
     {
         public static bool OptBool(this JObject jObject, string key, bool defval)
         {
-            if( jObject == null || key == null)
+            if (jObject == null || key == null)
             {
                 return defval;
             }
@@ -92,7 +92,7 @@ namespace FnSync
 
         public static string OptString(this JObject jObject, string key, string defval)
         {
-            if( jObject == null || key == null)
+            if (jObject == null || key == null)
             {
                 return defval;
             }
@@ -113,7 +113,7 @@ namespace FnSync
 
         public static long OptLong(this JObject jObject, string key, long defval)
         {
-            if( jObject == null || key == null)
+            if (jObject == null || key == null)
             {
                 return defval;
             }
@@ -132,6 +132,21 @@ namespace FnSync
             return defval;
         }
 
+    }
+
+    public static class StringExtension
+    {
+        public static string Truncate(this string orig, int limit)
+        {
+            if (string.IsNullOrEmpty(orig))
+            {
+                return orig;
+            }
+            else
+            {
+                return orig.Length <= limit ? orig : orig.Substring(0, limit);
+            }
+        }
     }
 
     static class StringBuilderExtension
@@ -248,16 +263,16 @@ namespace FnSync
     {
         public static IList<T> CloneToTypedList<T>(this IList self)
         {
-            if(self is IList<T> TypedList)
+            if (self is IList<T> TypedList)
             {
                 return TypedList.ToList();
             }
 
             List<T> list = new List<T>(self.Count);
 
-            foreach(object item in self)
+            foreach (object item in self)
             {
-                if(item is T typed)
+                if (item is T typed)
                 {
                     list.Add(typed);
                 }
