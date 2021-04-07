@@ -68,15 +68,11 @@ namespace FnSync
         {
             string[] ips = MainConfig.Config.AdditionalIPs.Split(new char[] { ';', '|' });
             StringBuilder Builder = new StringBuilder();
-            IPAddress address;
 
             foreach (string ip in ips)
             {
                 string ipTrimed = ip.Trim();
-                if(IPAddress.TryParse(ipTrimed, out address))
-                {
-                    Builder.Append(ip).Append("|");
-                }
+                Builder.Append(ipTrimed).Append("|");
             }
 
             if (Builder.EndsWith("|"))
