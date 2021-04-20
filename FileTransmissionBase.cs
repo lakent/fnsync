@@ -30,7 +30,7 @@ namespace FnSync
 
         public class BaseEntry
         {
-            private static async Task<IList<ControlFolderListItemView.UiItem>> ListDirFiles(PhoneClient Client, string FullPath)
+            private static async Task<IList<ControlFolderListItemViewBase.UiItem>> ListDirFiles(PhoneClient Client, string FullPath)
             {
                 JObject List = await PhoneMessageCenter.Singleton.OneShotMsgPart(
                     Client,
@@ -45,21 +45,20 @@ namespace FnSync
                 );
 
                 JArray ListPart = (JArray)List["files"];
-                List<ControlFolderListItemView.UiItem> Files = ListPart.ToObject<List<ControlFolderListItemView.UiItem>>();
+                List<ControlFolderListItemViewBase.UiItem> Files = ListPart.ToObject<List<ControlFolderListItemViewBase.UiItem>>();
 
                 return Files;
             }
 
-            public static async Task<T[]> ConvertFromUiItems<T>(IEnumerable<ControlFolderListItemView.UiItem> UiItems, String RootOnPhone, PhoneClient Client, ListModeClass ListMode = ListModeClass.DEEP) where T : BaseEntry, new()
+            public static async Task<T[]> ConvertFromUiItems<T>(IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, String RootOnPhone, PhoneClient Client, ListModeClass ListMode = ListModeClass.DEEP) where T : BaseEntry, new()
             {
                 List<T> ResultEntries = new List<T>();
 
-                foreach (ControlFolderListItemView.UiItem item in UiItems)
+                foreach (ControlFolderListItemViewBase.UiItem item in UiItems)
                 {
                     if (item.type == "dir")
                     {
-                        string FolderPathOnPhone =
-                            item.path.EndsWith("/") ? item.path : item.path + '/';
+                        string FolderPathOnPhone = item.path.AppendIfNotEnding("/");
 
                         if (ListMode == ListModeClass.DEEP)
                         {
@@ -73,9 +72,9 @@ namespace FnSync
                                 last = item.last
                             });
 
-                            IList<ControlFolderListItemView.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
+                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
 
-                            foreach (ControlFolderListItemView.UiItem i in Files)
+                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
                             {
                                 if (i.type == "dir")
                                 {
@@ -85,7 +84,7 @@ namespace FnSync
                                         length = 0,
                                         mime = null,
                                         name = i.name,
-                                        path = FolderPathOnPhone + (i.path.EndsWith("/") ? i.path : i.path + '/'),
+                                        path = FolderPathOnPhone + i.path.AppendIfNotEnding("/"),
                                         last = item.last
                                     });
                                 }
@@ -105,10 +104,10 @@ namespace FnSync
                         }
                         else if (ListMode == ListModeClass.PLAIN_WITH_FOLDER_LENGTH)
                         {
-                            IList<ControlFolderListItemView.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
+                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
 
                             long DirLength = 0;
-                            foreach (ControlFolderListItemView.UiItem i in Files)
+                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
                             {
                                 DirLength += i.size;
                             }
@@ -297,7 +296,7 @@ namespace FnSync
             string FirstName { get; set; }
             string DestinationFolder { get; set; }
             void StartTransmittion();
-            Task Init(PhoneClient client, IEnumerable<ControlFolderListItemView.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null);
+            Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null);
             void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnPhone = null);
 
         }
@@ -398,7 +397,7 @@ namespace FnSync
                 }
             }
 
-            public async Task Init(PhoneClient client, IEnumerable<ControlFolderListItemView.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null)
+            public async Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null)
             {
                 if (EntryList != null)
                 {
@@ -417,12 +416,7 @@ namespace FnSync
                 }
 
                 Client = client;
-                this.FileRootOnSource = FileRootOnPhone;
-
-                if (this.FileRootOnSource != null && !this.FileRootOnSource.EndsWith("/"))
-                {
-                    this.FileRootOnSource += "/";
-                }
+                this.FileRootOnSource = FileRootOnPhone.AppendIfNotEnding("/");
 
                 EntryList = (E[])Entries;
                 if (TotalSize < 0)
@@ -591,6 +585,7 @@ namespace FnSync
                     }
                     catch (Exception e)
                     {
+                        status = TransmissionStatus.FAILED_CONTINUE;
                         break;
                     }
                 }

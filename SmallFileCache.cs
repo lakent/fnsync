@@ -22,12 +22,7 @@ namespace FnSync
 
         public SmallFileCache(string Folder)
         {
-            this.Folder = Folder;
-
-            if (!this.Folder.EndsWith("\\"))
-            {
-                this.Folder += "\\";
-            }
+            this.Folder = Folder.AppendIfNotEnding("\\");
 
             Directory.CreateDirectory(this.Folder);
         }

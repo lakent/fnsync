@@ -116,6 +116,7 @@
     <System:String x:Key="Failed">Failed</System:String>
     <System:String x:Key="Skipped">Skipped</System:String>
     <System:String x:Key="Succeed">Succeed</System:String>
+    <System:String x:Key="SameFolder">The source and destination folders are the same, therefore cannot paste.</System:String>
 
     <System:String x:Key="FileAlreadyExistsTitle">File Already Exists</System:String>
     <System:String x:Key="FileAlreadyExists">This file/folder already exists: </System:String>

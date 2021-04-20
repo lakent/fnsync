@@ -126,7 +126,7 @@ namespace FnSync
         private void ListView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             if (!(sender is DataGrid list) || e == null ||
-                !(list.SelectedItem is ControlFolderListItemView.UiItem item) ||
+                !(list.SelectedItem is ControlFolderListItemViewBase.UiItem item) ||
                 (item.type != "dir" && item.type != "storage")
                 )
                 return;
@@ -139,7 +139,7 @@ namespace FnSync
         {
             if (!(sender is DataGrid list) || e == null ||
                 list.SelectedItems.Count != 1 ||
-                !(list.SelectedItem is ControlFolderListItemView.UiItem item)
+                !(list.SelectedItem is ControlFolderListItemViewBase.UiItem item)
                 )
                 return;
 
@@ -158,13 +158,13 @@ namespace FnSync
         }
     }
 
-    [ValueConversion(typeof(ControlFolderListItemView.UiItem), typeof(String))]
+    [ValueConversion(typeof(ControlFolderListItemViewBase.UiItem), typeof(String))]
     public class LongToHumanReadableSizeConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
 
-            if (!(value is ControlFolderListItemView.UiItem item))
+            if (!(value is ControlFolderListItemViewBase.UiItem item))
                 return "";
 
             if (item.type == "dir")
@@ -204,12 +204,12 @@ namespace FnSync
         }
     }
 
-    [ValueConversion(typeof(ControlFolderListItemView.UiItem), typeof(DateTime))]
+    [ValueConversion(typeof(ControlFolderListItemViewBase.UiItem), typeof(DateTime))]
     public class FileIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is ControlFolderListItemView.UiItem item))
+            if (!(value is ControlFolderListItemViewBase.UiItem item))
                 return null;
 
             if (item.type == "dir")

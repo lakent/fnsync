@@ -147,6 +147,22 @@ namespace FnSync
                 return orig.Length <= limit ? orig : orig.Substring(0, limit);
             }
         }
+
+        public static string AppendIfNotEnding(this string orig, string text)
+        {
+            if (orig == null || String.IsNullOrEmpty(text))
+            {
+                return orig;
+            }
+
+            if (!orig.EndsWith(text))
+            {
+                return orig + text;
+            } else
+            {
+                return orig;
+            }
+        }
     }
 
     static class StringBuilderExtension

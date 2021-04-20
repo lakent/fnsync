@@ -432,11 +432,7 @@ namespace FnSync
             get => DestLocalFolder;
             set
             {
-                DestLocalFolder = value;
-                if (!DestLocalFolder.EndsWith("\\"))
-                {
-                    DestLocalFolder += "\\";
-                }
+                DestLocalFolder = value.AppendIfNotEnding("\\");
             }
         }
 

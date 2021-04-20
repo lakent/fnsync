@@ -27,11 +27,7 @@ namespace FnSync
             get => DestPhoneFolder;
             set
             {
-                DestPhoneFolder = value;
-                if (!DestPhoneFolder.EndsWith("/"))
-                {
-                    DestPhoneFolder += "/";
-                }
+                DestPhoneFolder = value.AppendIfNotEnding("/");
             }
         }
 

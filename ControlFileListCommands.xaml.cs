@@ -27,7 +27,7 @@ namespace FnSync
 
             public bool CanExecute(object parameter)
             {
-                return FileList.ListView.SelectedItems.Count == 1 && !string.IsNullOrWhiteSpace(FileList.Folder) && FileList.ListView.SelectedItem is ControlFolderListItemView.UiItem item && (item.type == "dir" || item.type == "file");
+                return FileList.ListView.SelectedItems.Count == 1 && !string.IsNullOrWhiteSpace(FileList.Folder) && FileList.ListView.SelectedItem is ControlFolderListItemViewBase.UiItem item && (item.type == "dir" || item.type == "file");
             }
 
             public void RenameSubmit(object sender, RenameSubmitEventArgs Args)
@@ -45,7 +45,7 @@ namespace FnSync
 
             public void Execute(object parameter)
             {
-                if (!(FileList.ListView.SelectedItem is ControlFolderListItemView.UiItem item))
+                if (!(FileList.ListView.SelectedItem is ControlFolderListItemViewBase.UiItem item))
                     return;
 
 
@@ -79,7 +79,7 @@ namespace FnSync
 
                 for (int i = 0; i < max && i < Count; ++i)
                 {
-                    if (FileList.ListView.SelectedItems[i] is ControlFolderListItemView.UiItem item)
+                    if (FileList.ListView.SelectedItems[i] is ControlFolderListItemViewBase.UiItem item)
                     {
                         sb.Append(item.name).Append(delimiter);
                     }
@@ -113,7 +113,7 @@ namespace FnSync
                     JArray names = new JArray();
                     foreach (object obj in FileList.ListView.SelectedItems)
                     {
-                        if (obj is ControlFolderListItemView.UiItem item && (item.type == "dir" || item.type == "file"))
+                        if (obj is ControlFolderListItemViewBase.UiItem item && (item.type == "dir" || item.type == "file"))
                         {
                             names.Add(item.name);
                         }
@@ -146,7 +146,7 @@ namespace FnSync
                 new WindowFileOperation(
                     new FileReceive(),
                     FileList.Client,
-                    FileList.ListView.SelectedItems.CloneToTypedList<ControlFolderListItemView.UiItem>(),
+                    FileList.ListView.SelectedItems.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(),
                     FileList.Folder
                     ).Show();
             }
@@ -177,18 +177,18 @@ namespace FnSync
         {
 
             public readonly string ClientId;
-            public readonly IList<ControlFolderListItemView.UiItem> Items;
-            public readonly string ItemsRootOnPhone;
+            public readonly IList<ControlFolderListItemViewBase.UiItem> Items;
+            public readonly string SourceFolder;
             public readonly FileTransmission.OperationClass Operation;
             public readonly string Storage;
             public string DestinationFolder { get; set; } = null;
 
-            public FileOperationInsideDescriptorClass(string clientId, IList items, string ItemsRootOnPhone, FileTransmission.OperationClass operation, string Storage)
+            public FileOperationInsideDescriptorClass(string clientId, IList items, string SourceFolder, FileTransmission.OperationClass operation, string Storage)
             {
                 ClientId = clientId;
-                Items = items.CloneToTypedList<ControlFolderListItemView.UiItem>();
+                Items = items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>();
                 Operation = operation;
-                this.ItemsRootOnPhone = ItemsRootOnPhone;
+                this.SourceFolder = SourceFolder;
                 this.Storage = Storage;
             }
         }
@@ -267,12 +267,24 @@ namespace FnSync
             {
                 return !string.IsNullOrWhiteSpace(FileList.Folder) &&
                     FileList.FileOperationInsideDescriptor != null &&
-                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId
+                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId &&
+                    FileList.FolderList.CurrentStorage == FileList.FileOperationInsideDescriptor.Storage
                     ;
             }
 
             public void Execute(object parameter)
             {
+                if(DestFolder == FileList.FileOperationInsideDescriptor.SourceFolder)
+                {
+                    MessageBox.Show(
+                        (string)App.Current.FindResource("SameFolder"),
+                        (string)App.Current.FindResource("Prompt"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation
+                       );
+                    return;
+                }
+
                 ExecutingDescriptor = FileList.FileOperationInsideDescriptor;
                 FileCopyInside fileCopyInside = new FileCopyInside();
                 fileCopyInside.Operation = ExecutingDescriptor.Operation;
@@ -283,7 +295,7 @@ namespace FnSync
                     fileCopyInside,
                     FileList.Client,
                     FileList.FileOperationInsideDescriptor.Items,
-                    FileList.FileOperationInsideDescriptor.ItemsRootOnPhone,
+                    FileList.FileOperationInsideDescriptor.SourceFolder,
                     ExecutingDescriptor.DestinationFolder
                 ).Show();
             }
@@ -311,7 +323,7 @@ namespace FnSync
                             ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT_CHANGED,
                             new JObject()
                             {
-                                ["folder"] = ExecutingDescriptor.ItemsRootOnPhone,
+                                ["folder"] = ExecutingDescriptor.SourceFolder,
                                 ["storage"] = ExecutingDescriptor.Storage
                             },
                             phoneClient
@@ -327,7 +339,7 @@ namespace FnSync
 
         private class PasteToInsideCommandClass : PasteHereInsideCommandClass
         {
-            protected override string DestFolder => FileList.Folder + (FileList.ListView.SelectedItem as ControlFolderListItemView.UiItem).path;
+            protected override string DestFolder => FileList.Folder + (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem).path;
 
             public PasteToInsideCommandClass(ControlFileList FileList) : base(FileList)
             {
@@ -339,8 +351,9 @@ namespace FnSync
                 return !string.IsNullOrWhiteSpace(FileList.Folder) &&
                     FileList.FileOperationInsideDescriptor != null &&
                     FileList.ListView.SelectedItems.Count == 1 &&
-                    (FileList.ListView.SelectedItem as ControlFolderListItemView.UiItem)?.type == "dir" &&
-                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId
+                    (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem)?.type == "dir" &&
+                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId && 
+                    FileList.FolderList.CurrentStorage == FileList.FileOperationInsideDescriptor.Storage
                     ;
             }
         }
@@ -359,14 +372,14 @@ namespace FnSync
             {
                 return !string.IsNullOrWhiteSpace(FileList.Folder) &&
                     FileList.ListView.SelectedItems.Count == 1 &&
-                    (FileList.ListView.SelectedItem as ControlFolderListItemView.UiItem)?.type == "file"
+                    (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem)?.type == "file"
                     ;
 
             }
 
             public void Execute(object parameter)
             {
-                ControlFolderListItemView.UiItem item = FileList.ListView.SelectedItem as ControlFolderListItemView.UiItem;
+                ControlFolderListItemViewBase.UiItem item = FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem;
 
                 FileList.Client.SendMsg(
                     new JObject()

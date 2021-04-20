@@ -9,6 +9,12 @@
         Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico"
         Height="580" Width="800" PreviewKeyDown="Window_PreviewKeyDown">
+
+    <Window.Resources>
+        <local:BooleanToVisibleConverter x:Key="BooleanToVisibleConverter" />
+        <local:InvertBooleanConverter x:Key="InvertBooleanConverter" />
+    </Window.Resources>
+    
     <Grid Margin="8">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -37,9 +43,14 @@
                 <TextBox Grid.Column="1" x:Name="PathBox" Margin="8,0,0,0" BorderThickness="0" IsReadOnly="True" Background="Transparent" Text="{Binding CurrentPath, ElementName=FolderTree, Mode=OneWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
             </Grid>
         </Border>
-        <local:ControlFileList Grid.Row="1" Grid.Column="1" x:Name="Content" Margin="0,4,0,0" DataContext="{Binding ContentItems, ElementName=FolderTree, Mode=OneWay}" Client="{Binding CurrentClient, ElementName=FolderTree, Mode=OneWay}" Folder="{Binding CurrentPath, ElementName=FolderTree, Mode=OneWay}" FolderList="{Binding ElementName=FolderTree, Mode=OneWay}"/>
-        <StatusBar Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2">
-            <TextBlock Text="{Binding Path=Prompt, ElementName=FolderTree}"/>
-        </StatusBar>
+        <local:ControlFileList Grid.Row="1" Grid.Column="1" x:Name="Content" Margin="0,4,0,0" DataContext="{Binding ContentItems, ElementName=FolderTree, Mode=OneWay}" Client="{Binding CurrentClient, ElementName=FolderTree, Mode=OneWay}" Folder="{Binding CurrentPath, ElementName=FolderTree, Mode=OneWay}" FolderList="{Binding ElementName=FolderTree, Mode=OneWay}" IsEnabled="{Binding Path=IsProcessing, ElementName=FolderTree, Converter={StaticResource InvertBooleanConverter}}"/>
+        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,4,0,0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="{Binding Path=Prompt, ElementName=FolderTree}"/>
+            <ProgressBar Grid.Column="1" MinWidth="100" VerticalAlignment="Stretch" IsIndeterminate="True" Visibility="{Binding Path=IsProcessing, ElementName=FolderTree, Converter={StaticResource BooleanToVisibleConverter}}"/>
+        </Grid>
     </Grid>
 </Window>

@@ -20,11 +20,7 @@ namespace FnSync
                 return DestRemoteFolder;
             }
             set {
-                DestRemoteFolder = value;
-                if (!DestRemoteFolder.EndsWith("/"))
-                {
-                    DestRemoteFolder += '/';
-                }
+                DestRemoteFolder = value.AppendIfNotEnding("/");
             }
         }
 

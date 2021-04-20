@@ -23,7 +23,7 @@ namespace FnSync
     public partial class WindowFileOperation : Window
     {
         private IBase Transmission = null;
-        private readonly IList<ControlFolderListItemView.UiItem> PendingItems;
+        private readonly IList<ControlFolderListItemViewBase.UiItem> PendingItems;
         private readonly PhoneClient Client = null;
         private readonly string RootFolderOnSource = null;
         private readonly string DestFolder = null;
@@ -104,7 +104,7 @@ namespace FnSync
             this.DestFolder = DestFolder;
         }
 
-        public WindowFileOperation(IBase Transmission, PhoneClient Client, IList<ControlFolderListItemView.UiItem> items, string RootOnPhone, string DestFolder = null) : this(Transmission, DestFolder)
+        public WindowFileOperation(IBase Transmission, PhoneClient Client, IList<ControlFolderListItemViewBase.UiItem> items, string RootOnPhone, string DestFolder = null) : this(Transmission, DestFolder)
         {
             this.Client = Client;
             this.PendingItems = items;
@@ -112,7 +112,7 @@ namespace FnSync
         }
 
 
-        public WindowFileOperation(BaseModule<BaseEntry> Transmission, PhoneClient Client, IList items, string RootOnPhone, string DestFolder = null) : this(Transmission, Client, items.CloneToTypedList<ControlFolderListItemView.UiItem>(), RootOnPhone, DestFolder)
+        public WindowFileOperation(BaseModule<BaseEntry> Transmission, PhoneClient Client, IList items, string RootOnPhone, string DestFolder = null) : this(Transmission, Client, items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(), RootOnPhone, DestFolder)
         { }
 
         private void OnPercentageChangedEventHandler(object sender, ProgressChangedEventArgs e)

@@ -42,7 +42,7 @@ namespace FnSync
         }
     }
 
-    public abstract class ControlFolderListItemView : IControlFolderListItemView, IDisposable
+    public abstract class ControlFolderListItemViewBase : IControlFolderListItemView, IDisposable
     {
         public class UiItem
         {
@@ -180,7 +180,7 @@ namespace FnSync
 
         public string Name { get; protected set; }
         public string Path { get; protected set; }
-        public ControlFolderListItemView Parent { get; protected set; }
+        public ControlFolderListItemViewBase Parent { get; protected set; }
         public ControlFolderListPhoneRootItem Root { get; protected set; }
         public ControlFolderListPhoneStorageItem Storage { get; protected set; }
 
@@ -225,7 +225,14 @@ namespace FnSync
             {
                 if (f.type == "dir")
                 {
-                    Children.Add(new ControlFolderListPhoneFolderItem(this, Root, Storage, f.name, f.haschild));
+                    Children.Add(new ControlFolderListPhoneFolderItem(
+                        this,
+                        Root,
+                        Storage,
+                        f.name,
+                        f.path,
+                        f.haschild
+                        ));
                     ++FolderCount;
                 }
 
@@ -252,7 +259,7 @@ namespace FnSync
 
         public abstract void Refresh();
 
-        public ControlFolderListItemView(ControlFolderListItemView Parent, ControlFolderListPhoneRootItem Root, ControlFolderListPhoneStorageItem Storage, bool Dummied)
+        public ControlFolderListItemViewBase(ControlFolderListItemViewBase Parent, ControlFolderListPhoneRootItem Root, ControlFolderListPhoneStorageItem Storage, bool Dummied)
         {
             this.Parent = Parent;
             this.Root = Root;
@@ -266,13 +273,13 @@ namespace FnSync
 
     internal static class ControlFolderListRequestMapExtension
     {
-        public static void Put(this Dictionary<Tuple<string, string>, ControlFolderListItemView> map, string Storage, string Path, ControlFolderListItemView view)
+        public static void Put(this Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> map, string Storage, string Path, ControlFolderListItemViewBase view)
         {
             Tuple<string, string> tuple = new Tuple<string, string>(Storage, Path);
             map[tuple] = view;
         }
 
-        public static bool PutIfNotExist(this Dictionary<Tuple<string, string>, ControlFolderListItemView> map, string Storage, string Path, ControlFolderListItemView view)
+        public static bool PutOnlyIfNotExist(this Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> map, string Storage, string Path, ControlFolderListItemViewBase view)
         {
             Tuple<string, string> tuple = new Tuple<string, string>(Storage, Path);
             if (map.ContainsKey(tuple))
@@ -284,26 +291,26 @@ namespace FnSync
             return true;
         }
 
-        public static ControlFolderListItemView Get(this Dictionary<Tuple<string, string>, ControlFolderListItemView> map, string Storage, string Path)
+        public static ControlFolderListItemViewBase Get(this Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> map, string Storage, string Path)
         {
             Tuple<string, string> tuple = new Tuple<string, string>(Storage, Path);
             return map.ContainsKey(tuple) ? map[tuple] : null;
         }
 
-        public static bool ContainsKey(this Dictionary<Tuple<string, string>, ControlFolderListItemView> map, string Storage, string Path)
+        public static bool ContainsKey(this Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> map, string Storage, string Path)
         {
             Tuple<string, string> tuple = new Tuple<string, string>(Storage, Path);
             return map.ContainsKey(tuple);
         }
 
-        public static void Remove(this Dictionary<Tuple<string, string>, ControlFolderListItemView> map, string Storage, string Path)
+        public static void Remove(this Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> map, string Storage, string Path)
         {
             Tuple<string, string> tuple = new Tuple<string, string>(Storage, Path);
             map.Remove(tuple);
         }
     }
 
-    public class ControlFolderListPhoneRootItem : ControlFolderListItemView
+    public class ControlFolderListPhoneRootItem : ControlFolderListItemViewBase
     {
         public const string MSG_TYPE_GET_STORAGE = "get_storage";
         public const string MSG_TYPE_STORAGE_LIST = "storage_list";
@@ -314,7 +321,7 @@ namespace FnSync
         public const string MSG_TYPE_FOLDER_CONTENT = "folder_content";
         public const string MSG_TYPE_FILE_MANAGER_NO_PERMISSION = "file_manager_no_permission";
 
-        internal readonly Dictionary<Tuple<string, string>, ControlFolderListItemView> RequestMap = new Dictionary<Tuple<string, string>, ControlFolderListItemView>();
+        internal readonly Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> RequestMap = new Dictionary<Tuple<string, string>, ControlFolderListItemViewBase>();
         internal readonly Dictionary<string, IList<UiItem>> RequestCache = new Dictionary<string, IList<UiItem>>();
         internal readonly ConditionalWeakTable<IList<UiItem>, string> NumberOfItemsPrompts = new ConditionalWeakTable<IList<UiItem>, string>();
 
@@ -342,7 +349,7 @@ namespace FnSync
 
             RequestCache[this.Path] = storage;
 
-            ControlFolderListItemView view = RequestMap.Get(Storage.Path, this.Path);
+            ControlFolderListItemViewBase view = RequestMap.Get(Storage.Path, this.Path);
 
             if (view == null)
             {
@@ -359,7 +366,7 @@ namespace FnSync
             {
                 if (view.IsSelected)
                 {
-                    ThisControl?.FireSelectionChanged(this, Storage.Path, client, this.Path, storage);
+                    ThisControl?.FireSelectionChangedEvent(this, Storage.Path, client, this.Path, storage);
                 }
             }
         }
@@ -371,7 +378,7 @@ namespace FnSync
 
             string path = (string)msg["path"];
             string storage = (string)msg["storage"];
-            ControlFolderListItemView view = RequestMap.Get(storage, path);
+            ControlFolderListItemViewBase view = RequestMap.Get(storage, path);
 
             if (view == null)
                 return;
@@ -388,7 +395,7 @@ namespace FnSync
 
             if (view.IsSelected)
             {
-                ThisControl?.FireSelectionChanged(this, storage, client, path, folders);
+                ThisControl.FireSelectionChangedEvent(this, storage, client, path, folders);
             }
         }
 
@@ -405,7 +412,7 @@ namespace FnSync
             RequestMap.Clear();
 
             Children.Add(ControlFolderListPlaceholder.PhoneOffline);
-            ThisControl.FireSelectionChanged(this, this.Storage.Path, Client, Path, Empty);
+            ThisControl.FireSelectionChangedEvent(this, this.Storage.Path, Client, Path, Empty);
             ThisControl.Prompt = ControlFolderListPlaceholder.PhoneOffline.Name;
         }
 
@@ -440,11 +447,11 @@ namespace FnSync
             RequestMap.Clear();
 
             Children.Add(ControlFolderListPlaceholder.NoPermission);
-            ThisControl.FireSelectionChanged(this, this.Storage.Path, Client, Path, Empty);
+            ThisControl.FireSelectionChangedEvent(this, this.Storage.Path, Client, Path, Empty);
             ThisControl.Prompt = ControlFolderListPlaceholder.NoPermission.Name;
         }
 
-        public void RequestChildren(ControlFolderListItemView view)
+        public void RequestChildren(ControlFolderListItemViewBase view)
         {
             if (!Client.IsAlive)
             {
@@ -464,20 +471,21 @@ namespace FnSync
 
                 if (view.IsSelected)
                 {
-                    ThisControl?.FireSelectionChanged(this, view.Storage.Path, Client, ViewPath, Cache);
+                    ThisControl.FireSelectionChangedEvent(this, view.Storage.Path, Client, ViewPath, Cache);
                 }
             }
             else
             {
-                if (!RequestMap.PutIfNotExist(view.Storage.Path, ViewPath, view))
-                {
-                    return;
-                }
-
                 if (view.IsSelected)
                 {
-                    ThisControl?.FireSelectionChanged(this, view.Storage.Path, Client, ViewPath, null);
+                    ThisControl.FireSelectionChangedEvent(this, view.Storage.Path, Client, ViewPath, null);
                     ThisControl.Prompt = ControlFolderListPlaceholder.Dummy.Name;
+                    ThisControl.IsProcessing = true;
+                }
+
+                if (!RequestMap.PutOnlyIfNotExist(view.Storage.Path, ViewPath, view))
+                {
+                    return;
                 }
 
                 if (view == this)
@@ -644,20 +652,21 @@ namespace FnSync
     {
         public static readonly ControlFolderListPhoneStorageItem VOID = new ControlFolderListPhoneStorageItem(null, null, "", false);
 
-        public ControlFolderListPhoneStorageItem(ControlFolderListPhoneRootItem Phone, string Name, string Path, bool HasChildFolder) : base(Phone, Phone, null, Name, true)
+        public ControlFolderListPhoneStorageItem(ControlFolderListPhoneRootItem Phone, string Name, string Path, bool HasChildFolder) : base(Phone, Phone, null, Name, Path, true)
         {
-            this.Path = Path;
+            this.Path = Path.AppendIfNotEnding("/");
             this.Storage = this;
         }
     }
 
-    public class ControlFolderListPhoneFolderItem : ControlFolderListItemView
+    public class ControlFolderListPhoneFolderItem : ControlFolderListItemViewBase
     {
         public ControlFolderListPhoneFolderItem(
-            ControlFolderListItemView Parent,
+            ControlFolderListItemViewBase Parent,
             ControlFolderListPhoneRootItem Root,
             ControlFolderListPhoneStorageItem Storage,
             string Name,
+            string Path,
             bool HasChildFolder
             ) : base(Parent, Root, Storage, HasChildFolder)
         {
@@ -665,7 +674,7 @@ namespace FnSync
 
             if (Parent != null)
             {
-                this.Path = Parent.Path + Name + "/";
+                this.Path = Parent.Path.AppendIfNotEnding("/") + Path.AppendIfNotEnding("/");
             }
         }
 
@@ -690,7 +699,7 @@ namespace FnSync
         {
             foreach (IControlFolderListItemView child in Children)
             {
-                if (child is ControlFolderListItemView c)
+                if (child is ControlFolderListItemViewBase c)
                 {
                     c.Dispose();
                 }
@@ -728,7 +737,7 @@ namespace FnSync
         private readonly List<ControlFolderListPhoneRootItem> Roots = new List<ControlFolderListPhoneRootItem>();
 
         public string CurrentPath { get; protected set; } = null;
-        public IList<ControlFolderListItemView.UiItem> ContentItems { get; protected set; }
+        public IList<ControlFolderListItemViewBase.UiItem> ContentItems { get; protected set; }
         public PhoneClient CurrentClient { get; protected set; } = null;
         public ControlFolderListPhoneRootItem CurrentRoot { get; protected set; } = null;
         public string CurrentStorage { get; protected set; } = null;
@@ -754,6 +763,20 @@ namespace FnSync
             }
         }
 
+        public bool isProcessing = false;
+        public bool IsProcessing
+        {
+            get
+            {
+                return isProcessing;
+            }
+            set
+            {
+                isProcessing = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsProcessing"));
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private class RefreshCommandClass : ICommand
@@ -774,7 +797,7 @@ namespace FnSync
 
                 object dataContext = item.DataContext;
 
-                if (dataContext is ControlFolderListItemView view)
+                if (dataContext is ControlFolderListItemViewBase view)
                 {
                     view.Refresh();
                 }
@@ -783,12 +806,12 @@ namespace FnSync
 
         public ICommand RefreshCommand => RefreshCommandClass.RefreshCommand;
 
-        public void FireSelectionChanged(
+        public void FireSelectionChangedEvent(
             ControlFolderListPhoneRootItem Root,
             string Storage,
             PhoneClient client,
             string path,
-            IList<ControlFolderListItemView.UiItem> items
+            IList<ControlFolderListItemViewBase.UiItem> items
             )
         {
             bool FullyLoad = this.CurrentPath != path;
@@ -802,7 +825,7 @@ namespace FnSync
                 }
                 else
                 {
-                    this.ContentItems = new ObservableCollection<ControlFolderListItemView.UiItem>(items);
+                    this.ContentItems = new ObservableCollection<ControlFolderListItemViewBase.UiItem>(items);
                 }
             }
             else
@@ -811,10 +834,10 @@ namespace FnSync
                 {
                     if (this.ContentItems == null)
                     {
-                        this.ContentItems = new ObservableCollection<ControlFolderListItemView.UiItem>();
+                        this.ContentItems = new ObservableCollection<ControlFolderListItemViewBase.UiItem>();
                     }
 
-                    ControlFolderListItemView.UiItem.ImcrementalUpdate(this.ContentItems, items);
+                    ControlFolderListItemViewBase.UiItem.ImcrementalUpdate(this.ContentItems, items);
                 }
             }
 
@@ -838,6 +861,8 @@ namespace FnSync
                     Prompt = null;
                 }
             }
+
+            IsProcessing = false;
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CurrentPath"));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ContentItems"));
@@ -916,7 +941,7 @@ namespace FnSync
 
         public void RefreshCurrentSelected()
         {
-            if (!(ListView.SelectedItem is ControlFolderListItemView itemView))
+            if (!(ListView.SelectedItem is ControlFolderListItemViewBase itemView))
                 return;
 
             itemView.Refresh();
@@ -927,14 +952,14 @@ namespace FnSync
             if (CurrentRoot == null)
                 return;
 
-            ControlFolderListItemView itemView =
+            ControlFolderListItemViewBase itemView =
                 CurrentRoot.RequestMap.Get(CurrentStorage, CurrentPath);
             if (itemView == null)
                 return;
 
             itemView.IsExpanded = true;
 
-            foreach (ControlFolderListItemView child in itemView.Children)
+            foreach (ControlFolderListItemViewBase child in itemView.Children)
             {
                 if (child.Name == Subfolder)
                 {
@@ -951,12 +976,12 @@ namespace FnSync
             if (CurrentRoot == null)
                 return;
 
-            ControlFolderListItemView itemView =
+            ControlFolderListItemViewBase itemView =
                 CurrentRoot.RequestMap.Get(CurrentStorage, CurrentPath);
             if (itemView == null)
                 return;
 
-            ControlFolderListItemView parent = itemView.Parent;
+            ControlFolderListItemViewBase parent = itemView.Parent;
 
             if (parent != null)
             {
