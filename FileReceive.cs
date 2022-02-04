@@ -79,7 +79,7 @@ namespace FnSync
                 }
             }
 
-            public override string ConvertedPath { get; protected set; } = null;
+            public override string ConvertedPath { get; set; } = null;
 
             public override bool IsFolder => ConvertedPath != null && ConvertedPath.EndsWith("\\");
             public bool IsUnderSubfolder
@@ -184,72 +184,6 @@ namespace FnSync
             }
         }
 
-        private class RequestCacheClass
-        {
-            public class Entry
-            {
-                public int Count;
-                public int Length;
-
-                public override int GetHashCode()
-                {
-                    return (Count << 24) ^ Length;
-                }
-
-                public override bool Equals(object obj)
-                {
-                    return (obj is Entry e) && Count == e.Count && Length == e.Length;
-                }
-            }
-
-            private string key = null;
-            public string Key
-            {
-                get
-                {
-                    return key;
-                }
-                set
-                {
-                    if (value != key)
-                    {
-                        key = value;
-                        Cache.Clear();
-                    }
-                }
-            }
-
-            private readonly Dictionary<Entry, string> Cache = new Dictionary<Entry, string>(2);
-
-            public RequestCacheClass()
-            {
-
-            }
-
-            public string Get(int Count, int Length)
-            {
-                Entry entry = new Entry { Count = Count, Length = Length };
-                if (Cache.ContainsKey(entry))
-                {
-                    return Cache[entry];
-                }
-                else
-                {
-                    string msg = new JObject
-                    {
-                        ["key"] = Key,
-                        ["count"] = Count,
-                        ["length"] = Length,
-                        [PhoneClient.MSG_TYPE_KEY] = MSG_TYPE_FILE_TRANSFER_META
-                    }.ToString(Newtonsoft.Json.Formatting.None);
-
-                    Cache[entry] = msg;
-
-                    return msg;
-                }
-            }
-        }
-
         static FileReceive()
         {
             PhoneMessageCenter.Singleton.Register(
@@ -349,6 +283,8 @@ namespace FnSync
 
         public static void ParseQueryString(QueryString queries)
         {
+            // 'Save As' from Notification
+
             if (queries.Contains("cancelpending"))
             {
                 Pendings.Remove(queries["cancelpending"]);
@@ -381,10 +317,8 @@ namespace FnSync
 
         private FileStream file = null;
 
-        private const int UnitSizeInBytes = 1024;
-        private int UnitCoefficient = 10;
-
-        private RequestCacheClass RequestCache;
+        private ChunkRequestCache RequestCache;
+        private ChunkSizeCalculatorClass SizeCalculator;
 
         private bool IsDisposed = false;
 
@@ -410,7 +344,20 @@ namespace FnSync
         {
             base.Init(client, Entries, TotalSize, FileRootOnPhone);
 
-            RequestCache = new RequestCacheClass();
+            RequestCache = new ChunkRequestCache
+            {
+                StringMaker = delegate (string Key, int Count, int Length)
+                {
+                    return new JObject
+                    {
+                        ["key"] = Key,
+                        ["count"] = Count,
+                        ["length"] = Length,
+                        [PhoneClient.MSG_TYPE_KEY] = MSG_TYPE_FILE_TRANSFER_META
+                    }.ToString(Newtonsoft.Json.Formatting.None);
+                }
+            };
+            SizeCalculator = new ChunkSizeCalculatorClass();
 
             PhoneMessageCenter.Singleton.Register(
                 Client.Id,
@@ -422,9 +369,8 @@ namespace FnSync
 
         private void RequestNext(int UnitCount)
         {
-            Client.WriteQueued(RequestCache.Get(UnitCount, UnitCoefficient * UnitSizeInBytes));
+            Client.WriteQueued(RequestCache.Get(UnitCount, SizeCalculator.ChunkSize));
         }
-
 
         private string DestLocalFolder = null;
         public override string DestinationFolder
@@ -452,6 +398,7 @@ namespace FnSync
                     ["path"] = FileRootOnSource + entry.path,
                 },
                 MSG_TYPE_FILE_CONTENT_GET,
+                null,
                 MSG_TYPE_FILE_CONTENT,
                 5000
                 );
@@ -460,7 +407,7 @@ namespace FnSync
             WriteBinaryToFile(Msg.Binary, 0);
         }
 
-        private async Task GetKey(ReceiveEntry entry, bool Force = false)
+        private async Task AcquireKey(ReceiveEntry entry, bool Force = false)
         {
             if (String.IsNullOrWhiteSpace(entry.key) || Force)
             {
@@ -492,7 +439,7 @@ namespace FnSync
                 entry.key = key;
             }
 
-            RequestCache.Key = entry.key;
+            RequestCache.RemoteKey = entry.key;
         }
 
         private void MultipleChunksReceive()
@@ -515,7 +462,7 @@ namespace FnSync
                 if (BytesPer > LargestSpeed)
                 {
                     LargestSpeed = BytesPer;
-                    UnitCoefficient += 4;
+                    SizeCalculator.UnitCount += 4;
                 }
                 else
                 {
@@ -544,6 +491,7 @@ namespace FnSync
 
             file.Position = Offset;
             file.Write(Binary, 0, length);
+            // XXX TODO: Not thread-safe here
 
             AddTransmitLength(length);
         }
@@ -561,10 +509,10 @@ namespace FnSync
 
             if (start < 0)
             {
-                if (length > CurrentEntry.length - CurrnetReceived)
+                if (length > CurrentEntry.length - CurrnetTransmittedLength)
                     return;
 
-                start = CurrnetReceived;
+                start = CurrnetTransmittedLength;
             }
             else
             {
@@ -574,7 +522,7 @@ namespace FnSync
 
             WriteBinaryToFile(msg.Binary, start);
 
-            if (CurrnetReceived < CurrentEntry.length)
+            if (CurrnetTransmittedLength < CurrentEntry.length)
             {
                 RequestNext(1);
             }
@@ -596,8 +544,9 @@ namespace FnSync
                         break;
 
                     case TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE:
-                        if (string.IsNullOrWhiteSpace(CurrentEntry.path))
+                        if (string.IsNullOrWhiteSpace(CurrentEntry.key))
                         {
+                            // It this happended, there are some bugs.
                             throw new Exception();
                         }
 
@@ -605,7 +554,7 @@ namespace FnSync
                             Client,
                             new JObject()
                             {
-                                ["path"] = CurrentEntry.path,
+                                ["key"] = CurrentEntry.key,
                             },
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS,
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY,
@@ -616,7 +565,7 @@ namespace FnSync
 
                         if (!KeyIsExist)
                         {
-                            await GetKey(CurrentEntry, true);
+                            await AcquireKey(CurrentEntry, true);
                         }
 
                         long SeekResult = await PhoneMessageCenter.Singleton.OneShotGetLong(
@@ -624,7 +573,7 @@ namespace FnSync
                             new JObject()
                             {
                                 ["key"] = CurrentEntry.key,
-                                ["position"] = CurrnetReceived
+                                ["position"] = CurrnetTransmittedLength
                             },
                             MSG_TYPE_FILE_TRANSFER_SEEK,
                             MSG_TYPE_FILE_TRANSFER_SEEK_OK,
@@ -633,7 +582,7 @@ namespace FnSync
                             -1
                             );
 
-                        if (SeekResult != CurrnetReceived)
+                        if (SeekResult != CurrnetTransmittedLength)
                         {
                             throw new Exception();
                         }
@@ -664,7 +613,8 @@ namespace FnSync
 
         protected override Task OnDisconnected()
         {
-            if (TransmitionStage == TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE && string.IsNullOrWhiteSpace(CurrentEntry.path))
+            if (TransmitionStage == TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE &&
+                string.IsNullOrWhiteSpace(CurrentEntry.path) /* If it is from ContentProvider, cannot resume after reconnect */)
             {
                 OnErrorEvent?.Invoke(this, null);
             }
@@ -702,7 +652,7 @@ namespace FnSync
             }
             catch (Exception e) { }
 
-            if (CurrentEntry == null || CurrnetReceived >= CurrentEntry.length)
+            if (CurrentEntry == null || CurrnetTransmittedLength >= CurrentEntry.length)
             {
                 return;
             }
@@ -805,7 +755,7 @@ namespace FnSync
             {
                 throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
             }
-            else if (entry.length <= Math.Max(UnitSizeInBytes * UnitCoefficient, 100 * 1024) &&
+            else if (entry.length <= Math.Max(SizeCalculator.ChunkSize, 100 * 1024) &&
                 String.IsNullOrWhiteSpace(entry.key))
             {
                 await OneChunkReceive(entry);
@@ -814,7 +764,7 @@ namespace FnSync
             else
             {
                 TransmitionStage = TransmitionStageClass.GETTING_KEY;
-                await GetKey(entry);
+                await AcquireKey(entry);
                 MultipleChunksReceive();
             }
         }

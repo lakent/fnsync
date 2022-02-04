@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -59,7 +60,6 @@ namespace FnSync
             public static extern IntPtr DefWindowProc(IntPtr hWnd, uint msg, IntPtr wparam, IntPtr lparam);
         }
 
-
         private static readonly string TagFormat = "FnSyncTag";
 
         private bool monitorClipboard = false;
@@ -86,7 +86,6 @@ namespace FnSync
                 }
             }
         }
-
         public class ClipboardEventArgs : EventArgs
         {
             public readonly String Text;
@@ -155,6 +154,30 @@ namespace FnSync
             }
 
             return null;
+        }
+
+        public bool ContainsFileList()
+        {
+            try
+            {
+                return Clipboard.ContainsFileDropList();
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public IList<string> GetFileList()
+        {
+            try
+            {
+                return Clipboard.GetFileDropList()?.Cast<string>().ToList();
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
         }
 
         private long LastClipboardChangedTime = 0;

@@ -50,7 +50,7 @@ namespace FnSync
                     string str = ip.Address.ToString();
 
 #if DEBUG
-                    if(str.StartsWith("10."))
+                    if (str.StartsWith("10."))
                     {
                         continue;
                     }
@@ -100,7 +100,7 @@ namespace FnSync
                         bytes[3].ToString();
 
 #if DEBUG
-                    if(IpStr.StartsWith("10."))
+                    if (IpStr.StartsWith("10."))
                     {
                         continue;
                     }
@@ -195,7 +195,7 @@ namespace FnSync
         }
 
         private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
-        private static readonly char[] InvalidFileNameCharsWithoutLinuxPathSlash = 
+        private static readonly char[] InvalidFileNameCharsWithoutLinuxPathSlash =
             InvalidFileNameChars.Except(new char[] { '/' }).ToArray();
 
         public static string ReplaceInvalidFileNameChars(string src, bool PreserveLinuxPathSlash = false)
@@ -208,6 +208,77 @@ namespace FnSync
             }
 
             return sb.ToString();
+        }
+        public static IEnumerable<string> TraverseFile(string root)
+        {
+            if (!Directory.Exists(root) && !File.Exists(root))
+            {
+                yield break;
+            }
+
+            if (File.Exists(root))
+            {
+                yield return root;
+                yield break;
+            }
+            else
+            {
+                Stack<string> dirs = new Stack<string>();
+
+                dirs.Push(root);
+
+                while (dirs.Count > 0)
+                {
+                    string currentDir = dirs.Pop();
+                    string[] subDirs;
+                    try
+                    {
+                        subDirs = Directory.GetDirectories(currentDir);
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                        continue;
+                    }
+                    catch (DirectoryNotFoundException e)
+                    {
+                        continue;
+                    }
+
+                    foreach (string dir in subDirs)
+                    {
+                        dirs.Push(dir);
+                        yield return dir.AppendIfNotEnding("\\");
+                    }
+
+                    string[] files = null;
+
+                    try
+                    {
+                        files = Directory.GetFiles(currentDir);
+                    }
+                    catch (UnauthorizedAccessException e)
+                    {
+                        continue;
+                    }
+                    catch (DirectoryNotFoundException e)
+                    {
+                        continue;
+                    }
+
+                    foreach (string file in files)
+                    {
+                        yield return file;
+                    }
+                }
+
+                yield break;
+            }
+
+        }
+
+        public static string GetRelativePath(string absPath, string folder) {
+            folder = folder.AppendIfNotEnding("\\");
+            return absPath.Substring(folder.Length);
         }
     }
 

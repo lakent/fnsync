@@ -25,8 +25,9 @@ namespace FnSync
 
         private NotificationSubchannel()
         {
-            Thread thread = new Thread(() => ThreadJob());
-            thread.Start();
+            //Thread thread = new Thread(() => ThreadJob());
+            Task.Run(ThreadJob);
+            //thread.Start();
             PhoneMessageCenter.Singleton.Register(
                 null,
                 PhoneMessageCenter.MSG_TYPE_NEW_NOTIFICATION,

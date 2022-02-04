@@ -337,6 +337,68 @@ namespace FnSync
             }
         }
 
+        private class PasteHereFromPCCommandClass : ICommand
+        {
+            protected readonly ControlFileList FileList;
+            protected FileOperationInsideDescriptorClass ExecutingDescriptor = null;
+
+            protected virtual string DestFolder => FileList.Folder;
+
+            public PasteHereFromPCCommandClass(ControlFileList FileList)
+            {
+                this.FileList = FileList;
+            }
+
+            public event EventHandler CanExecuteChanged;
+
+            public virtual bool CanExecute(object parameter)
+            {
+                return !string.IsNullOrWhiteSpace(FileList.Folder) &&
+                    ClipboardManager.Singleton.ContainsFileList();
+            }
+
+            public void Execute(object parameter)
+            {
+                ExecutingDescriptor = new FileOperationInsideDescriptorClass(
+                    this.FileList.Client.Id,
+                    null,
+                    null,
+                    FileTransmission.OperationClass.COPY,
+                    this.FileList.FolderList.CurrentStorage
+                    );
+                ExecutingDescriptor.DestinationFolder = this.FileList.Folder;
+
+                FileSend fileSend = new FileSend(ExecutingDescriptor.Storage);
+                fileSend.OnExitEvent += FileCopyInside_OnExitEvent;
+                fileSend.Init(this.FileList.Client, ClipboardManager.Singleton.GetFileList());
+
+                new WindowFileOperation(
+                    fileSend,
+                    ExecutingDescriptor.DestinationFolder
+                ).Show();
+            }
+
+            protected void FileCopyInside_OnExitEvent(object sender, EventArgs e)
+            {
+                PhoneClient phoneClient = AlivePhones.Singleton[ExecutingDescriptor.ClientId];
+                if (phoneClient != null)
+                {
+                    PhoneMessageCenter.Singleton.Raise(
+                        phoneClient.Id,
+                        ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT_CHANGED,
+                        new JObject()
+                        {
+                            ["folder"] = ExecutingDescriptor.DestinationFolder,
+                            ["storage"] = ExecutingDescriptor.Storage
+                        },
+                        phoneClient
+                    );
+
+                    ExecutingDescriptor = null;
+                }
+            }
+        }
+
         private class PasteToInsideCommandClass : PasteHereInsideCommandClass
         {
             protected override string DestFolder => FileList.Folder + (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem).path;
@@ -374,7 +436,6 @@ namespace FnSync
                     FileList.ListView.SelectedItems.Count == 1 &&
                     (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem)?.type == "file"
                     ;
-
             }
 
             public void Execute(object parameter)

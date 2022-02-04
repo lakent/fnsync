@@ -76,7 +76,15 @@ namespace FnSync
                 }
                 else
                 {
-                    return x.name.CompareTo(y.name);
+                    int NameRel = x.name.CompareTo(y.name);
+                    if (NameRel != 0)
+                    {
+                        return NameRel;
+                    }
+                    else
+                    {
+                        return (int)(x.size - y.size);
+                    }
                 }
             }
 
@@ -321,6 +329,7 @@ namespace FnSync
         public const string MSG_TYPE_FOLDER_CONTENT = "folder_content";
         public const string MSG_TYPE_FILE_MANAGER_NO_PERMISSION = "file_manager_no_permission";
 
+        // Help callback (FolderContentCallback() ) find the right UiView, if there are multiple ongoing requests
         internal readonly Dictionary<Tuple<string, string>, ControlFolderListItemViewBase> RequestMap = new Dictionary<Tuple<string, string>, ControlFolderListItemViewBase>();
         internal readonly Dictionary<string, IList<UiItem>> RequestCache = new Dictionary<string, IList<UiItem>>();
         internal readonly ConditionalWeakTable<IList<UiItem>, string> NumberOfItemsPrompts = new ConditionalWeakTable<IList<UiItem>, string>();

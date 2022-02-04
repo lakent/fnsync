@@ -149,5 +149,7 @@ etc. {0} items in total.</System:String>
     <System:String x:Key="CopyInsidePhone">Copy (Inside Phone) …</System:String>
     <System:String x:Key="PasteHereInsidePhone">Paste to current folder</System:String>
     <System:String x:Key="PasteToInsidePhone">Paste to selected folder</System:String>
+    <System:String x:Key="PasteHereFromPC">Paste to current folder (From PC)</System:String>
+    <System:String x:Key="PasteToFromPC">Paste to selected folder (From PC)</System:String>
     <System:String x:Key="RefreshMediaStore">Refresh Media Store for selected file</System:String>
 </ResourceDictionary>

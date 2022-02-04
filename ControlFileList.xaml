@@ -17,9 +17,11 @@
             <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
             <Separator/>
             <MenuItem Header="{DynamicResource CopyToThisPc}" Command="{Binding CopyToPcCommand}"/>
+            <MenuItem Header="{DynamicResource PasteHereFromPC}" Command="{Binding PasteHereFromPCCommand}"/>
             <Separator/>
             <MenuItem Header="{DynamicResource CutInsidePhone}" Command="{Binding CutInsideCommand}"/>
             <MenuItem Header="{DynamicResource CopyInsidePhone}" Command="{Binding CopyInsideCommand}"/>
+            <Separator/>
             <MenuItem Header="{DynamicResource PasteHereInsidePhone}" Command="{Binding PasteHereInsideCommand}"/>
             <MenuItem Header="{DynamicResource PasteToInsidePhone}" Command="{Binding PasteToInsideCommand}"/>
             <Separator/>

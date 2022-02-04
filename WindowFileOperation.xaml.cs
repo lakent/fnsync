@@ -24,7 +24,7 @@ namespace FnSync
     {
         private IBase Transmission = null;
         private readonly IList<ControlFolderListItemViewBase.UiItem> PendingItems;
-        private readonly PhoneClient Client = null;
+        private readonly PhoneClient Client;
         private readonly string RootFolderOnSource = null;
         private readonly string DestFolder = null;
         private bool PromptOnClose = false;
@@ -72,7 +72,7 @@ namespace FnSync
             Title = string.Format(Pattern, Operation);
         }
 
-        private void Rendered(object sender, EventArgs e)
+        private void OnWindowRendered(object sender, EventArgs e)
         {
             SetTitle();
             this.TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo();
@@ -95,25 +95,25 @@ namespace FnSync
         private WindowFileOperation()
         {
             InitializeComponent();
-            this.ContentRendered += Rendered;
+            this.ContentRendered += OnWindowRendered;
         }
 
-        public WindowFileOperation(IBase InitializedTransmission, string DestFolder = null) : this()
+        public WindowFileOperation(IBase InitializedTransmission, string DestFolder = null) : this(InitializedTransmission, null, null, null, DestFolder)
+        { }
+
+        public WindowFileOperation(IBase Transmission, PhoneClient Client, IList<ControlFolderListItemViewBase.UiItem> UiItems, string RootFolderOnSource, string DestFolder = null) : this()
         {
-            this.Transmission = InitializedTransmission;
+            this.Transmission = Transmission;
             this.DestFolder = DestFolder;
-        }
-
-        public WindowFileOperation(IBase Transmission, PhoneClient Client, IList<ControlFolderListItemViewBase.UiItem> items, string RootOnPhone, string DestFolder = null) : this(Transmission, DestFolder)
-        {
             this.Client = Client;
-            this.PendingItems = items;
-            this.RootFolderOnSource = RootOnPhone;
+            this.PendingItems = UiItems;
+            this.RootFolderOnSource = RootFolderOnSource;
         }
 
-
+        /*
         public WindowFileOperation(BaseModule<BaseEntry> Transmission, PhoneClient Client, IList items, string RootOnPhone, string DestFolder = null) : this(Transmission, Client, items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(), RootOnPhone, DestFolder)
         { }
+        */
 
         private void OnPercentageChangedEventHandler(object sender, ProgressChangedEventArgs e)
         {
@@ -190,7 +190,6 @@ namespace FnSync
 
                 return null;
             });
-
 
             if (e.entry == null)
             {

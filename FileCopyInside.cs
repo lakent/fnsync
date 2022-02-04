@@ -14,8 +14,6 @@ namespace FnSync
         {
         }
 
-        public const string MSG_TYPE_FILE_EXISTS = "file_exists";
-        public const string MSG_TYPE_FILE_EXISTS_BACK = "file_exists_back";
         public const string MSG_TYPE_FILE_MOVE = "file_move";
         public const string MSG_TYPE_FILE_COPY = "file_copy";
         public const string MSG_TYPE_COPY_DONE = "copy_done";
@@ -44,42 +42,9 @@ namespace FnSync
 
         }
 
-        protected override async Task<bool> DetermineFileExistence(CopyInsideEntry entry)
+        protected override Task<bool> DetermineFileExistence(CopyInsideEntry entry)
         {
-            string Condition = await PhoneMessageCenter.Singleton.OneShotGetString(
-                Client,
-                new JObject()
-                {
-                    ["path"] = DestinationFolder + CurrentEntry.path,
-                },
-                MSG_TYPE_FILE_EXISTS,
-                MSG_TYPE_FILE_EXISTS_BACK,
-                5000,
-                "type",
-                null
-            );
-
-            if (string.IsNullOrWhiteSpace(Condition))
-            {
-                throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
-            }
-
-            if (Condition == "not_exist")
-            {
-                return false;
-            }
-
-            if (Condition == "dir" && entry.IsFolder)
-            {
-                return true;
-            }
-
-            if (Condition == "file" && !entry.IsFolder)
-            {
-                return true;
-            }
-
-            throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
+            return FileExistsOnPhone(Client, DestinationFolder, entry);
         }
 
         protected override void ResetCurrentFileTransmisionAction(CopyInsideEntry entry)

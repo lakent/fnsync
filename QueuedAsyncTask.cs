@@ -59,10 +59,10 @@ namespace FnSync
             if (IsDisposed)
                 throw new Exception("Has disposed");
 
-            InputFrom(Input);
+            InputManually(Input);
         }
 
-        public void InputFrom(I Input)
+        public void InputManually(I Input)
         {
             if (Input == null)
                 throw new ArgumentNullException();

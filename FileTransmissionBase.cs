@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FnSync
@@ -40,6 +41,7 @@ namespace FnSync
                         ["recursive"] = true
                     },
                     ControlFolderListPhoneRootItem.MSG_TYPE_LIST_FOLDER,
+                    null,
                     ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT,
                     60000
                 );
@@ -178,6 +180,8 @@ namespace FnSync
 
             public virtual long length { get; set; }
             public virtual string key { get; set; }
+
+            // Last Modified in Milliseconds
             public virtual long last { get; set; } = -1;
 
             //
@@ -187,7 +191,7 @@ namespace FnSync
             public virtual string ConvertedPath
             {
                 get => path;
-                protected set { }
+                set { throw new InvalidOperationException("Cannot set ConvertedPath"); }
             }
 
             public virtual bool IsFolder => path != null && path.EndsWith("/");
@@ -266,7 +270,10 @@ namespace FnSync
         {
             public enum Measure
             {
-                NONE, SKIP, OVERWRITE, RENAME
+                FILE_NOT_EXIST,
+                SKIP, // No need to handle this
+                OVERWRITE,
+                RENAME
             }
 
             public readonly BaseEntry entry;
@@ -296,14 +303,60 @@ namespace FnSync
             string FirstName { get; set; }
             string DestinationFolder { get; set; }
             void StartTransmittion();
-            Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null);
-            void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnPhone = null);
+            Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnSource = null);
+            void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnSource = null);
 
         }
 
         public abstract class BaseModule<E> : IBase where E : BaseEntry, new()
         {
-            public OperationClass Operation { get; set; } = OperationClass.COPY;
+            public const string MSG_TYPE_FILE_EXISTS = "file_exists";
+            public const string MSG_TYPE_FILE_EXISTS_BACK = "file_exists_back";
+
+            protected static async Task<bool> FileExistsOnPhone(
+                PhoneClient Client,
+                string DestinationFolder,
+                E entry)
+            {
+                string Condition = await PhoneMessageCenter.Singleton.OneShotGetString(
+                    Client,
+                    new JObject()
+                    {
+                        ["path"] = DestinationFolder + entry.ConvertedPath,
+                    },
+                    MSG_TYPE_FILE_EXISTS,
+                    MSG_TYPE_FILE_EXISTS_BACK,
+                    5000,
+                    "type",
+                    null
+                );
+
+                if (string.IsNullOrWhiteSpace(Condition))
+                {
+                    throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
+                }
+
+                if (Condition == "not_exist")
+                {
+                    return false;
+                }
+
+                if (Condition == "dir" && entry.IsFolder)
+                {
+                    return true;
+                }
+
+                if (Condition == "file" && !entry.IsFolder)
+                {
+                    return true;
+                }
+
+                throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////////
+
+            public virtual OperationClass Operation { get; set; } = OperationClass.COPY;
             public DirectionClass Direction { get; protected set; } = DirectionClass.INSIDE_PHONE;
             public int CurrentFileIndex { get; private set; } = -1;
             protected E[] EntryList { get; set; } = null;
@@ -323,8 +376,8 @@ namespace FnSync
             public int FileCount => EntryList.Length;
             protected E CurrentEntry { get; private set; } = null;
 
-            public long CurrnetReceived { get; private set; } = 0;
-            public long TotalReceived { get; private set; } = 0;
+            public long CurrnetTransmittedLength { get; private set; } = 0;
+            public long TotalTransmittedLength { get; private set; } = 0;
             public long TotalSize { get; protected set; }
 
             protected ListModeClass ListMode = ListModeClass.DEEP;
@@ -369,8 +422,8 @@ namespace FnSync
                 ProgressChangedEvent?.Invoke(
                     this,
                     new ProgressChangedEventArgs(
-                        CurrnetReceived, CurrentEntry.length,
-                        TotalReceived, TotalSize,
+                        CurrnetTransmittedLength, CurrentEntry.length,
+                        TotalTransmittedLength, TotalSize,
                         speed
                     )
                 );
@@ -384,8 +437,8 @@ namespace FnSync
                 if (len < 0)
                     throw new ArgumentOutOfRangeException("len");
 
-                CurrnetReceived += len;
-                TotalReceived += len;
+                CurrnetTransmittedLength += len;
+                TotalTransmittedLength += len;
                 Speeder.Add(len);
 
                 double BytesPerSec = Speeder.BytesPerSec(250);
@@ -397,18 +450,25 @@ namespace FnSync
                 }
             }
 
-            public async Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnPhone = null)
+            protected virtual void DecreaseTransmitLength(long len)
+            {
+                CurrnetTransmittedLength += len;
+                TotalTransmittedLength += len;
+            }
+
+            public async Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnSource = null)
+                // Only for FileReceive
             {
                 if (EntryList != null)
                 {
                     throw new InvalidOperationException("Already Initialized");
                 }
 
-                E[] Entries = await BaseEntry.ConvertFromUiItems<E>(UiItems, FileRootOnPhone, client, ListMode);
-                this.Init(client, Entries, TotalSize, FileRootOnPhone);
+                E[] Entries = await BaseEntry.ConvertFromUiItems<E>(UiItems, FileRootOnSource, client, ListMode);
+                this.Init(client, Entries, TotalSize, FileRootOnSource);
             }
 
-            public virtual void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnPhone = null)
+            public virtual void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnSource = null)
             {
                 if (EntryList != null)
                 {
@@ -416,7 +476,9 @@ namespace FnSync
                 }
 
                 Client = client;
-                this.FileRootOnSource = FileRootOnPhone.AppendIfNotEnding("/");
+                this.FileRootOnSource = FileRootOnSource.AppendIfNotEnding(
+                    Direction == DirectionClass.PC_TO_PHONE ? "\\" : "/"
+                    );
 
                 EntryList = (E[])Entries;
                 if (TotalSize < 0)
@@ -431,29 +493,28 @@ namespace FnSync
                 PhoneMessageCenter.Singleton.Register(
                     Client.Id,
                     PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
-                    OnReconnectedInner,
-                    false
+                    OnReconnectedWrapper,
+                    true
                 );
 
                 PhoneMessageCenter.Singleton.Register(
                     Client.Id,
                     PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
-                    OnDisconnectedInner,
-                    false
+                    OnDisconnectedWrapper,
+                    true
                 );
-
             }
 
             protected abstract Task OnReconnected();
 
-            private async void OnReconnectedInner(string id, string msgType, object msgObj, PhoneClient client)
+            private async void OnReconnectedWrapper(string id, string msgType, object msgObj, PhoneClient client)
             {
-                Client = client;
+                this.Client = client;
 
                 if (CurrentEntry != null)
                 {
                     await Task.Delay(1000);
-                    if (Client != client)
+                    if (this.Client != client)
                     {
                         // Phones may reconnect multiple times within this 1 second delayed above.
                         return;
@@ -465,7 +526,7 @@ namespace FnSync
 
             protected abstract Task OnDisconnected();
 
-            private async void OnDisconnectedInner(string id, string msgType, object msgObj, PhoneClient client)
+            private async void OnDisconnectedWrapper(string id, string msgType, object msgObj, PhoneClient client)
             {
                 if (CurrentEntry != null)
                 {
@@ -489,8 +550,8 @@ namespace FnSync
                         goto case TransmissionStatus.INITIAL;
 
                     case TransmissionStatus.RESET_CURRENT:
-                        TotalReceived -= CurrnetReceived;
-                        CurrnetReceived = 0;
+                        TotalTransmittedLength -= CurrnetTransmittedLength;
+                        CurrnetTransmittedLength = 0;
                         ResetCurrentFileTransmisionAction(LastEntry);
                         --CurrentFileIndex;
                         goto case TransmissionStatus.INITIAL;
@@ -530,7 +591,7 @@ namespace FnSync
                     throw new ExitLoop();
                 }
 
-                CurrnetReceived = 0;
+                CurrnetTransmittedLength = 0;
                 CurrentEntry = EntryList[CurrentFileIndex];
                 OnNextFileEvent?.Invoke(
                     this,
@@ -561,7 +622,7 @@ namespace FnSync
                     }
                 }
 
-                await Transmit(CurrentEntry, args?.Action ?? FileAlreadyExistEventArgs.Measure.NONE);
+                await Transmit(CurrentEntry, args?.Action ?? FileAlreadyExistEventArgs.Measure.FILE_NOT_EXIST);
             }
 
             public async void StartNext(TransmissionStatus LastStatus)
@@ -595,14 +656,14 @@ namespace FnSync
             private long LastReceivedTotal = long.MinValue;
             protected virtual void WatchJob()
             {
-                if (LastReceivedTotal == TotalReceived)
+                if (LastReceivedTotal == TotalTransmittedLength)
                 {
                     Client?.SendMsgNoThrow(PhoneClient.MSG_TYPE_HELLO);
                     FireProgressChangedEvent(0);
                 }
                 else
                 {
-                    LastReceivedTotal = TotalReceived;
+                    LastReceivedTotal = TotalTransmittedLength;
                 }
             }
 
@@ -633,16 +694,82 @@ namespace FnSync
                     PhoneMessageCenter.Singleton.Unregister(
                         Client.Id,
                         PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
-                        OnReconnectedInner
+                        OnReconnectedWrapper
                     );
 
                     PhoneMessageCenter.Singleton.Unregister(
                         Client.Id,
                         PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
-                        OnDisconnectedInner
+                        OnDisconnectedWrapper
                     );
                 }
             }
+        }
+
+        public class ChunkRequestCache
+        {
+            public class Entry
+            {
+                public int Count;
+                public int Length;
+
+                public override int GetHashCode()
+                {
+                    return (Count << 24) ^ Length;
+                }
+
+                public override bool Equals(object obj)
+                {
+                    return (obj is Entry e) && Count == e.Count && Length == e.Length;
+                }
+            }
+
+            public delegate string MakeString(string key, int Count, int Length);
+            public MakeString StringMaker = null;
+
+            private string remoteKey = null;
+            public string RemoteKey
+            {
+                get
+                {
+                    return remoteKey;
+                }
+                set
+                {
+                    if (value != remoteKey)
+                    {
+                        remoteKey = value;
+                        Cache.Clear();
+                    }
+                }
+            }
+
+            private readonly Dictionary<Entry, string> Cache = new Dictionary<Entry, string>(2);
+
+            public ChunkRequestCache() { }
+
+            public string Get(int Count, int Length)
+            {
+                Entry entry = new Entry { Count = Count, Length = Length };
+                if (Cache.ContainsKey(entry))
+                {
+                    return Cache[entry];
+                }
+                else
+                {
+                    string msg = StringMaker?.Invoke(RemoteKey, Count, Length) ?? throw new Exception();
+                    Cache[entry] = msg;
+                    return msg;
+                }
+            }
+        }
+
+        public class ChunkSizeCalculatorClass
+        {
+            public const int UnitSizeInBytes = 1024;
+            public int UnitCount = 10;
+
+            public int ChunkSize => UnitCount * UnitSizeInBytes;
         }
     }
 }

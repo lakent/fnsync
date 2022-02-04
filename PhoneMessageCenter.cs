@@ -7,12 +7,13 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace FnSync
 {
     class PhoneMessageCenter
     {
+        // Any thread can register event handlers, and handlers are called by **threads** that call Raise()
+
         public const string MSG_FAKE_TYPE_ON_CONNECTED = "fake_type_on_connected";
         public const string MSG_FAKE_TYPE_ON_DISCONNECTED = "fake_type_on_disconnected";
         public const string MSG_FAKE_TYPE_ON_CONNECTION_FAILED = "fake_type_on_connection_failed";
@@ -220,25 +221,25 @@ namespace FnSync
 
         public async Task<bool> OneShotGetBoolean(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, bool DefVal)
         {
-            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, null, ExpectedType, TimeoutMillseconds);
             return msg.OptBool(Key, DefVal);
         }
 
         public async Task<long> OneShotGetLong(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, long DefVal)
         {
-            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, null, ExpectedType, TimeoutMillseconds);
             return msg.OptLong(Key, DefVal);
         }
 
         public async Task<string> OneShotGetString(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds, string Key, string DefVal)
         {
-            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            JObject msg = await OneShotMsgPart(Client, Msg, MsgType, null, ExpectedType, TimeoutMillseconds);
             return msg.OptString(Key, DefVal);
         }
 
-        public async Task<JObject> OneShotMsgPart(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds)
+        public async Task<JObject> OneShotMsgPart(PhoneClient Client, JObject Msg, string MsgType, byte[] binary, string ExpectedType, int TimeoutMillseconds)
         {
-            Object msgObj = await OneShot(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds);
+            Object msgObj = await OneShot(Client, Msg, MsgType, binary, ExpectedType, TimeoutMillseconds);
             if (msgObj is JObject msg)
             {
                 return msg;
@@ -263,11 +264,11 @@ namespace FnSync
 
         public class PhoneDisconnectedException : Exception { }
 
-        public Task<Object> OneShot(PhoneClient Client, JObject Msg, string MsgType, string ExpectedType, int TimeoutMillseconds)
+        public Task<Object> OneShot(PhoneClient Client, JObject Msg, string MsgType, byte[] binary, string ExpectedType, int TimeoutMillseconds)
         {
             TaskCompletionSource<Object> completionSource = new TaskCompletionSource<Object>();
 
-            OneShot(Client, Msg, MsgType, ExpectedType, TimeoutMillseconds,
+            OneShot(Client, Msg, MsgType, binary, ExpectedType, TimeoutMillseconds,
                 delegate (JObject msg, byte[] bin, Object msgObj, RequestStatus Status)
             {
                 switch (Status)
@@ -293,7 +294,7 @@ namespace FnSync
             return completionSource.Task;
         }
 
-        public void OneShot(PhoneClient Client, JObject MsgTo, string MsgToType, string ExpectedType, int TimeoutMillseconds, System.Action<JObject, byte[], Object, RequestStatus> OnDone, bool OnMainThread)
+        public void OneShot(PhoneClient Client, JObject MsgTo, string MsgToType, byte[] binary, string ExpectedType, int TimeoutMillseconds, System.Action<JObject, byte[], Object, RequestStatus> OnDone, bool OnMainThread)
         {
             if (OnDone == null)
             {
@@ -344,7 +345,7 @@ namespace FnSync
 
             try
             {
-                Client.SendMsg(MsgTo, MsgToType);
+                Client.SendMsg(MsgTo, MsgToType, binary);
             }
             catch (SocketException e)
             {

@@ -79,27 +79,78 @@ namespace FnSync
         public ControlFileList()
         {
             InitializeComponent();
-
-            RenameCommand = new RenameCommandClass(this);
-            DeleteCommand = new DeleteCommandClass(this);
-            CopyToPcCommand = new CopyToPcCommandClass(this);
-            RefreshCommand = new RefreshCommandClass(this);
-            CutInsideCommand = new CutInsideCommandClass(this);
-            CopyInsideCommand = new CopyInsideCommandClass(this);
-            PasteHereInsideCommand = new PasteHereInsideCommandClass(this);
-            PasteToInsideCommand = new PasteToInsideCommandClass(this);
-            RefreshMediaStoreCommand = new RefreshMediaStoreCommandClass(this);
         }
 
-        public ICommand RenameCommand { get; }
-        public ICommand DeleteCommand { get; }
-        public ICommand CopyToPcCommand { get; }
-        public ICommand RefreshCommand { get; }
-        public ICommand CutInsideCommand { get; }
-        public ICommand CopyInsideCommand { get; }
-        public ICommand PasteHereInsideCommand { get; }
-        public ICommand PasteToInsideCommand { get; }
-        public ICommand RefreshMediaStoreCommand { get; }
+        public ICommand RenameCommand
+        {
+            get
+            {
+                return new RenameCommandClass(this);
+            }
+        }
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                return new DeleteCommandClass(this);
+            }
+        }
+        public ICommand CopyToPcCommand
+        {
+            get
+            {
+                return new CopyToPcCommandClass(this);
+            }
+        }
+        public ICommand RefreshCommand
+        {
+            get
+            {
+                return new RefreshCommandClass(this);
+            }
+        }
+        public ICommand CutInsideCommand
+        {
+            get
+            {
+                return new CutInsideCommandClass(this);
+            }
+        }
+        public ICommand CopyInsideCommand
+        {
+            get
+            {
+                return new CopyInsideCommandClass(this);
+            }
+        }
+        public ICommand PasteHereInsideCommand
+        {
+            get
+            {
+                return new PasteHereInsideCommandClass(this);
+            }
+        }
+        public ICommand PasteToInsideCommand
+        {
+            get
+            {
+                return new PasteToInsideCommandClass(this);
+            }
+        }
+        public ICommand RefreshMediaStoreCommand
+        {
+            get
+            {
+                return new RefreshMediaStoreCommandClass(this);
+            }
+        }
+        public ICommand PasteHereFromPCCommand
+        {
+            get
+            {
+                return new PasteHereFromPCCommandClass(this);
+            }
+        }
 
         private void ListView_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -177,7 +228,7 @@ namespace FnSync
             }
             else
             {
-            return Utils.ToHumanReadableSize(item.size);
+                return Utils.ToHumanReadableSize(item.size);
             }
         }
 

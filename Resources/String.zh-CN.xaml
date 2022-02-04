@@ -148,5 +148,7 @@
     <System:String x:Key="CopyInsidePhone">复制(手机内) …</System:String>
     <System:String x:Key="PasteHereInsidePhone">粘贴到当前文件夹</System:String>
     <System:String x:Key="PasteToInsidePhone">粘贴到所选文件夹</System:String>
+    <System:String x:Key="PasteHereFromPC">粘贴到当前文件夹 (从 PC)</System:String>
+    <System:String x:Key="PasteToFromPC">粘贴到所选文件夹 (从 PC)</System:String>
     <System:String x:Key="RefreshMediaStore">为所选文件刷新媒体缓存</System:String>
 </ResourceDictionary>

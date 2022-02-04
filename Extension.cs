@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -163,6 +164,14 @@ namespace FnSync
                 return orig;
             }
         }
+
+        public static void AssureNotEmpty(this string str)
+        {
+            if (string.IsNullOrWhiteSpace(str))
+            {
+                throw new Exception();
+            }
+        }
     }
 
     static class StringBuilderExtension
@@ -279,6 +288,11 @@ namespace FnSync
     {
         public static IList<T> CloneToTypedList<T>(this IList self)
         {
+            if (self == null)
+            {
+                return null;
+            }
+
             if (self is IList<T> TypedList)
             {
                 return TypedList.ToList();
@@ -295,6 +309,14 @@ namespace FnSync
             }
 
             return list;
+        }
+    }
+
+    static class FileStreamExtension
+    {
+        public static long Available(this FileStream self)
+        {
+            return self.Length - self.Position;
         }
     }
 }

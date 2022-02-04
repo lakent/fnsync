@@ -20,30 +20,30 @@ namespace FnSync
 
         private class ReceiveQueueClass : QueuedAsyncTask<byte[], byte[]>
         {
-            public readonly LengthPrefixedStreamBuffer BufferObject;
-            public ReceiveQueueClass(LengthPrefixedStreamBuffer BufferObject)
+            public readonly LengthPrefixedStreamBuffer LPBuffer;
+            public ReceiveQueueClass(LengthPrefixedStreamBuffer LPBuffer)
             {
-                this.BufferObject = BufferObject;
+                this.LPBuffer = LPBuffer;
             }
 
             protected override Task<byte[]> InputSource()
             {
-                return BufferObject.ReadRawPackage();
+                return LPBuffer.ReadRawPackage();
             }
 
             protected override void OnDone(byte[] input, byte[] output)
             {
-                BufferObject.PackageProcessing(input, output);
+                LPBuffer.ConsumePackage(input, output);
             }
 
             protected override byte[] TaskBody(byte[] Input)
             {
-                return BufferObject.encryptionManager.Decrypt(Input, 0, Input.Length);
+                return LPBuffer.encryptionManager.Decrypt(Input, 0, Input.Length);
             }
 
             protected override void OnException(QueuedAsyncTask<byte[], byte[]> sender, Exception e)
             {
-                BufferObject.Dispose();
+                LPBuffer.Dispose();
             }
         }
 
@@ -148,7 +148,7 @@ namespace FnSync
             return EncryptionManager.ExtractJSON(await ReadBytes());
         }
 
-        protected virtual void PackageProcessing(byte[] raw, byte[] decrypted)
+        protected virtual void ConsumePackage(byte[] raw, byte[] decrypted)
         {
             throw new ReceiveQueueClass.WontOperateThis();
         }

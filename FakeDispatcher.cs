@@ -10,8 +10,18 @@ namespace FnSync
 {
     public class FakeDispatcher
     {
+        public static bool IsOnUIThread()
+        {
+            return App.Current.Dispatcher.CheckAccess();
+        }
+
         public static FakeDispatcher Init()
         {
+            if (!IsOnUIThread())
+            {
+                throw new InvalidOperationException("FakeDispatcher must be created in UI thread.");
+            }
+
             FakeDispatcher dispatcher = new FakeDispatcher();
             dispatcher.Start();
             return dispatcher;
@@ -19,12 +29,21 @@ namespace FnSync
 
         private class DispatcherAction
         {
-            public readonly TaskCompletionSource<object> CompletionSource = new TaskCompletionSource<object>();
-            public Func<object> Action { get; }
+            public readonly TaskCompletionSource<object> CompletionSource;
+            public readonly Func<object> Action;
 
-            public DispatcherAction(Func<object> Action)
+            public DispatcherAction(Func<object> Action, bool Awaitable)
             {
                 this.Action = Action;
+
+                if (Awaitable)
+                {
+                    CompletionSource = new TaskCompletionSource<object>();
+                }
+                else
+                {
+                    CompletionSource = null;
+                }
             }
         }
 
@@ -41,24 +60,33 @@ namespace FnSync
                 try
                 {
                     object result = dispatcherAction.Action.Invoke();
-                    dispatcherAction.CompletionSource.SetResult(result);
+                    dispatcherAction.CompletionSource?.SetResult(result);
                 }
                 catch (Exception e)
                 {
-                    dispatcherAction.CompletionSource.SetException(e);
+                    dispatcherAction.CompletionSource?.SetException(e);
                     WindowUnhandledException.ShowException(e);
                 }
             }
         }
 
-        public Task<object> Invoke(Func<object> action)
+        public Task<object> InvokeAwaitable(Func<object> action)
         {
             if (action == null)
                 throw new ArgumentNullException("action");
 
-            DispatcherAction dispatcherAction = new DispatcherAction(action);
+            DispatcherAction dispatcherAction = new DispatcherAction(action, true);
             Queue.Post(dispatcherAction);
             return dispatcherAction.CompletionSource.Task;
+        }
+
+        public void Invoke(Func<object> action)
+        {
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            DispatcherAction dispatcherAction = new DispatcherAction(action, false);
+            Queue.Post(dispatcherAction);
         }
     }
 }

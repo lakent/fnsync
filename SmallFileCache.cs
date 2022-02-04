@@ -23,12 +23,16 @@ namespace FnSync
         public SmallFileCache(string Folder)
         {
             this.Folder = Folder.AppendIfNotEnding("\\");
-
             Directory.CreateDirectory(this.Folder);
         }
 
         private void SaveBytes(string path, byte[] bytes)
         {
+            if (!Directory.Exists(this.Folder))
+            {
+                Directory.CreateDirectory(this.Folder);
+            }
+
             File.WriteAllBytes(path, bytes);
         }
 

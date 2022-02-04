@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -21,23 +20,8 @@ namespace FnSync
         public const string MSG_TYPE_HELLO = "hello";
         public const string MSG_TYPE_NONCE = "nonce";
 
-        private static readonly BufferBlock<PhoneClient> ThreadQueue = new BufferBlock<PhoneClient>();
-
-
-        private static Thread NetworkThread = new Thread(async () =>
-        {
-            while (true)
-            {
-                (await ThreadQueue.ReceiveAsync()).StartHandShake();
-            }
-        });
-
-        //private static Dispatcher NetworkThreadDispatcher = null;
-
         static PhoneClient()
         {
-            NetworkThread.Start();
-
             PhoneMessageCenter.Singleton.Register(
                 null,
                 MSG_TYPE_LOCK_SCREEN,
@@ -55,14 +39,13 @@ namespace FnSync
 
         public static void CreateClient(TcpClient Client, String code)
         {
-            ThreadQueue.Post(new PhoneClient(Client, code));
+            new PhoneClient(Client, code).StartHandShake();
         }
 
         public static void HelloBack(string id, string msgType, object msg, PhoneClient client)
         {
             client.SendMsg(MSG_TYPE_NONCE);
         }
-
 
         /////////////////////////////////////////////////////////////////////////////////
 
@@ -229,18 +212,38 @@ namespace FnSync
 
         public void WriteQueued(string v)
         {
-            SendQueue.InputFrom(v);
+            SendQueue.InputManually(v);
         }
 
         public void WriteQueued(JObject json)
         {
-            SendQueue.InputFrom(json);
+            SendQueue.InputManually(json);
+        }
+
+        public void WriteQueued(byte[] binary)
+        {
+            SendQueue.InputManually(binary);
         }
 
         public void SendMsg(JObject src, string type)
         {
+            SendMsg(src, type, (byte[])null);
+        }
+
+        public void SendMsg(JObject src, string type, byte[] binary)
+        {
             src[MSG_TYPE_KEY] = type;
+            if(binary != null)
+            {
+                src["withbinary"] = true;
+            }
+
             WriteQueued(src);
+
+            if (binary != null)
+            {
+                WriteQueued(binary);
+            }
         }
 
         public void SendMsg(string type)
@@ -288,7 +291,7 @@ namespace FnSync
                 await HandShakeStep1_GetPhoneId();
                 await HandShakeStep2_Authenticate();
                 ClientObject.ReceiveTimeout = 0;
-                await HandShakeStep3_WaitingForAccepted();
+                await HandShakeStep3_WaitingForAcceptance();
                 EnterLoop();
             }
             catch (Exception e)
@@ -355,7 +358,7 @@ namespace FnSync
             }
         }
 
-        private async Task HandShakeStep3_WaitingForAccepted()
+        private async Task HandShakeStep3_WaitingForAcceptance()
         {
             /*
              {  // json ENCRYPTED
@@ -427,7 +430,7 @@ namespace FnSync
         }
 
         private MessageWithBinary messageWithBinary = null;
-        protected override void PackageProcessing(byte[] raw, byte[] decrypted)
+        protected override void ConsumePackage(byte[] raw, byte[] decrypted)
         {
             if (messageWithBinary != null)
             {
@@ -474,6 +477,7 @@ namespace FnSync
                    this,
                    new JObject(),
                    MSG_TYPE_HELLO,
+                   null,
                    MSG_TYPE_NONCE,
                    DelayMills
                    );

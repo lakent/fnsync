@@ -10,7 +10,7 @@ namespace FnSync
 {
     static class NetworkChangedHandler
     {
-        private static readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
+        private static readonly object Lock = new object();
 
         public static void Init()
         {
@@ -22,12 +22,10 @@ namespace FnSync
         {
             const int DELAY_MILLS = 5000;
 
-            if (Lock.CurrentCount == 0)
+            if (!Monitor.TryEnter(Lock, 0))
             {
                 return;
             }
-
-            await Lock.WaitAsync();
 
             Task FinalDelay = Task.Delay(DELAY_MILLS);
 
@@ -59,7 +57,7 @@ namespace FnSync
             }
             finally
             {
-                Lock.Release();
+                Monitor.Exit(Lock);
             }
         }
     }

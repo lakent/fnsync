@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Gaming.Input;
 using Windows.UI.StartScreen;
@@ -20,17 +21,17 @@ namespace FnSync
 
         public long Add(long n)
         {
-            Bytes += n;
-            return Bytes;
+            return Interlocked.Add(ref Bytes, n);
         }
 
         public double BytesPerSec(long WhenAfter = 1)
         {
-            long Elapsed = DateTimeOffset.Now.ToUnixTimeMilliseconds() - Start;
-            if(Elapsed >= WhenAfter)
+            long Elapsed = DateTimeOffset.Now.ToUnixTimeMilliseconds() - Interlocked.Read(ref Start);
+            if (Elapsed >= WhenAfter)
             {
-                return (double)Bytes / (double)Elapsed * 1000.0;
-            } else
+                return (double)Interlocked.Read(ref Bytes) / (double)Elapsed * 1000.0;
+            }
+            else
             {
                 return -1;
             }
@@ -38,8 +39,8 @@ namespace FnSync
 
         public void Reset()
         {
-            Start = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-            Bytes = 0;
+            Interlocked.Exchange(ref Start, DateTimeOffset.Now.ToUnixTimeMilliseconds());
+            Interlocked.Exchange(ref Bytes, 0);
         }
     }
 }
