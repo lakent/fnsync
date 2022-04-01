@@ -10,7 +10,7 @@
   <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
 
-  <Product Id="*" Name="FnSync" Language="1033" Version="0.5.8.0" Manufacturer="holmium" UpgradeCode="9ad7c0b9-c690-4cf2-bbb6-093d68c50100" >
+  <Product Id="*" Name="FnSync" Language="1033" Version="0.7.0.0" Manufacturer="holmium" UpgradeCode="9ad7c0b9-c690-4cf2-bbb6-093d68c50100" >
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -40,10 +40,10 @@
         <Shortcut Id="ApplicationStartMenuShortcut" Name="FnSync" Description="FnSync" Target="[INSTALLFOLDER]FnSync.exe" WorkingDirectory="INSTALLFOLDER">
 
           <!--AUMID-->
-          <ShortcutProperty Key="System.AppUserModel.ID" Value="holmium.FnSync.A7F49234CADC422229142EDC7D8932E"/>
+          <!--<ShortcutProperty Key="System.AppUserModel.ID" Value="holmium.FnSync.A7F49234CADC422229142EDC7D8932E"/>-->
 
           <!--COM CLSID, specifying which CLSID to activate when toast clicked-->
-          <ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{8C025F15-F051-427B-AF16-9F43DB9ED3EA}"/>
+          <!--<ShortcutProperty Key="System.AppUserModel.ToastActivatorCLSID" Value="{8C025F15-F051-427B-AF16-9F43DB9ED3EA}"/>-->
 
         </Shortcut>
 
@@ -77,14 +77,14 @@
       </Component>
       <ComponentRef Id="ApplicationShortcut"/>
 
-      <Component Id="BouncyCastle.Crypto.dll">
-        <File Source="$(var.FnSync.TargetDir)\BouncyCastle.Crypto.dll" />
-      </Component>
       <Component Id="FnSync.exe.config">
         <File Source="$(var.FnSync.TargetDir)\FnSync.exe.config" />
       </Component>
-      <Component Id="Hardcodet.Wpf.TaskbarNotification.dll">
-        <File Source="$(var.FnSync.TargetDir)\Hardcodet.Wpf.TaskbarNotification.dll" />
+      <Component Id="BouncyCastle.Crypto.dll">
+        <File Source="$(var.FnSync.TargetDir)\BouncyCastle.Crypto.dll" />
+      </Component>
+      <Component Id="Hardcodet.NotifyIcon.Wpf.dll">
+        <File Source="$(var.FnSync.TargetDir)\Hardcodet.NotifyIcon.Wpf.dll" />
       </Component>
       <Component Id="Microsoft.Toolkit.Uwp.Notifications.dll">
         <File Source="$(var.FnSync.TargetDir)\Microsoft.Toolkit.Uwp.Notifications.dll" />

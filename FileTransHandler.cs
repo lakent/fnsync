@@ -525,7 +525,7 @@ namespace FnSync
         protected CancellationToken Cancellation => CancellationSource.Token;
 
         public long TransmittedLength { get; private set; } = 0;
-        private SpeedWatch SpeedShortTerm = new SpeedWatch();
+        private readonly SpeedWatch SpeedShortTerm = new SpeedWatch();
 
         public PhoneClient Client { get; protected set; }
         public BaseEntry Entry { get; private set; }
