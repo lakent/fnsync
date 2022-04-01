@@ -42,7 +42,8 @@ namespace FnSync
                     CurrentWindow.Activate();
                     if (id != null)
                     {
-                        CurrentWindow.SelectDevice(id); CurrentWindow.DeviceList.Focus();
+                        CurrentWindow.SelectDevice(id);
+                        CurrentWindow.DeviceList.Focus();
                     }
                 }
                 return null;

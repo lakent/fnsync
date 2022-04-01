@@ -1,5 +1,4 @@
-﻿using FnSync.FileTransmission;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static FnSync.FileTransHandler;
 
 namespace FnSync
 {
@@ -22,7 +22,7 @@ namespace FnSync
     {
         public class ExistAction : EventArgs
         {
-            public readonly FileTransmission.FileAlreadyExistEventArgs.Measure Action;
+            public readonly FileAlreadyExistEventArgs.Measure Action;
             public readonly bool ApplyToAll;
             public ExistAction(
                 FileAlreadyExistEventArgs.Measure Action,

@@ -94,6 +94,12 @@ namespace FnSync
             }
         }
 
+        public bool IsOnline(string id, out PhoneClient Client)
+        {
+            Client = this[id];
+            return Client.IsAlive == true;
+        }
+
         public IEnumerator<PhoneClient> GetEnumerator()
         {
             return map.Values.GetEnumerator();

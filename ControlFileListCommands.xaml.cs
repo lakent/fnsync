@@ -143,12 +143,31 @@ namespace FnSync
 
             public void Execute(object parameter)
             {
+                IList<ControlFolderListItemViewBase.UiItem> UiItemList = FileList.ListView.SelectedItems.CloneToTypedList<ControlFolderListItemViewBase.UiItem>();
+                string CurrentFolder = FileList.Folder;
+                PhoneClient Client = FileList.Client;
+
                 new WindowFileOperation(
-                    new FileReceive(),
-                    FileList.Client,
-                    FileList.ListView.SelectedItems.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(),
-                    FileList.Folder
-                    ).Show();
+                    FileTransHandler.DirectionClass.PHONE_TO_PC,
+                    FileTransHandler.OperationClass.COPY,
+                    Client.Id,
+                    null,
+                    CurrentFolder,
+                    null,
+                    FileList.FolderList.CurrentStorage)
+                    .SetPreparation(() =>
+                    {
+                        Task<FileReceive.ReceiveEntry[]> t = FileTransHandler.BaseEntry.ConvertFromUiItems<FileReceive.ReceiveEntry>(
+                            UiItemList,
+                       CurrentFolder,
+                       Client,
+                       FileTransHandler.ListModeClass.DEEP
+                            );
+
+                        t.Wait();
+                        return t.Result;
+                    })
+                    .Show();
             }
         }
 
@@ -179,11 +198,11 @@ namespace FnSync
             public readonly string ClientId;
             public readonly IList<ControlFolderListItemViewBase.UiItem> Items;
             public readonly string SourceFolder;
-            public readonly FileTransmission.OperationClass Operation;
+            public readonly FileTransHandler.OperationClass Operation;
             public readonly string Storage;
             public string DestinationFolder { get; set; } = null;
 
-            public FileOperationInsideDescriptorClass(string clientId, IList items, string SourceFolder, FileTransmission.OperationClass operation, string Storage)
+            public FileOperationInsideDescriptorClass(string clientId, IList items, string SourceFolder, FileTransHandler.OperationClass operation, string Storage)
             {
                 ClientId = clientId;
                 Items = items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>();
@@ -216,7 +235,7 @@ namespace FnSync
                     FileList.Client.Id,
                     FileList.ListView.SelectedItems,
                     FileList.Folder,
-                    FileTransmission.OperationClass.CUT,
+                    FileTransHandler.OperationClass.CUT,
                     FileList.FolderList.CurrentStorage
                     );
             }
@@ -243,7 +262,7 @@ namespace FnSync
                     FileList.Client.Id,
                     FileList.ListView.SelectedItems,
                     FileList.Folder,
-                    FileTransmission.OperationClass.COPY,
+                    FileTransHandler.OperationClass.COPY,
                     FileList.FolderList.CurrentStorage
                     );
             }
@@ -274,7 +293,7 @@ namespace FnSync
 
             public void Execute(object parameter)
             {
-                if(DestFolder == FileList.FileOperationInsideDescriptor.SourceFolder)
+                if (DestFolder == FileList.FileOperationInsideDescriptor.SourceFolder)
                 {
                     MessageBox.Show(
                         (string)App.Current.FindResource("SameFolder"),
@@ -286,21 +305,47 @@ namespace FnSync
                 }
 
                 ExecutingDescriptor = FileList.FileOperationInsideDescriptor;
-                FileCopyInside fileCopyInside = new FileCopyInside();
-                fileCopyInside.Operation = ExecutingDescriptor.Operation;
-                fileCopyInside.OnExitEvent += FileCopyInside_OnExitEvent;
                 ExecutingDescriptor.DestinationFolder = DestFolder;
 
+                PhoneClient Client = FileList.Client;
+
                 new WindowFileOperation(
-                    fileCopyInside,
-                    FileList.Client,
-                    FileList.FileOperationInsideDescriptor.Items,
-                    FileList.FileOperationInsideDescriptor.SourceFolder,
-                    ExecutingDescriptor.DestinationFolder
-                ).Show();
+                    FileTransHandler.DirectionClass.INSIDE_PHONE,
+                    ExecutingDescriptor.Operation,
+                    Client.Id,
+                    DestFolder,
+                    ExecutingDescriptor.SourceFolder,
+                    FileList.FolderList.CurrentStorage,
+                    ExecutingDescriptor.Storage)
+                    .SetPreparation(() =>
+                    {
+                        if (ExecutingDescriptor.Operation == FileTransHandler.OperationClass.CUT)
+                        {
+                            Task<FileCutInside.CutInsideEntry[]> t = FileTransHandler.BaseEntry.ConvertFromUiItems<FileCutInside.CutInsideEntry>(
+                          ExecutingDescriptor.Items,
+                          ExecutingDescriptor.SourceFolder,
+                          Client,
+                          FileTransHandler.ListModeClass.PLAIN_WITHOUT_FOLDER_LENGTH
+                               );
+                            t.Wait();
+                            return t.Result;
+                        } else
+                        {
+                            Task<FileCopyInside.CopyInsideEntry[]> t = FileTransHandler.BaseEntry.ConvertFromUiItems<FileCopyInside.CopyInsideEntry>(
+                          ExecutingDescriptor.Items,
+                          ExecutingDescriptor.SourceFolder,
+                          Client,
+                          FileTransHandler.ListModeClass.PLAIN_WITHOUT_FOLDER_LENGTH
+                               );
+                            t.Wait();
+                            return t.Result;
+                        }
+                    })
+                    .SetOnExitEventHandler(OnExitEvent)
+                    .Show();
             }
 
-            protected void FileCopyInside_OnExitEvent(object sender, EventArgs e)
+            protected void OnExitEvent(object sender, EventArgs e)
             {
                 PhoneClient phoneClient = AlivePhones.Singleton[ExecutingDescriptor?.ClientId];
                 if (phoneClient != null)
@@ -316,7 +361,7 @@ namespace FnSync
                         phoneClient
                     );
 
-                    if (ExecutingDescriptor.Operation == FileTransmission.OperationClass.CUT)
+                    if (ExecutingDescriptor.Operation == FileTransHandler.OperationClass.CUT)
                     {
                         PhoneMessageCenter.Singleton.Raise(
                             phoneClient.Id,
@@ -328,10 +373,9 @@ namespace FnSync
                             },
                             phoneClient
                         );
-
-                        FileList.FileOperationInsideDescriptor = null;
                     }
 
+                    FileList.FileOperationInsideDescriptor = null;
                     ExecutingDescriptor = null;
                 }
             }
@@ -363,24 +407,30 @@ namespace FnSync
                     this.FileList.Client.Id,
                     null,
                     null,
-                    FileTransmission.OperationClass.COPY,
+                    FileTransHandler.OperationClass.COPY,
                     this.FileList.FolderList.CurrentStorage
                     );
                 ExecutingDescriptor.DestinationFolder = this.FileList.Folder;
 
-                FileSend fileSend = new FileSend(ExecutingDescriptor.Storage);
-                fileSend.OnExitEvent += FileCopyInside_OnExitEvent;
-                fileSend.Init(this.FileList.Client, ClipboardManager.Singleton.GetFileList());
+                IList<string> ClipboardFileList = ClipboardManager.Singleton.GetFileList();
+                string CommonParent = FileSend.GetCommonParentFolder(ClipboardFileList);
 
                 new WindowFileOperation(
-                    fileSend,
-                    ExecutingDescriptor.DestinationFolder
-                ).Show();
+                    FileTransHandler.DirectionClass.PC_TO_PHONE,
+                    FileTransHandler.OperationClass.COPY,
+                    FileList.Client.Id,
+                    FileList.Folder,
+                    CommonParent,
+                    FileList.FolderList.CurrentStorage,
+                    null)
+                    .SetEntryList(FileSend.ConvertToEntries(ClipboardFileList, CommonParent))
+                    .SetOnExitEventHandler(OnExitEvent)
+                    .Show();
             }
 
-            protected void FileCopyInside_OnExitEvent(object sender, EventArgs e)
+            protected void OnExitEvent(object sender, EventArgs e)
             {
-                PhoneClient phoneClient = AlivePhones.Singleton[ExecutingDescriptor.ClientId];
+                PhoneClient phoneClient = AlivePhones.Singleton[ExecutingDescriptor?.ClientId];
                 if (phoneClient != null)
                 {
                     PhoneMessageCenter.Singleton.Raise(
@@ -414,7 +464,7 @@ namespace FnSync
                     FileList.FileOperationInsideDescriptor != null &&
                     FileList.ListView.SelectedItems.Count == 1 &&
                     (FileList.ListView.SelectedItem as ControlFolderListItemViewBase.UiItem)?.type == "dir" &&
-                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId && 
+                    FileList.Client.Id == FileList.FileOperationInsideDescriptor.ClientId &&
                     FileList.FolderList.CurrentStorage == FileList.FileOperationInsideDescriptor.Storage
                     ;
             }

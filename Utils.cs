@@ -276,9 +276,22 @@ namespace FnSync
 
         }
 
-        public static string GetRelativePath(string absPath, string folder) {
+        public static string GetRelativePath(string absPath, string folder)
+        {
             folder = folder.AppendIfNotEnding("\\");
             return absPath.Substring(folder.Length);
+        }
+
+        public static bool IsFolder(string Path)
+        {
+            if (File.Exists(Path))
+            {
+                return false;
+            }
+            else
+            {
+                return Directory.Exists(Path);
+            }
         }
     }
 

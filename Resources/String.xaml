@@ -87,6 +87,7 @@
     <System:String x:Key="PkgID">Package ID</System:String>
     <System:String x:Key="ConnectOnStartup">Connect known phones on startup</System:String>
     <System:String x:Key="HideOnStartup">Don't show Connect window on startup</System:String>
+    <System:String x:Key="HideNotificationOnStartup">Don't show connect toast on startup</System:String>
     <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
     <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>
     <System:String x:Key="TextCastAutoCopy">Auto copy text when text is received</System:String>

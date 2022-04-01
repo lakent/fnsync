@@ -2,13 +2,10 @@
 using Microsoft.Toolkit.Uwp.Notifications;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using System.Windows;
@@ -21,13 +18,11 @@ namespace FnSync
     {
         public static readonly NotificationSubchannel Singleton = new NotificationSubchannel();
 
-        private readonly BufferBlock<ToastNotification> Queue = new BufferBlock<ToastNotification>();
+        private readonly BufferBlock<ToastContentBuilder> Queue = new BufferBlock<ToastContentBuilder>();
 
         private NotificationSubchannel()
         {
-            //Thread thread = new Thread(() => ThreadJob());
             Task.Run(ThreadJob);
-            //thread.Start();
             PhoneMessageCenter.Singleton.Register(
                 null,
                 PhoneMessageCenter.MSG_TYPE_NEW_NOTIFICATION,
@@ -55,40 +50,42 @@ namespace FnSync
 
         private async void ThreadJob()
         {
-            ToastNotifier Notifier = ToastNotificationManager.CreateToastNotifier("holmium.FnSync.A7F49234CADC422229142EDC7D8932E");
-
-            ToastNotification Last = null;
-            ToastNotification LastDup = null;
+            ToastContentBuilder Last = null;
+            int LastTag = 0;
 
             while (true)
             {
-                ToastNotification one = await Queue.ReceiveAsync();
+                ToastContentBuilder one = await Queue.ReceiveAsync();
+
+                one.AddCustomTimeStamp(DateTime.Now);
 
 #if !DEBUG
                 try
                 {
 #endif
-                    Notifier.Show(one);
+                string Tag = LastTag.ToString();
+                one.Show(toast =>
+                {
+                    toast.Tag = Tag;
+                });
+
+                if (Last != null)
+                {
+                    ToastNotificationManagerCompat.History.Remove((LastTag - 1).ToString());
+                    Last.Show(toast =>
+                    {
+                        toast.SuppressPopup = true;
+                    });
+                }
+
+                LastTag++;
+                Last = one;
+                await Task.Delay(1000);
+
 #if !DEBUG
                 }
                 catch (Exception e) { }
 #endif
-
-                if (Last != null)
-                {
-                    Notifier.Hide(Last);
-
-                    if (LastDup != null)
-                    {
-                        LastDup.SuppressPopup = true;
-                        Notifier.Show(LastDup);
-                    }
-                }
-
-                await Task.Delay(1000);
-                ToastNotification dup = await Queue.ReceiveAsync();
-                LastDup = dup;
-                Last = one;
             }
         }
 
@@ -164,6 +161,47 @@ namespace FnSync
             string appName = msg.OptString("appname", null);
             long time = (long)msg["time"];
             string icon = SavedPhones.Singleton[clientId].SmallFiles.GetOrPutFromBase64(pkgname, msg.OptString("icon", null), "png", false);
+
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddHeader(clientId, clientName, "")
+                .AddText(title)
+                .AddText(text.Truncate(120))
+                ;
+
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                Builder.AddButton(new ToastButton()
+                    .SetContent(COPY_TEXT)
+                    .AddArgument("Copy", text)
+                    .SetBackgroundActivation());
+            }
+
+            if (appName != null)
+            {
+                Builder.AddAttributionText(appName);
+            }
+
+            if (icon != null)
+            {
+                Builder.AddAppLogoOverride(new Uri(icon));
+            }
+
+            string[] copyables = GetCopyableSeries(text, 4);
+            if (copyables != null)
+            {
+                foreach (string copyable in copyables)
+                {
+                    Builder.AddButton(new ToastButton()
+                        .SetContent(copyable)
+                        .AddArgument("Copy", copyable)
+                        .SetBackgroundActivation()
+                    );
+                }
+            }
+
+            Singleton.Push(Builder);
+
+            /*
 
             ToastActionsCustom Actions = new ToastActionsCustom()
             {
@@ -241,41 +279,37 @@ namespace FnSync
             var ToastDup = new ToastNotification(doc);
 
             // And then show it
+
             Singleton.Push(Toast, ToastDup);
+
+            */
+
         }
 
-        public void Push(ToastNotification notification, ToastNotification dup)
+        public void Push(ToastContentBuilder Builder)
         {
-            Queue.Post(notification);
-            Queue.Post(dup);
+            Queue.Post(Builder);
         }
-    }
 
-    //////////////////////////////////////////////////////////////////////////////////
-
-    // The GUID CLSID must be unique to your app. Create a new GUID if copying this code.
-    [ClassInterface(ClassInterfaceType.None)]
-    [ComSourceInterfaces(typeof(INotificationActivationCallback))]
-    [Guid("8C025F15-F051-427B-AF16-9F43DB9ED3EA"), ComVisible(true)]
-    public class FnSyncNotificationActivator : NotificationActivator
-    {
-        public override void OnActivated(string invokedArgs, NotificationUserInput userInput, string appUserModelId)
+        public static void OnActivated(ToastNotificationActivatedEventArgsCompat e)
         {
-            if (invokedArgs == "")
+            string InvokedArgs = e.Argument;
+
+            if (String.IsNullOrWhiteSpace(InvokedArgs))
             {
                 return;
             }
 
-            if (invokedArgs.Equals("ConnectOther"))
+            if (InvokedArgs.Equals("ConnectOther"))
             {
                 WindowConnect.NewOne();
             }
-            else if (invokedArgs.Equals("DeviceManager"))
+            else if (InvokedArgs.Equals("DeviceManager"))
             {
                 WindowDeviceMananger.NewOne(null);
             }
 
-            QueryString queries = QueryString.Parse(invokedArgs);
+            QueryString queries = QueryString.Parse(InvokedArgs);
             if (queries.Contains("Copy"))
             {
                 App.FakeDispatcher.Invoke(() =>
@@ -290,5 +324,6 @@ namespace FnSync
                 FileReceive.ParseQueryString(queries);
             }
         }
+
     }
 }

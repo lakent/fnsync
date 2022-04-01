@@ -18,12 +18,12 @@ namespace FnSync
                 ["ThisId"] = "",
                 ["ConnectOnStartup"] = true,
                 ["HideOnStartup"] = true,
+                ["HideNotificationOnStartup"] = false,
                 ["DontToastConnected"] = false,
                 ["ClipboardSync"] = true,
                 ["TextCastAutoCopy"] = true,
                 ["FixedListenPort"] = 0,
                 ["AdditionalIPs"] = "",
-
 
                 // Don't assign null
             };
@@ -67,6 +67,17 @@ namespace FnSync
             set
             {
                 this["HideOnStartup"] = value;
+            }
+        }
+        public bool HideNotificationOnStartup
+        {
+            get
+            {
+                return (bool)this["HideNotificationOnStartup"];
+            }
+            set
+            {
+                this["HideNotificationOnStartup"] = value;
             }
         }
         public bool DontToastConnected

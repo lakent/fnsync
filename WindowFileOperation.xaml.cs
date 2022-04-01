@@ -1,5 +1,4 @@
-﻿using FnSync.FileTransmission;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using Ookii.Dialogs.Wpf;
 using System;
@@ -14,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using static FnSync.FileTransHandler;
 
 namespace FnSync
 {
@@ -22,82 +22,189 @@ namespace FnSync
     /// </summary>
     public partial class WindowFileOperation : Window
     {
-        private IBase Transmission = null;
-        private readonly IList<ControlFolderListItemViewBase.UiItem> PendingItems;
-        private readonly PhoneClient Client;
-        private readonly string RootFolderOnSource = null;
-        private readonly string DestFolder = null;
         private bool PromptOnClose = false;
         private bool CloseAutomatically = true;
         private bool IsClosing = false;
-        private bool IsClosed = false;
 
-        private void SetTitle()
+        public IList<BaseEntry> EntryList = null;
+        public Func<IList<BaseEntry>> PrepareEntryList { get; private set; } = null;
+        private FileTransHandler.HandlerList HandlerList = null;
+
+        public readonly DirectionClass Direction;
+
+        public readonly string ClientId = null;
+        public string DestFolder { get; private set; } = null;
+        public readonly string SrcFolder = null;
+        public readonly string DestStorage = null;
+        public readonly string SrcStorage = null;
+
+        private long FinishedLength = 0;
+
+        private event EventHandler OnExitEvent;
+
+        public WindowFileOperation(
+            DirectionClass Direction,
+            OperationClass Operation,
+            string ClientId,
+            string DestFolder = null,
+            string SrcFolder = null,
+            string DestStorage = null,
+            string SrcStorage = null
+            )
         {
-            string Pattern;
-            switch (this.Transmission.Direction)
+            InitializeComponent();
+            SetTitle(Direction, Operation);
+            this.ContentRendered += OnWindowRendered;
+
+            this.Direction = Direction;
+
+            this.ClientId = ClientId;
+            this.DestFolder = DestFolder;
+            this.SrcFolder = SrcFolder;
+            this.DestStorage = DestStorage;
+            this.SrcStorage = SrcStorage;
+        }
+
+        public WindowFileOperation SetEntryList(IList<BaseEntry> EntryList)
+        {
+            this.EntryList = EntryList;
+            return this;
+        }
+
+        public WindowFileOperation SetPreparation(Func<IList<BaseEntry>> Action)
+        {
+            this.PrepareEntryList = Action;
+            return this;
+        }
+
+        public WindowFileOperation SetOnExitEventHandler(EventHandler Handler)
+        {
+            this.OnExitEvent += Handler;
+            return this;
+        }
+
+        private void SetTitle(DirectionClass Direction, OperationClass Operation)
+        {
+            string PatternString;
+            switch (Direction)
             {
                 case DirectionClass.INSIDE_PHONE:
-                    Pattern = (string)FindResource("FileOperation_InsidePhone");
+                    PatternString = (string)FindResource("FileOperation_InsidePhone");
                     break;
 
                 case DirectionClass.PC_TO_PHONE:
-                    Pattern = (string)FindResource("FileOperation_PcToPhone");
+                    PatternString = (string)FindResource("FileOperation_PcToPhone");
                     break;
 
                 case DirectionClass.PHONE_TO_PC:
-                    Pattern = (string)FindResource("FileOperation_PhoneToPc");
+                    PatternString = (string)FindResource("FileOperation_PhoneToPc");
                     break;
 
                 default:
                     return;
             }
 
-            string Operation;
-            switch (this.Transmission.Operation)
+            string OperationString;
+            switch (Operation)
             {
                 case OperationClass.COPY:
-                    Operation = (string)FindResource("Copy");
+                    OperationString = (string)FindResource("Copy");
                     break;
 
                 case OperationClass.CUT:
-                    Operation = (string)FindResource("Cut");
+                    OperationString = (string)FindResource("Cut");
                     break;
-
 
                 default:
                     return;
             }
 
-            Title = string.Format(Pattern, Operation);
+            Title = string.Format(PatternString, OperationString);
         }
 
-        private void OnWindowRendered(object sender, EventArgs e)
+        private async void OnWindowRendered(object sender, EventArgs e)
         {
-            SetTitle();
             this.TaskbarItemInfo = new System.Windows.Shell.TaskbarItemInfo();
-            if (this.Transmission.IsInitialzed)
-            {
-                StartTramsmission();
-            }
-            else if (this.PendingItems != null && this.PendingItems.Any())
+            if (PrepareEntryList != null)
             {
                 PercentTotal.IsIndeterminate = true;
                 this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Indeterminate;
-                GetFileMetaDataAndInitialize();
+                EntryList = await Task.Run(this.PrepareEntryList);
+                this.PrepareEntryList = null;
             }
+
+            if (EntryList == null)
+            {
+                throw new ArgumentNullException("EntryList");
+            }
+
+            if (this.DestFolder == null && this.Direction == DirectionClass.PHONE_TO_PC)
+            {
+                if (this.EntryList.Count == 1)
+                {
+                    string FirstName = this.EntryList[0].ConvertedName;
+                    string ext = Path.GetExtension(FirstName);
+
+                    SaveFileDialog dlg = new SaveFileDialog
+                    {
+                        FileName = FirstName, // Default file name
+                        DefaultExt = ext ?? "", // Default file extension
+                        Filter = (ext != null ? $"*{ext}|*{ext}|" : "") + "*|*",
+                        OverwritePrompt = true
+                    };
+
+                    bool? result = dlg.ShowDialog();
+
+                    if (result == true)
+                    {
+                        string FileName = dlg.FileName;
+                        this.DestFolder = Path.GetDirectoryName(FileName).AppendIfNotEnding("\\");
+                        this.EntryList[0].ConvertedName = Path.GetFileName(FileName);
+
+                        PromptOnClose = true;
+
+                        FileExistsAction = new WindowFileAlreadyExists.ExistAction(FileAlreadyExistEventArgs.Measure.OVERWRITE, true);
+                    }
+                    else
+                    {
+                        Close();
+                        return;
+                    }
+                }
+                else
+                {
+                    VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog
+                    {
+                        Description = (string)FindResource("SaveTo"),
+                        UseDescriptionForTitle = true
+                    };
+
+                    if ((bool)dialog.ShowDialog(this))
+                    {
+                        this.DestFolder = dialog.SelectedPath.AppendIfNotEnding("\\");
+                        PromptOnClose = true;
+                    }
+                    else
+                    {
+                        Close();
+                        return;
+                    }
+                }
+            }
+            else
+            {
+            }
+
+            HandlerList = new FileTransHandler.HandlerList(this.EntryList, ClientId, DestFolder, SrcFolder, DestStorage, SrcStorage);
+
+            StartTramsmission();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
         }
 
-        private WindowFileOperation()
-        {
-            InitializeComponent();
-            this.ContentRendered += OnWindowRendered;
-        }
-
+        /*
         public WindowFileOperation(IBase InitializedTransmission, string DestFolder = null) : this(InitializedTransmission, null, null, null, DestFolder)
         { }
 
@@ -107,103 +214,44 @@ namespace FnSync
             this.DestFolder = DestFolder;
             this.Client = Client;
             this.PendingItems = UiItems;
-            this.RootFolderOnSource = RootFolderOnSource;
+            this.SrcFolder = RootFolderOnSource;
         }
+        */
 
         /*
         public WindowFileOperation(BaseModule<BaseEntry> Transmission, PhoneClient Client, IList items, string RootOnPhone, string DestFolder = null) : this(Transmission, Client, items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(), RootOnPhone, DestFolder)
         { }
         */
 
-        private void OnPercentageChangedEventHandler(object sender, ProgressChangedEventArgs e)
-        {
-            App.FakeDispatcher.Invoke(() =>
-            {
-                Percent.Value = Convert.ToInt32(e.Percent);
-                PercentTotal.Value = Convert.ToInt32(e.TotalPercent);
-                this.TaskbarItemInfo.ProgressValue = e.TotalPercent / 100;
-
-                Speed.Content = Utils.ToHumanReadableSize((long)(e.BytesPerSec)) + "/s";
-
-                BytesAlready.Content = Utils.ToHumanReadableSize(e.Received);
-                BytesTotal.Content = Utils.ToHumanReadableSize(e.Size);
-
-                AllBytesAlready.Content = Utils.ToHumanReadableSize(e.TotalReceived);
-                AllBytesTotal.Content = Utils.ToHumanReadableSize(e.TotalSize);
-
-                Logs.AppendText(LogsBuffer.ToString());
-                LogsBuffer.Clear();
-
-                Logs.ScrollToEnd();
-
-                return null;
-            });
-        }
-
         private static readonly string FAILED = (string)App.Current.FindResource("Failed");
         private static readonly string SKIPPED = (string)App.Current.FindResource("Skipped");
         private static readonly string SUCCEED = (string)App.Current.FindResource("Succeed");
 
-        private readonly StringBuilder LogsBuffer = new StringBuilder();
+        private readonly StringBuilder LogBuffer = new StringBuilder();
 
-        private void OnNextFileEventHandler(object sender, NextFileEventArgs e)
+        private void FileFailed()
         {
-            App.FakeDispatcher.Invoke(() =>
-            {
-                switch (e.lastStatus)
-                {
-                    case TransmissionStatus.FAILED_ABORT:
-                    case TransmissionStatus.FAILED_CONTINUE:
-                        CloseAutomatically = false;
-                        LogsBuffer.Append(FAILED);
-                        LogsBuffer.Append("\n");
-                        break;
+            CloseAutomatically = false;
+            LogBuffer.Append(FAILED);
+            LogBuffer.Append("\n");
+        }
 
-                    case TransmissionStatus.SKIPPED:
-                        LogsBuffer.Append(SKIPPED);
-                        LogsBuffer.Append("\n");
-                        break;
+        private void FileSkipped()
+        {
+            LogBuffer.Append(SKIPPED);
+            LogBuffer.Append("\n");
+        }
 
-                    case TransmissionStatus.SUCCESSFUL:
-                        LogsBuffer.Append(SUCCEED);
-                        LogsBuffer.Append("\n");
-                        break;
+        private void FileSuccess()
+        {
+            LogBuffer.Append(SUCCEED);
+            LogBuffer.Append("\n");
+        }
 
-                    default:
-                        break;
-                }
-
-                FilesAlready.Content = e.Current.ToString();
-
-                if (e.entry != null)
-                {
-                    FilesTotal.Content = e.Count.ToString();
-                    CurrentFile.Text = e.entry.ConvertedName;
-
-                    LogsBuffer.Append(e.entry.ConvertedPath);
-                    LogsBuffer.Append(" … ");
-                }
-                else
-                {
-                    CurrentFile.Text = "";
-                }
-
-                return null;
-            });
-
-            if (e.entry == null)
-            {
-                // Transfer end
-                Transmission.Dispose();
-                App.FakeDispatcher.Invoke(() =>
-                {
-                    PromptOnClose = false;
-                    if (!IsClosing && CloseAutomatically)
-                        Close();
-
-                    return null;
-                });
-            }
+        private void FileStart(BaseEntry Entry)
+        {
+            LogBuffer.Append(Entry.ConvertedPath);
+            LogBuffer.Append(" … ");
         }
 
         private void OnErrorHandler(object sender, EventArgs e)
@@ -225,21 +273,21 @@ namespace FnSync
 
         private WindowFileAlreadyExists.ExistAction FileExistsAction = null;
 
-        private void FileAlreadyExistHandler(object sender, FileAlreadyExistEventArgs e)
+        private FileAlreadyExistEventArgs.Measure FileAlreadyExist(BaseEntry Entry)
         {
             if (FileExistsAction?.ApplyToAll == true)
             {
-                e.Action = FileExistsAction.Action;
+                return FileExistsAction.Action;
             }
             else
             {
                 this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Paused;
-                WindowFileAlreadyExists window = new WindowFileAlreadyExists(e.entry.ConvertedName);
+                WindowFileAlreadyExists window = new WindowFileAlreadyExists(Entry.ConvertedName);
                 window.ActionChanged += ActionChangedEventHandler;
                 window.ShowDialog();
                 this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
 
-                e.Action = FileExistsAction.Action;
+                return FileExistsAction.Action;
             }
         }
 
@@ -265,8 +313,8 @@ namespace FnSync
                 return;
             }
 
-            Transmission?.Dispose();
-            IsClosed = true;
+            this.HandlerList?.Dispose();
+            this.OnExitEvent?.Invoke(this, null);
         }
 
         private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -274,101 +322,98 @@ namespace FnSync
             Close();
         }
 
-        private void StartTramsmission()
+        private async void StartTramsmission()
         {
             PercentTotal.IsIndeterminate = false;
             this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+            FilesTotal.Content = HandlerList.Count.ToString();
 
-            this.Transmission.ProgressChangedEvent += OnPercentageChangedEventHandler;
-            this.Transmission.OnNextFileEvent += OnNextFileEventHandler;
-            this.Transmission.FileAlreadyExistEvent += FileAlreadyExistHandler;
-            this.Transmission.OnErrorEvent += OnErrorHandler;
-
-            CurrentFile.Text = string.Format((string)FindResource("SaveTo"), "");
-
-            if (this.DestFolder == null)
+            int i = 0;
+            foreach (FileTransHandler Handler in this.HandlerList)
             {
-                if (this.Transmission.FileCount == 1)
+                if (this.HandlerList.IsDisposed)
                 {
-                    string FirstName = Transmission.FirstName;
-                    string ext = Path.GetExtension(FirstName);
+                    break;
+                }
 
-                    SaveFileDialog dlg = new SaveFileDialog
+                if (Handler.IsDisposed)
+                {
+                    continue;
+                }
+
+                Handler.ProgressChangedEvent += Handler_ProgressChangedEvent;
+                CurrentFile.Text = Handler.Entry.ConvertedName;
+
+                try
+                {
+                    FileStart(Handler.Entry);
+                    FileAlreadyExistEventArgs.Measure Measure = FileAlreadyExistEventArgs.Measure.OVERWRITE;
+                    if (await Handler.DetermineFileExistence())
                     {
-                        FileName = FirstName, // Default file name
-                        DefaultExt = ext ?? "", // Default file extension
-                        Filter = (ext != null ? $"*{ext}|*{ext}|" : "") + "*|*",
-                        OverwritePrompt = true
-                    };
+                        Measure = FileAlreadyExist(Handler.Entry);
+                    }
 
-                    // Show save file dialog box
-                    bool? result = dlg.ShowDialog();
-
-                    // Process save file dialog box results
-                    if (result == true)
+                    if (Measure != FileAlreadyExistEventArgs.Measure.SKIP)
                     {
-                        // Save document
-                        string filename = dlg.FileName;
-                        this.Transmission.DestinationFolder = Path.GetDirectoryName(filename);
-                        this.Transmission.FirstName = Path.GetFileName(filename);
-                        PromptOnClose = true;
-
-                        FileExistsAction = new WindowFileAlreadyExists.ExistAction(FileAlreadyExistEventArgs.Measure.OVERWRITE, true);
+                        await Handler.Transmit(Measure);
+                        FileSuccess();
+                        ++i;
                     }
                     else
                     {
-                        Close();
-                        return;
+                        FileSkipped();
+                        ++i;
                     }
+
+                    this.FinishedLength += Handler.Entry.length;
+                    FilesAlready.Content = i.ToString();
                 }
-                else
+                catch (Exception E)
                 {
-                    VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog
-                    {
-                        Description = (string)FindResource("SaveTo"),
-                        UseDescriptionForTitle = true
-                    };
-
-                    if ((bool)dialog.ShowDialog(this))
-                    {
-                        this.Transmission.DestinationFolder = dialog.SelectedPath;
-                        PromptOnClose = true;
-                    }
-                    else
-                    {
-                        Close();
-                        return;
-                    }
+                    FileFailed();
                 }
-            }
-            else
-            {
-                this.Transmission.DestinationFolder = this.DestFolder;
+
+                Handler.Dispose();
             }
 
-            this.Transmission.StartTransmittion();
+            App.FakeDispatcher.Invoke(() =>
+            {
+                PromptOnClose = false;
+                if (!IsClosing && CloseAutomatically)
+                {
+                    Close();
+                }
+
+                return null;
+            });
         }
 
-        private async void GetFileMetaDataAndInitialize()
+        private void Handler_ProgressChangedEvent(object sender, FileTransHandler.ProgressChangedEventArgs e)
         {
-            CurrentFile.Text = (string)FindResource("GettingFileMetaData");
-
-            try
+            App.FakeDispatcher.Invoke(() =>
             {
-                await this.Transmission.Init(Client, PendingItems, -1, RootFolderOnSource);
-            }
-            catch (Exception e)
-            {
-                Close();
-                return;
-            }
+                Percent.Value = Convert.ToInt32(e.Percent);
+                long TotalTransmitted = this.FinishedLength + e.Received;
+                double TotalPercent = this.HandlerList.TotalLength > 0 ? (double)TotalTransmitted / (double)this.HandlerList.TotalLength : 0;
+                PercentTotal.Value = Convert.ToInt32(TotalPercent * 100.0);
+                this.TaskbarItemInfo.ProgressValue = TotalPercent;
 
-            if (IsClosed)
-            {
-                return;
-            }
+                Speed.Content = Utils.ToHumanReadableSize((long)e.BytesPerSec) + "/s";
 
-            StartTramsmission();
+                BytesAlready.Content = Utils.ToHumanReadableSize(e.Received);
+                BytesTotal.Content = Utils.ToHumanReadableSize(e.Size);
+
+                AllBytesAlready.Content = Utils.ToHumanReadableSize(TotalTransmitted);
+                AllBytesTotal.Content = Utils.ToHumanReadableSize(this.HandlerList.TotalLength);
+
+                Logs.AppendText(LogBuffer.ToString());
+                LogBuffer.Clear();
+
+                Logs.ScrollToEnd();
+
+                return null;
+            });
         }
     }
 }
+

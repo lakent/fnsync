@@ -26,6 +26,7 @@ namespace FnSync
             return true;
         }
 
+        /*
         public static void SendSafe(this Socket self, byte[] buffer)
         {
             lock (self)
@@ -33,6 +34,7 @@ namespace FnSync
                 self.Send(buffer);
             }
         }
+        */
     }
 
     public static class NetworkStreamExtension

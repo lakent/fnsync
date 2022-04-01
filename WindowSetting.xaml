@@ -19,6 +19,7 @@
                 <StackPanel x:Name="Settings" Margin="8">
                     <CheckBox Margin="0,4" Content="{DynamicResource ConnectOnStartup}" IsChecked="{Binding ConnectOnStartup, Mode=TwoWay}"/>
                     <CheckBox Margin="0,4" Content="{DynamicResource HideOnStartup}" IsChecked="{Binding HideOnStartup, Mode=TwoWay}"/>
+                    <CheckBox Margin="0,4" Content="{DynamicResource HideNotificationOnStartup}" IsChecked="{Binding HideNotificationOnStartup, Mode=TwoWay}"/>
                     <CheckBox Margin="0,4" Content="{DynamicResource DontToastConnected}" IsChecked="{Binding DontToastConnected, Mode=TwoWay}"/>
                     <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}" Checked="ClipboardSync_Checked"/>
                     <CheckBox Margin="0,4" x:Name="TextCastAutoCopy" Content="{DynamicResource TextCastAutoCopy}" IsChecked="{Binding TextCastAutoCopy, Mode=TwoWay}" />

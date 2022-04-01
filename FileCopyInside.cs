@@ -1,5 +1,4 @@
-﻿using FnSync.FileTransmission;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,109 +7,90 @@ using System.Threading.Tasks;
 
 namespace FnSync
 {
-    class FileCopyInside : BaseModule<FileCopyInside.CopyInsideEntry>
+    class FileCopyInside : FileTransHandler
     {
-        public class CopyInsideEntry : BaseEntry 
-        {
-        }
+        public class CopyInsideEntry : BaseEntry { }
 
         public const string MSG_TYPE_FILE_MOVE = "file_move";
         public const string MSG_TYPE_FILE_COPY = "file_copy";
         public const string MSG_TYPE_COPY_DONE = "copy_done";
         public const string MSG_TYPE_MOVE_DONE = "move_done";
 
-        private string DestPhoneFolder = "";
-        public override string DestinationFolder
-        {
-            get => DestPhoneFolder;
-            set
-            {
-                DestPhoneFolder = value.AppendIfNotEnding("/");
-            }
-        }
+        public string DestinationFolder { get; private set; }
+        public string FileRootOnSource { get; private set; }
 
-        public override event EventHandler OnErrorEvent;
+        public OperationClass Operation{ get; protected set; }
 
         public FileCopyInside()
         {
-            ListMode = ListModeClass.PLAIN_WITH_FOLDER_LENGTH;
-            Direction = DirectionClass.INSIDE_PHONE;
+            Operation = OperationClass.COPY;
         }
 
-        protected override void FileFailedCleanUpAction(CopyInsideEntry entry)
+        public override void Initialization(string ClientId, BaseEntry Entry, string DestFolder = null, string SrcFolder = null,
+            string DestStorage = null, string SrcStorage = null,
+            ChunkSizeCalculatorClass ChunkSizeCaclulator = null)
         {
-
+            base.Initialization(ClientId, Entry, DestFolder, SrcFolder, DestStorage, SrcStorage, ChunkSizeCaclulator);
+            this.DestinationFolder = DestFolder.AppendIfNotEnding("/");
+            this.FileRootOnSource = SrcFolder;
         }
 
-        protected override Task<bool> DetermineFileExistence(CopyInsideEntry entry)
+        public override Task<bool> DetermineFileExistence()
         {
-            return FileExistsOnPhone(Client, DestinationFolder, entry);
+            return FileExistsOnPhone(Client, DestinationFolder, this.Entry);
         }
 
-        protected override void ResetCurrentFileTransmisionAction(CopyInsideEntry entry)
+        public override async Task Transmit(FileAlreadyExistEventArgs.Measure Measure)
         {
-
-        }
-
-        protected override async Task Transmit(CopyInsideEntry entry, FileAlreadyExistEventArgs.Measure Measure)
-        {
+            await base.Transmit(Measure);
             string ExistAction;
-            if(Measure == FileAlreadyExistEventArgs.Measure.OVERWRITE)
+            if (Measure == FileAlreadyExistEventArgs.Measure.OVERWRITE)
             {
                 ExistAction = "overwrite";
-            } else if(Measure == FileAlreadyExistEventArgs.Measure.RENAME)
+            }
+            else if (Measure == FileAlreadyExistEventArgs.Measure.RENAME)
             {
                 ExistAction = "rename";
-            } else
+            }
+            else
             {
                 ExistAction = "none";
             }
 
-            bool Done = await PhoneMessageCenter.Singleton.OneShotGetBoolean(
-                Client,
-                new JObject()
+            while (true) try
                 {
-                    ["src"] = FileRootOnSource + CurrentEntry.path,
-                    ["to"] = DestinationFolder,
-                    ["exist_action"] = ExistAction
-                },
-                Operation == OperationClass.CUT ? MSG_TYPE_FILE_MOVE : MSG_TYPE_FILE_COPY,
-                Operation == OperationClass.CUT ? MSG_TYPE_MOVE_DONE : MSG_TYPE_COPY_DONE,
-                int.MaxValue,
-                "success",
-                false
-            );
+                    bool Done = await PhoneMessageCenter.Singleton.OneShotGetBoolean(
+                        Client,
+                        new JObject()
+                        {
+                            ["src"] = FileRootOnSource + this.Entry.path,
+                            ["to"] = DestinationFolder,
+                            ["exist_action"] = ExistAction
+                        },
+                        Operation == OperationClass.CUT ? MSG_TYPE_FILE_MOVE : MSG_TYPE_FILE_COPY,
+                        Operation == OperationClass.CUT ? MSG_TYPE_MOVE_DONE : MSG_TYPE_COPY_DONE,
+                        int.MaxValue,
+                        "success",
+                        false
+                    );
 
-            if (!Done)
-            {
-                throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
-            }
+                    if (!Done)
+                    {
+                        throw new FileTransException(this.Entry.path);
+                    }
 
-            AddTransmitLength(entry.length);
+                    AddTransmitLength(this.Entry.length);
 
-            throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
-        }
-
-        protected override void FileTransmitSuccessAction(CopyInsideEntry entry)
-        {
-
-        }
-
-        public override void StartTransmittion()
-        {
-            StartWatchJob(1000);
-            base.StartTransmittion();
-        }
-
-        protected override Task OnReconnected()
-        {
-            StartNext(TransmissionStatus.FAILED_CONTINUE);
-            return Task.CompletedTask;
-        }
-
-        protected override Task OnDisconnected()
-        {
-            return Task.CompletedTask;
+                    return;
+                }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
         }
     }
 }

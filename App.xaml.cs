@@ -90,8 +90,7 @@ namespace FnSync
 
             FakeDispatcher = FakeDispatcher.Init();
 
-            DesktopNotificationManagerCompat.RegisterAumidAndComServer<FnSyncNotificationActivator>("holmium.FnSync.A7F49234-CADC-4222-9291-42EDC7D8932E");
-            DesktopNotificationManagerCompat.RegisterActivator<FnSyncNotificationActivator>();
+            ToastNotificationManagerCompat.OnActivated += NotificationSubchannel.OnActivated;
 
             NotifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
             MenuList = new DeviceMenuList(NotifyIcon.ContextMenu);
@@ -137,7 +136,7 @@ namespace FnSync
                 int SavedCount = SavedPhones.Singleton.Count;
                 if (MainConfig.Config.ConnectOnStartup && SavedCount > 0)
                 {
-                    if (!e.Args.Contains("-ToastActivated"))
+                    if (!e.Args.Contains("-ToastActivated") && !MainConfig.Config.HideNotificationOnStartup)
                     {
                         ToastConnectingKnown(MainConfig.Config.HideOnStartup);
                     }
@@ -178,59 +177,19 @@ namespace FnSync
 
         private static void ToastConnectingKnown(bool ShowConnectOthers)
         {
-            ToastContent toastContent = new ToastContent()
-            {
-                //Launch = "action=viewConversation&conversationId=5",
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddText((string)Application.Current.FindResource("ConnectingKnown"))
+                .AddButton(new ToastButton()
+                    .SetContent((string)Application.Current.FindResource("ConnectOther"))
+                    .AddArgument("ConnectOther")
+                    .SetBackgroundActivation())
+                .AddButton(new ToastButton()
+                    .SetContent((string)Application.Current.FindResource("DeviceManager"))
+                    .AddArgument("DeviceManager")
+                    .SetBackgroundActivation())
+                ;
 
-                Visual = new ToastVisual()
-                {
-                    BindingGeneric = new ToastBindingGeneric()
-                    {
-                        Children =
-                        {
-                            new AdaptiveText()
-                            {
-                                Text = (string)Application.Current.FindResource("ConnectingKnown"),
-                                //HintMaxLines = 1
-                            },
-                            /*
-                            new AdaptiveText()
-                            {
-                                Text = Id,
-                            }
-                            */
-                        }
-                    }
-                },
-
-                Actions = ShowConnectOthers ? new ToastActionsCustom()
-                {
-                    Buttons =
-                    {
-                        new ToastButton((string)Application.Current.FindResource("ConnectOther"), "ConnectOther")
-                        {
-                            ActivationType = ToastActivationType.Foreground
-                        },
-                        new ToastButton((string)Application.Current.FindResource("DeviceManager"), "DeviceManager")
-                        {
-                            ActivationType = ToastActivationType.Foreground
-                        },
-                    }
-                } : null,
-
-                DisplayTimestamp = DateTime.Now
-            };
-
-            // Create the XML document (BE SURE TO REFERENCE WINDOWS.DATA.XML.DOM)
-            var doc = new XmlDocument();
-            doc.LoadXml(toastContent.GetContent());
-
-            // And create the Toast notification
-            var Toast = new ToastNotification(doc);
-            var ToastDup = new ToastNotification(doc);
-
-            // And then show it
-            NotificationSubchannel.Singleton.Push(Toast, ToastDup);
+            NotificationSubchannel.Singleton.Push(Builder);
         }
 
         private void SetLanguageDictionary()
@@ -268,6 +227,14 @@ namespace FnSync
                 return;
             }
 
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddHeader(id, client.Name, "")
+                .AddText(CONNECTED)
+                ;
+
+            NotificationSubchannel.Singleton.Push(Builder);
+
+            /*
             ToastContent toastContent = new ToastContent()
             {
                 //Launch = "action=viewConversation&conversationId=5",
@@ -285,17 +252,14 @@ namespace FnSync
                                 Text = CONNECTED,
                                 //HintMaxLines = 1
                             },
-                            /*
                             new AdaptiveText()
                             {
                                 Text = Id,
                             }
-                            */
                         }
                     }
                 },
 
-                /*
                 Actions = new ToastActionsCustom()
                 {
                     Buttons =
@@ -306,7 +270,6 @@ namespace FnSync
                         },
                     }
                 }
-                */
 
                 DisplayTimestamp = DateTime.Now
             };
@@ -321,6 +284,7 @@ namespace FnSync
 
             // And then show it
             NotificationSubchannel.Singleton.Push(Toast, ToastDup);
+            */
         }
 
         private static void OnDeviceChangedUIWorks(string id, string msgType, object msg, PhoneClient client)

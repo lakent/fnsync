@@ -1,15 +1,15 @@
-﻿using FnSync.FileTransmission;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FnSync
 {
-    class FileSend : BaseModule<FileSend.SendEntry>
+    class FileSend : FileTransHandler 
     {
         public class SendEntry : BaseEntry
         {
@@ -30,33 +30,6 @@ namespace FnSync
 
             public override bool IsFolder => path != null && path.EndsWith("\\");
         }
-        public override OperationClass Operation
-        {
-            get
-            {
-                return OperationClass.COPY;
-            }
-            set
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        public readonly string RemoteStorage;
-
-        public FileSend(string RemoteStorage)
-        {
-            Direction = DirectionClass.PC_TO_PHONE;
-            this.RemoteStorage = RemoteStorage;
-        }
-
-        private enum TransmitionStageClass
-        {
-            NONE = 0,
-            GETTING_KEY,
-            ONE_CHUNK_SENDING,
-            MULTIPLE_CHUNK_SENDING
-        }
 
         public const string MSG_TYPE_FILE_CONTENT_RECEIVED = "file_content_received";
         public const string MSG_TYPE_FILE_TRANSFER_DATA_RECEIVED = "file_transfer_data_received";
@@ -65,38 +38,11 @@ namespace FnSync
         public const string MSG_TYPE_NEW_FOLDER = "file_new_folder";
         public const string MSG_TYPE_NEW_FOLDER_CREATED = "file_new_folder_creates";
 
-
-        private string DestRemoteFolder = null;
-        public override string DestinationFolder
-        {
-            get
-            {
-                return DestRemoteFolder;
-            }
-            set
-            {
-                DestRemoteFolder = value.AppendIfNotEnding("/");
-            }
-        }
-
-        public override event EventHandler OnErrorEvent;
-
-        private SpeedWatch SpeedLong = null;
-        private double LargestSpeed = 0;
-        private ChunkSizeCalculatorClass ChunkSizeCalculator;
-
-        private FileStream CurrentFileStream = null;
-
-        private TransmitionStageClass TransmitionStage = TransmitionStageClass.NONE;
-
-        public override void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnSource = null)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected static BaseEntry[] ConvertToEntries(IList<string> FileList, string ParentPath)
+        public static BaseEntry[] ConvertToEntries(IList<string> FileList, string ParentPath = null)
         {
             List<SendEntry> ret = new List<SendEntry>();
+
+            ParentPath = ParentPath ?? GetCommonParentFolder(FileList);
 
             foreach (string fileRoot in FileList)
             {
@@ -120,7 +66,7 @@ namespace FnSync
             return ret.ToArray();
         }
 
-        protected string GetCommonParentFolder(IList<string> FileList)
+        public static string GetCommonParentFolder(IList<string> FileList)
         {
             string First = FileList.First<string>();
             string Folder = Path.GetDirectoryName(First);
@@ -160,134 +106,87 @@ namespace FnSync
             return Folder;
         }
 
-        public void Init(PhoneClient client, IList<string> FileList)
+        public new SendEntry Entry => base.Entry as SendEntry;
+
+        private string DestinationFolder = null;
+        private string SourceFolder = null;
+        public string RemoteStorage { get; private set; }
+
+        private FileStream CurrentFileStream = null;
+
+        public override void Initialization(string ClientId, BaseEntry Entry, string DestFolder = null, string SrcFolder = null,
+            string DestStorage = null, string SrcStorage = null,
+            ChunkSizeCalculatorClass ChunkSizeCaclulator = null)
         {
-            string CommonParentFolder = GetCommonParentFolder(FileList);
-            base.Init(client, ConvertToEntries(FileList, CommonParentFolder), -1, CommonParentFolder);
-
-            ChunkSizeCalculator = new ChunkSizeCalculatorClass();
-
-            PhoneMessageCenter.Singleton.Register(
-                Client.Id,
-                MSG_TYPE_FILE_TRANSFER_DATA_RECEIVED,
-                OnChunkReceivedVerified,
-                false
-            );
-        }
-        public override void StartTransmittion()
-        {
-            SpeedLong = new SpeedWatch();
-            StartWatchJob();
-            base.StartTransmittion();
+            base.Initialization(ClientId, Entry, DestFolder, SrcFolder, DestStorage, SrcStorage, ChunkSizeCaclulator);
+            if(!(Entry is SendEntry))
+            {
+                throw new ArgumentException("Entry");
+            }
+            this.RemoteStorage = DestStorage;
+            this.SourceFolder = SrcFolder.AppendIfNotEnding("/");
+            this.DestinationFolder = DestFolder.AppendIfNotEnding("/");
+            if (!Entry.IsFolder)
+            {
+                CurrentFileStream = File.OpenRead(Path.Combine(SrcFolder, Entry.path));
+            }
         }
 
-        protected override Task<bool> DetermineFileExistence(SendEntry entry)
+        public override Task<bool> DetermineFileExistence()
         {
             // Only check files not folders.
 
-            if (entry.IsFolder)
+            if (this.Entry.IsFolder)
             {
                 return Task.FromResult(false);
             }
 
-            return FileExistsOnPhone(Client, DestinationFolder, entry);
+            return FileExistsOnPhone(this.Client, DestinationFolder, this.Entry);
         }
 
-        protected override void FileFailedCleanUpAction(SendEntry entry)
+        public override async Task Transmit(FileAlreadyExistEventArgs.Measure Measure)
         {
-            /*
-            JObject msg = new JObject();
-            msg["folder"] = DestinationFolder;
-            msg["storage"] = "";
+            await base.Transmit(Measure);
 
-            JArray names = new JArray();
-            names.Add(entry.path);
-
-            msg["names"] = names;
-
-            Client.SendMsg(msg, ControlFolderListPhoneRootItem.MSG_TYPE_FILE_DELETE);
-            */
-
-            EndOneEntry(entry);
-        }
-
-        protected override void FileTransmitSuccessAction(SendEntry entry)
-        {
-            CurrentFileStream?.Close();
-            CurrentFileStream = null;
-            EndOneEntry(entry);
-        }
-
-        protected override Task OnDisconnected()
-        {
-            return Task.CompletedTask;
-        }
-
-        protected override async Task OnReconnected()
-        {
-            try
+            string ExistAction;
+            if (Measure == FileAlreadyExistEventArgs.Measure.OVERWRITE)
             {
-                switch (TransmitionStage)
+                ExistAction = "overwrite";
+            }
+            else if (Measure == FileAlreadyExistEventArgs.Measure.RENAME)
+            {
+                ExistAction = "newname";
+            }
+            else
+            {
+                ExistAction = "continue";
+            }
+
+            if (Entry.IsFolder)
+            {
+                bool success = await CreateNewFolder();
+                if (success)
                 {
-                    case TransmitionStageClass.GETTING_KEY:
-                    case TransmitionStageClass.ONE_CHUNK_SENDING: // No such case actually
-                        StartNext(TransmissionStatus.RESET_CURRENT);
-                        break;
-
-                    case TransmitionStageClass.MULTIPLE_CHUNK_SENDING:
-                        if (!String.IsNullOrWhiteSpace(CurrentEntry.key))
-                        {
-                            Client.SendMsg(
-                                new JObject()
-                                {
-                                    ["key"] = CurrentEntry.key
-                                },
-                                FileReceive.MSG_TYPE_FILE_TRANSFER_END
-                            );
-                        }
-
-                        long lenTransfered = await AcquireKey(CurrentEntry, "continue", true);
-
-                        long diff = CurrentFileStream.Position - lenTransfered;
-                        if (diff > 0)
-                        {
-                            DecreaseTransmitLength(diff);
-                        }
-
-                        CurrentFileStream.Position = lenTransfered;
-
-                        MultipleChunkSend(CurrentEntry);
-                        break;
-
-                    default:
-                        break;
+                    return;
+                }
+                else
+                {
+                    throw new FileTransException("Failed");
                 }
             }
-            catch (TimeoutException e)
+            else if (Entry.length <= ChunkSizeCalculator.ChunkSize)
             {
-                return;
+                await OneChunkSend(ExistAction);
             }
-            catch (PhoneMessageCenter.PhoneDisconnectedException e)
+            else
             {
-                return;
+                await MultipleChunkSend(ExistAction);
             }
-            catch (Exception e)
-            {
-                OnErrorEvent?.Invoke(this, null);
-                return;
-            }
+
+            return;
         }
 
-        protected override void ResetCurrentFileTransmisionAction(SendEntry entry)
-        {
-            // Only in case of TransmitionStageClass.GETTING_KEY:
-            // Nothing to do
-
-            // However, if you are implementing TransmitionStageClass.ONE_CHUNK_SENDING, you should do something here
-
-            // But notice that, new folder creation uses TransmitionStageClass.ONE_CHUNK_SENDING, and there is nothing to be done here.
-        }
-
+        /*
         protected override void AddTransmitLength(long len)
         {
             base.AddTransmitLength(len);
@@ -303,18 +202,17 @@ namespace FnSync
                 }
                 else
                 {
-                    /*
+                    / *
                     if(UnitCoefficient > 10)
                     {
                         UnitCoefficient -= 1;
                     }
-                    */
+                    * /
                 }
 
                 SpeedLong.Reset();
             }
         }
-
         private void OnChunkReceivedVerified(string id, string msgType, object msgObj, PhoneClient client)
         {
             if (!(msgObj is JObject msg))
@@ -341,122 +239,135 @@ namespace FnSync
                 StartNext(TransmissionStatus.SUCCESSFUL);
             }
         }
-
-        private void SendChunk(SendEntry entry)
+*/
+        private async Task SendChunk()
         {
-            long available = CurrentFileStream.Available();
-            byte[] chunk = new byte[Math.Min(ChunkSizeCalculator.ChunkSize, available)];
-            long read = CurrentFileStream.Read(chunk, 0, chunk.Length);
-            // XXX TODO: Not thread-safe here
-            if (read == 0)
+            for (long available = CurrentFileStream.Available(); available > 0; available = CurrentFileStream.Available())
             {
-                return;
-            }
+                byte[] chunk = new byte[Math.Min(ChunkSizeCalculator.ChunkSize * 10, available)];
+                long read = await CurrentFileStream.ReadAsync(chunk, 0, chunk.Length);
 
-            JObject msg = new JObject()
-            {
-                ["key"] = entry.key,
-            };
-
-            Client.SendMsg(
-                msg,
-                FileReceive.MSG_TYPE_FILE_TRANSFER_DATA,
-                chunk
-                );
-        }
-
-        private async Task OneChunkSend(SendEntry entry, string strategy)
-        {
-            byte[] binary = File.ReadAllBytes(Path.Combine(FileRootOnSource, entry.path));
-            string RemotePath = DestinationFolder + entry.RemotePath;
-            TransmitionStage = TransmitionStageClass.ONE_CHUNK_SENDING;
-            object msgObj = await PhoneMessageCenter.Singleton.OneShot(
-                Client,
-                new JObject()
+                if (read == 0)
                 {
-                    ["path"] = RemotePath,
-                    ["newname"] = strategy != "overwrite",
-                },
-                FileReceive.MSG_TYPE_FILE_CONTENT,
-                binary,
-                MSG_TYPE_FILE_CONTENT_RECEIVED,
-                5000
-                );
+                    return;
+                }
+                else if (read < chunk.Length)
+                {
+                    Array.Resize(ref chunk, (int)read);
+                }
 
-            AddTransmitLength(entry.length);
-        }
+                JObject msg = new JObject()
+                {
+                    ["key"] = Entry.key,
+                };
 
-        private void MultipleChunkSend(SendEntry entry)
-        {
-            TransmitionStage = TransmitionStageClass.MULTIPLE_CHUNK_SENDING;
-            for (int i = 0; i < 10; ++i)
-            {
-                SendChunk(entry);
-            }
-        }
-
-        private async Task<long> AcquireKey(SendEntry entry, string strategy, bool Force = false)
-        {
-            if (String.IsNullOrWhiteSpace(entry.key) || Force)
-            {
-                FileRootOnSource.AssureNotEmpty();
-                entry.RemotePath.AssureNotEmpty();
-
-                TransmitionStage = TransmitionStageClass.GETTING_KEY;
                 object msgObj = await PhoneMessageCenter.Singleton.OneShot(
                     Client,
-                    new JObject()
-                    {
-                        ["path"] = DestinationFolder + entry.RemotePath,
-                        ["strategy"] = strategy,
-                        ["direction"] = "to_phone",
-                    },
-                    FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
-                    null,
-                    FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
-                    5000
+                    msg,
+                    FileReceive.MSG_TYPE_FILE_TRANSFER_DATA,
+                    chunk,
+                    MSG_TYPE_FILE_TRANSFER_DATA_RECEIVED,
+                    60000
                     );
 
-                if (!(msgObj is JObject msg))
-                {
-                    throw new Exception();
-                }
-
-                string key = (string)msg["key"];
-
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    throw new ArgumentException("entry.key");
-                }
-
-                entry.RemoteName = (string)msg["name"];
-                entry.key = key;
-
-                return (long)msg["length"];
-            }
-            else
-            {
-                return -1;
+                AddTransmitLength(chunk.Length);
             }
         }
 
-        private async Task<bool> CreateNewFolder(SendEntry entry)
+        private async Task OneChunkSend(string strategy)
         {
-            if (!entry.IsFolder)
-            {
-                return false;
-            }
+            byte[] binary = File.ReadAllBytes(Path.Combine(this.SourceFolder, Entry.path));
+            string RemotePath = DestinationFolder + Entry.RemotePath;
 
-            TransmitionStage = TransmitionStageClass.ONE_CHUNK_SENDING;
+            while (true) try
+                {
+                    object msgObj = await PhoneMessageCenter.Singleton.OneShot(
+                        Client,
+                        new JObject()
+                        {
+                            ["path"] = RemotePath,
+                            ["newname"] = strategy != "overwrite",
+                        },
+                        FileReceive.MSG_TYPE_FILE_CONTENT,
+                        binary,
+                        MSG_TYPE_FILE_CONTENT_RECEIVED,
+                        5000
+                        );
+
+                    AddTransmitLength(Entry.length);
+
+                    return;
+                }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
+        }
+
+        private async Task MultipleChunkSend(string ExistAction)
+        {
+            while (true) try
+                {
+                    if (string.IsNullOrEmpty(Entry.key))
+                    {
+                        await AcquireKey(ExistAction);
+                    }
+                    else
+                    {
+                        bool KeyIsExist = await PhoneMessageCenter.Singleton.OneShotGetBoolean(
+                            Client,
+                            new JObject()
+                            {
+                                ["key"] = Entry.key,
+                            },
+                            MSG_TYPE_FILE_TRANSFER_KEY_EXISTS,
+                            MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY,
+                            5000,
+                            "exists",
+                            false
+                            );
+
+                        if (!KeyIsExist)
+                        {
+                            long pos = await AcquireKey("continue");
+                            CurrentFileStream.Position = pos;
+                        }
+                    }
+
+                    await SendChunk();
+
+                    return;
+                }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
+        }
+
+        private async Task<long> AcquireKey(string strategy)
+        {
+            SourceFolder.AssureNotEmpty();
+            Entry.RemotePath.AssureNotEmpty();
+
             object msgObj = await PhoneMessageCenter.Singleton.OneShot(
                 Client,
                 new JObject()
                 {
-                    ["path"] = DestinationFolder + entry.RemotePath,
+                    ["path"] = DestinationFolder + Entry.RemotePath,
+                    ["strategy"] = strategy,
+                    ["direction"] = "to_phone",
                 },
-                MSG_TYPE_NEW_FOLDER,
+                FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
                 null,
-                MSG_TYPE_NEW_FOLDER_CREATED,
+                FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
                 5000
                 );
 
@@ -465,82 +376,66 @@ namespace FnSync
                 throw new Exception();
             }
 
-            return (bool)msg["success"];
+            string key = (string)msg["key"];
+
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("entry.key");
+            }
+
+            Entry.RemoteName = (string)msg["name"];
+            Entry.key = key;
+
+            return (long)msg["length"];
         }
 
-        protected override async Task Transmit(SendEntry entry, FileAlreadyExistEventArgs.Measure Measure)
+        private async Task<bool> CreateNewFolder()
         {
-            string ExistAction;
-            if (Measure == FileAlreadyExistEventArgs.Measure.OVERWRITE)
+            if (!Entry.IsFolder)
             {
-                ExistAction = "overwrite";
-            }
-            else if (Measure == FileAlreadyExistEventArgs.Measure.RENAME)
-            {
-                ExistAction = "newname";
-            }
-            else
-            {
-                ExistAction = "continue";
+                return false;
             }
 
-            if (entry.IsFolder)
-            {
-                bool success = await CreateNewFolder(entry);
-                if (success)
+            while (true) try
                 {
-                    throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
-                }
-                else
-                {
-                    throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
-                }
-            }
-            else if (entry.length <= ChunkSizeCalculator.ChunkSize)
-            {
-                await OneChunkSend(entry, ExistAction);
-                throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
-            }
-            else
-            {
-                await AcquireKey(entry, ExistAction, true);
-                CurrentFileStream = File.OpenRead(Path.Combine(FileRootOnSource, entry.path));
-                MultipleChunkSend(entry);
-            }
+                    object msgObj = await PhoneMessageCenter.Singleton.OneShot(
+                        Client,
+                        new JObject()
+                        {
+                            ["path"] = DestinationFolder + Entry.RemotePath,
+                        },
+                        MSG_TYPE_NEW_FOLDER,
+                        null,
+                        MSG_TYPE_NEW_FOLDER_CREATED,
+                        5000
+                        );
 
-            return;
-        }
-
-        private void EndOneEntry(SendEntry entry)
-        {
-            if (!string.IsNullOrWhiteSpace(entry.key))
-            {
-                Client.SendMsg(
-                    new JObject()
+                    if (!(msgObj is JObject msg))
                     {
-                        ["key"] = entry.key
-                    },
-                    FileReceive.MSG_TYPE_FILE_TRANSFER_END
-                );
-            }
+                        throw new FileTransException(Entry.path);
+                    }
+
+                    return (bool)msg["success"];
+                }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
         }
 
-        private void EndAll()
-        {
-            foreach (SendEntry entry in EntryList)
-            {
-                EndOneEntry(entry);
-            }
-        }
 
         public void DeleteCurrentFileIfNotCompleted()
         {
-            if (CurrentEntry.key != null && CurrnetTransmittedLength < CurrentEntry.length)
+            if (Entry.key != null && TransmittedLength < Entry.length)
             {
                 Client.SendMsg(
                     new JObject()
                     {
-                        ["paths"] = DestinationFolder + CurrentEntry.RemotePath,
+                        ["paths"] = DestinationFolder + Entry.RemotePath,
                     },
                     ControlFolderListPhoneRootItem.MSG_TYPE_FILE_DELETE);
             }
@@ -549,15 +444,8 @@ namespace FnSync
         public override void Dispose()
         {
             base.Dispose();
-
-            PhoneMessageCenter.Singleton.Unregister(
-                Client.Id,
-                MSG_TYPE_FILE_TRANSFER_DATA_RECEIVED,
-                OnChunkReceivedVerified
-            );
-
-            EndAll();
-
+            CurrentFileStream?.Close();
+            EndOneEntry();
             DeleteCurrentFileIfNotCompleted();
         }
     }

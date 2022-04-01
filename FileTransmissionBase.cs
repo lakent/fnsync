@@ -1,201 +1,18 @@
-﻿using Newtonsoft.Json.Linq;
+﻿/*
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using static FnSync.FileTransHandler;
 
 namespace FnSync
 {
     namespace FileTransmission
     {
-        public enum ListModeClass
-        {
-            DEEP,
-            PLAIN_WITHOUT_FOLDER_LENGTH,
-            PLAIN_WITH_FOLDER_LENGTH,
-        }
-
-        public enum OperationClass
-        {
-            CUT,
-            COPY
-        }
-
-        public enum DirectionClass
-        {
-            INSIDE_PHONE,
-            PHONE_TO_PC,
-            PC_TO_PHONE,
-        }
-
-        public class BaseEntry
-        {
-            private static async Task<IList<ControlFolderListItemViewBase.UiItem>> ListDirFiles(PhoneClient Client, string FullPath)
-            {
-                JObject List = await PhoneMessageCenter.Singleton.OneShotMsgPart(
-                    Client,
-                    new JObject()
-                    {
-                        ["path"] = FullPath,
-                        ["recursive"] = true
-                    },
-                    ControlFolderListPhoneRootItem.MSG_TYPE_LIST_FOLDER,
-                    null,
-                    ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT,
-                    60000
-                );
-
-                JArray ListPart = (JArray)List["files"];
-                List<ControlFolderListItemViewBase.UiItem> Files = ListPart.ToObject<List<ControlFolderListItemViewBase.UiItem>>();
-
-                return Files;
-            }
-
-            public static async Task<T[]> ConvertFromUiItems<T>(IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, String RootOnPhone, PhoneClient Client, ListModeClass ListMode = ListModeClass.DEEP) where T : BaseEntry, new()
-            {
-                List<T> ResultEntries = new List<T>();
-
-                foreach (ControlFolderListItemViewBase.UiItem item in UiItems)
-                {
-                    if (item.type == "dir")
-                    {
-                        string FolderPathOnPhone = item.path.AppendIfNotEnding("/");
-
-                        if (ListMode == ListModeClass.DEEP)
-                        {
-                            ResultEntries.Add(new T()
-                            {
-                                key = null,
-                                length = 0,
-                                mime = null,
-                                name = item.name,
-                                path = FolderPathOnPhone,
-                                last = item.last
-                            });
-
-                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
-
-                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
-                            {
-                                if (i.type == "dir")
-                                {
-                                    ResultEntries.Add(new T()
-                                    {
-                                        key = null,
-                                        length = 0,
-                                        mime = null,
-                                        name = i.name,
-                                        path = FolderPathOnPhone + i.path.AppendIfNotEnding("/"),
-                                        last = item.last
-                                    });
-                                }
-                                else if (i.type == "file")
-                                {
-                                    ResultEntries.Add(new T()
-                                    {
-                                        key = null,
-                                        length = i.size,
-                                        mime = null,
-                                        name = i.name,
-                                        path = FolderPathOnPhone + i.path,
-                                        last = item.last
-                                    });
-                                }
-                            }
-                        }
-                        else if (ListMode == ListModeClass.PLAIN_WITH_FOLDER_LENGTH)
-                        {
-                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
-
-                            long DirLength = 0;
-                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
-                            {
-                                DirLength += i.size;
-                            }
-
-                            ResultEntries.Add(new T()
-                            {
-                                key = null,
-                                length = DirLength,
-                                mime = null,
-                                name = item.name,
-                                path = FolderPathOnPhone,
-                                last = item.last
-                            });
-                        }
-                        else if (ListMode == ListModeClass.PLAIN_WITHOUT_FOLDER_LENGTH)
-                        {
-                            ResultEntries.Add(new T()
-                            {
-                                key = null,
-                                length = 0,
-                                mime = null,
-                                name = item.name,
-                                path = FolderPathOnPhone,
-                                last = item.last
-                            });
-                        }
-                    }
-                    else if (item.type == "file")
-                    {
-                        ResultEntries.Add(new T()
-                        {
-                            key = null,
-                            length = item.size,
-                            mime = null,
-                            name = item.name,
-                            path = item.path,
-                            last = item.last
-                        });
-                    }
-                }
-
-                return ResultEntries.ToArray();
-            }
-
-            public static long SizeOfAllFiles(IEnumerable<BaseEntry> entries)
-            {
-                long ret = 0;
-
-                foreach (BaseEntry entry in entries)
-                {
-                    ret += entry.length;
-                }
-
-                return ret;
-            }
 
 
-            ////////////////////////////////////////////////////////
-
-            public virtual string mime { get; set; }
-
-            public virtual string name { get; set; }
-            public virtual string ConvertedName
-            {
-                get => name;
-                set { }
-            }
-
-            public virtual long length { get; set; }
-            public virtual string key { get; set; }
-
-            // Last Modified in Milliseconds
-            public virtual long last { get; set; } = -1;
-
-            //
-            // Summary:
-            //     File path under a specific folder on source. It's a relative path including the filename
-            public virtual string path { get; set; }
-            public virtual string ConvertedPath
-            {
-                get => path;
-                set { throw new InvalidOperationException("Cannot set ConvertedPath"); }
-            }
-
-            public virtual bool IsFolder => path != null && path.EndsWith("/");
-        }
 
         public enum TransmissionStatus
         {
@@ -266,26 +83,6 @@ namespace FnSync
 
         public delegate void NextFileEventHandler(object sender, NextFileEventArgs e);
 
-        public class FileAlreadyExistEventArgs : EventArgs
-        {
-            public enum Measure
-            {
-                FILE_NOT_EXIST,
-                SKIP, // No need to handle this
-                OVERWRITE,
-                RENAME
-            }
-
-            public readonly BaseEntry entry;
-
-            public Measure Action;
-
-            public FileAlreadyExistEventArgs(BaseEntry entry)
-            {
-                this.entry = entry;
-                Action = Measure.SKIP;
-            }
-        }
 
         public delegate void FileAlreadyExistEventHandler(object sender, FileAlreadyExistEventArgs e);
 
@@ -376,8 +173,10 @@ namespace FnSync
             public int FileCount => EntryList.Length;
             protected E CurrentEntry { get; private set; } = null;
 
-            public long CurrnetTransmittedLength { get; private set; } = 0;
-            public long TotalTransmittedLength { get; private set; } = 0;
+            private long _CurrnetTransmittedLength = 0;
+            public long CurrnetTransmittedLength => _CurrnetTransmittedLength;
+            private long _TotalTransmittedLength = 0;
+            public long TotalTransmittedLength => _TotalTransmittedLength;
             public long TotalSize { get; protected set; }
 
             protected ListModeClass ListMode = ListModeClass.DEEP;
@@ -437,8 +236,8 @@ namespace FnSync
                 if (len < 0)
                     throw new ArgumentOutOfRangeException("len");
 
-                CurrnetTransmittedLength += len;
-                TotalTransmittedLength += len;
+                Interlocked.Add(ref _CurrnetTransmittedLength, len);
+                Interlocked.Add(ref _TotalTransmittedLength, len);
                 Speeder.Add(len);
 
                 double BytesPerSec = Speeder.BytesPerSec(250);
@@ -452,8 +251,10 @@ namespace FnSync
 
             protected virtual void DecreaseTransmitLength(long len)
             {
-                CurrnetTransmittedLength += len;
-                TotalTransmittedLength += len;
+                len = (-1) * len;
+
+                Interlocked.Add(ref _CurrnetTransmittedLength, len);
+                Interlocked.Add(ref _TotalTransmittedLength, len);
             }
 
             public async Task Init(PhoneClient client, IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, long TotalSize = -1, string FileRootOnSource = null)
@@ -550,8 +351,8 @@ namespace FnSync
                         goto case TransmissionStatus.INITIAL;
 
                     case TransmissionStatus.RESET_CURRENT:
-                        TotalTransmittedLength -= CurrnetTransmittedLength;
-                        CurrnetTransmittedLength = 0;
+                        Interlocked.Add(ref _TotalTransmittedLength, -CurrnetTransmittedLength);
+                        Interlocked.Exchange(ref _CurrnetTransmittedLength, 0);
                         ResetCurrentFileTransmisionAction(LastEntry);
                         --CurrentFileIndex;
                         goto case TransmissionStatus.INITIAL;
@@ -591,7 +392,7 @@ namespace FnSync
                     throw new ExitLoop();
                 }
 
-                CurrnetTransmittedLength = 0;
+                Interlocked.Exchange(ref _CurrnetTransmittedLength, 0);
                 CurrentEntry = EntryList[CurrentFileIndex];
                 OnNextFileEvent?.Invoke(
                     this,
@@ -706,63 +507,6 @@ namespace FnSync
             }
         }
 
-        public class ChunkRequestCache
-        {
-            public class Entry
-            {
-                public int Count;
-                public int Length;
-
-                public override int GetHashCode()
-                {
-                    return (Count << 24) ^ Length;
-                }
-
-                public override bool Equals(object obj)
-                {
-                    return (obj is Entry e) && Count == e.Count && Length == e.Length;
-                }
-            }
-
-            public delegate string MakeString(string key, int Count, int Length);
-            public MakeString StringMaker = null;
-
-            private string remoteKey = null;
-            public string RemoteKey
-            {
-                get
-                {
-                    return remoteKey;
-                }
-                set
-                {
-                    if (value != remoteKey)
-                    {
-                        remoteKey = value;
-                        Cache.Clear();
-                    }
-                }
-            }
-
-            private readonly Dictionary<Entry, string> Cache = new Dictionary<Entry, string>(2);
-
-            public ChunkRequestCache() { }
-
-            public string Get(int Count, int Length)
-            {
-                Entry entry = new Entry { Count = Count, Length = Length };
-                if (Cache.ContainsKey(entry))
-                {
-                    return Cache[entry];
-                }
-                else
-                {
-                    string msg = StringMaker?.Invoke(RemoteKey, Count, Length) ?? throw new Exception();
-                    Cache[entry] = msg;
-                    return msg;
-                }
-            }
-        }
 
         public class ChunkSizeCalculatorClass
         {
@@ -773,3 +517,4 @@ namespace FnSync
         }
     }
 }
+*/

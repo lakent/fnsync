@@ -63,7 +63,7 @@ namespace FnSync
         private class SendQueueClass : QueuedAsyncTask<object, byte[]>
         {
             public readonly PhoneClient ClientObject;
-            public SendQueueClass(PhoneClient ClientObject)
+            public SendQueueClass(PhoneClient ClientObject) : base()
             {
                 this.ClientObject = ClientObject;
             }
@@ -73,7 +73,7 @@ namespace FnSync
                 throw new WontOperateThis();
             }
 
-            protected override void OnDone(object input, byte[] output)
+            protected override void OnTaskDone(object input, byte[] output)
             {
                 ClientObject.WriteHard(output);
             }
@@ -95,7 +95,7 @@ namespace FnSync
                 }
                 else
                 {
-                    throw new Exception();
+                    throw new NotSupportedException();
                 }
 
                 return ClientObject.encryptionManager.Encrypt(RawBytes);
@@ -103,6 +103,7 @@ namespace FnSync
 
             protected override void OnException(QueuedAsyncTask<object, byte[]> sender, Exception e)
             {
+                sender.Dispose();
                 ClientObject.Dispose();
             }
         }
@@ -212,17 +213,38 @@ namespace FnSync
 
         public void WriteQueued(string v)
         {
-            SendQueue.InputManually(v);
+            try
+            {
+                SendQueue.InputManually(v);
+            }
+            catch (SendQueueClass.Exited E)
+            {
+                throw new PhoneMessageCenter.DisconnectedException();
+            }
         }
 
         public void WriteQueued(JObject json)
         {
-            SendQueue.InputManually(json);
+            try
+            {
+                SendQueue.InputManually(json);
+            }
+            catch (SendQueueClass.Exited E)
+            {
+                throw new PhoneMessageCenter.DisconnectedException();
+            }
         }
 
         public void WriteQueued(byte[] binary)
         {
-            SendQueue.InputManually(binary);
+            try
+            {
+                SendQueue.InputManually(binary);
+            }
+            catch (SendQueueClass.Exited E)
+            {
+                throw new PhoneMessageCenter.DisconnectedException();
+            }
         }
 
         public void SendMsg(JObject src, string type)
@@ -233,7 +255,7 @@ namespace FnSync
         public void SendMsg(JObject src, string type, byte[] binary)
         {
             src[MSG_TYPE_KEY] = type;
-            if(binary != null)
+            if (binary != null)
             {
                 src["withbinary"] = true;
             }
@@ -265,6 +287,14 @@ namespace FnSync
             {
 
             }
+            catch (SendQueueClass.Exited e)
+            {
+
+            }
+            catch (PhoneMessageCenter.DisconnectedException e)
+            {
+
+            }
         }
 
         private void SetCode(string newCode)
@@ -280,7 +310,7 @@ namespace FnSync
                 ["peerid"] = MainConfig.Config.ThisId,
             };
             WriteQueued(re);
-            SendQueue.PerformOnDoneOnce(await SendQueue.FetchOutputTaskOnce());
+            _ = SendQueue.PerformOnDoneOnce(await SendQueue.FetchOutputTaskOnce());
         }
 
         private async void StartHandShake()
@@ -448,7 +478,7 @@ namespace FnSync
             else
             {
                 JObject msg = EncryptionManager.ExtractJSON(decrypted);
-                if(msg == null)
+                if (msg == null)
                 {
 
                 }
@@ -483,7 +513,8 @@ namespace FnSync
                    );
 
                 return true;
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Dispose();
                 return false;

@@ -21,7 +21,7 @@ namespace FnSync
         private class ReceiveQueueClass : QueuedAsyncTask<byte[], byte[]>
         {
             public readonly LengthPrefixedStreamBuffer LPBuffer;
-            public ReceiveQueueClass(LengthPrefixedStreamBuffer LPBuffer)
+            public ReceiveQueueClass(LengthPrefixedStreamBuffer LPBuffer) : base()
             {
                 this.LPBuffer = LPBuffer;
             }
@@ -31,7 +31,7 @@ namespace FnSync
                 return LPBuffer.ReadRawPackage();
             }
 
-            protected override void OnDone(byte[] input, byte[] output)
+            protected override void OnTaskDone(byte[] input, byte[] output)
             {
                 LPBuffer.ConsumePackage(input, output);
             }
@@ -43,6 +43,7 @@ namespace FnSync
 
             protected override void OnException(QueuedAsyncTask<byte[], byte[]> sender, Exception e)
             {
+                sender.Dispose();
                 LPBuffer.Dispose();
             }
         }
@@ -121,7 +122,7 @@ namespace FnSync
         public async Task<string> ReadUncryptedString()
         {
             if (!ReceiveQueue.LoopStarted)
-                await ReceiveQueue.FetchOneFromSource();
+                await ReceiveQueue.FeedFromSource();
 
             QueuedAsyncTask<byte[], byte[]>.IOPair Pair = await ReceiveQueue.FetchOutputTaskOnce();
             string ret = Encoding.UTF8.GetString(Pair.Input);
@@ -136,7 +137,7 @@ namespace FnSync
         public async Task<byte[]> ReadBytes()
         {
             if (!ReceiveQueue.LoopStarted)
-                await ReceiveQueue.FetchOneFromSource();
+                await ReceiveQueue.FeedFromSource();
 
             QueuedAsyncTask<byte[], byte[]>.IOPair Pair = await ReceiveQueue.FetchOutputTaskOnce();
             byte[] ret = await Pair.Output;

@@ -23,9 +23,13 @@ namespace FnSync
     {
         public static void ShowException(Exception e)
         {
+#if DEBUG
+            return;
+#else
             Environment.SetEnvironmentVariable("LAST_ERROR_STRING", BuildString(e));
             Environment.SetEnvironmentVariable("LAST_ERROR_PID", Process.GetCurrentProcess().Id.ToString());
             Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location, "-LE");
+#endif
         }
 
         public WindowUnhandledException(Exception e) : this(BuildString(e))

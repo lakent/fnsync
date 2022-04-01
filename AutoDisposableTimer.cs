@@ -9,16 +9,21 @@ namespace FnSync
 {
     class AutoDisposableTimer : IDisposable
     {
+        public static readonly object STATE_TIMER_CANCELLED = new object();
+
         private Timer timer = null;
 
-        public delegate void DisposedEventHandler(object sender, Object state);
+        public delegate void DisposedEventHandler(object sender, object state);
 
         public event DisposedEventHandler DisposedEvent;
 
-        private TimerCallback Callback = null;
-        private int DelayInMills = Timeout.Infinite;
+        private readonly TimerCallback Callback = null;
+        private readonly int DelayInMills = Timeout.Infinite;
+        private readonly CancellationToken? Cancellation;
 
-        public AutoDisposableTimer(TimerCallback callback, int DelayInMills, bool StartImmediately)
+        private int AlreadyDisposed = 0;
+
+        public AutoDisposableTimer(TimerCallback callback, int DelayInMills, CancellationToken? Cancellation = null, bool StartImmediately = true)
         {
             this.Callback = (state) =>
             {
@@ -33,33 +38,49 @@ namespace FnSync
             };
 
             this.DelayInMills = DelayInMills;
+            this.Cancellation = Cancellation;
 
             if (StartImmediately)
+            {
                 Start();
+            }
         }
 
         public void Start()
         {
-            timer = new Timer(this.Callback, null, DelayInMills, Timeout.Infinite);
+            if (Thread.VolatileRead(ref AlreadyDisposed) == 0) // Atomic
+            {
+                if (DelayInMills == 0)
+                {
+                    Dispose(null);
+                }
+                else if (DelayInMills > 0)
+                {
+                    timer = new Timer(this.Callback, null, DelayInMills, Timeout.Infinite);
+                } else // DelayInMills < 0, never timeout
+                {
+                    // No timer
+                }
+
+                if(Cancellation != null)
+                {
+                    Cancellation.Value.Register(Dispose, STATE_TIMER_CANCELLED, true);
+                }
+            }
         }
-        
-        public AutoDisposableTimer(TimerCallback callback, int DelayInMills): this(callback, DelayInMills, true) {}
 
         public void Dispose()
         {
             Dispose(null);
         }
 
-        public void Dispose(Object state)
+        public void Dispose(object state)
         {
-            lock (this)
+            if (Interlocked.CompareExchange(ref AlreadyDisposed, 1, 0) == 0)
             {
-                if (timer != null)
-                {
-                    timer?.Dispose();
-                    timer = null;
-                    DisposedEvent?.Invoke(this, state);
-                }
+                timer?.Dispose();
+                timer = null;
+                DisposedEvent?.Invoke(this, state);
             }
         }
     }

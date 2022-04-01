@@ -29,31 +29,61 @@ namespace FnSync
 
         private static void OnCastReceived(string id, string msgType, object msgObject, PhoneClient client)
         {
-            if (msgObject is JObject msg)
+            if (!(msgObject is JObject msg))
             {
-                if (msgType == MSG_TYPE_TEXT_CAST)
+                return;
+            }
+            if (msgType != MSG_TYPE_TEXT_CAST)
+            {
+                return;
+            }
+
+            string text = (string)msg["text"];
+            if (text.Length < 500 && !MainConfig.Config.TextCastAutoCopy)
+            {
+                ToastTextCastPrompt(id, client.Name, text);
+            }
+            else
+            {
+                ToastTextCastCopied(id, client.Name, text);
+                App.FakeDispatcher.Invoke(delegate
                 {
-                    string text = (string)msg["text"];
-                    if (text.Length < 500 && !MainConfig.Config.TextCastAutoCopy )
-                    {
-                        ToastTextCastPrompt(id, client.Name, text);
-                    }
-                    else
-                    {
-                        ToastTextCastCopied(id, client.Name, text);
-                        App.FakeDispatcher.Invoke(delegate
-                        {
-                            ClipboardManager.Singleton.SetClipboardText(text, true);
-                            return null;
-                        });
-                    }
-                }
+                    ClipboardManager.Singleton.SetClipboardText(text, true);
+                    return null;
+                });
             }
         }
 
         public static readonly string TEXT_RECEIVED = (string)Application.Current.FindResource("TextCastReceived");
         private static void ToastTextCastPrompt(string clientId, string clientName, string text)
         {
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddHeader(clientId, clientName, "")
+                .AddText(TEXT_RECEIVED)
+                .AddText(text)
+                .AddButton(new ToastButton()
+                    .SetContent(NotificationSubchannel.COPY_TEXT)
+                    .AddArgument("Copy", text)
+                    .SetBackgroundActivation())
+                ;
+
+            string[] copyables = NotificationSubchannel.GetCopyableSeries(text, 4);
+            if (copyables != null)
+            {
+                foreach (string copyable in copyables)
+                {
+                    Builder.AddButton(new ToastButton()
+                        .SetContent(copyable)
+                        .AddArgument("Copy", copyable)
+                        .SetBackgroundActivation()
+                    );
+                }
+            }
+
+            NotificationSubchannel.Singleton.Push(Builder);
+
+            /*
+
             ToastActionsCustom Actions = new ToastActionsCustom()
             {
                 ContextMenuItems = { },
@@ -119,6 +149,8 @@ namespace FnSync
 
             // And then show it
             NotificationSubchannel.Singleton.Push(Toast, ToastDup);
+
+            */
         }
 
         public static readonly string TEXT_TOO_LONG_ALREADY_COPIED = (string)Application.Current.FindResource("TextTooLongAlreadyCopied");
@@ -129,18 +161,30 @@ namespace FnSync
             if (FullText.Length >= 500)
             {
                 FullText = FullText.Substring(0, 50) + " ...";
-                if( MainConfig.Config.TextCastAutoCopy)
+                if (MainConfig.Config.TextCastAutoCopy)
                 {
                     PromptText = TEXT_ALREADY_COPIED;
-                } else
+                }
+                else
                 {
                     PromptText = TEXT_TOO_LONG_ALREADY_COPIED;
                 }
-            } else
+            }
+            else
             {
                 PromptText = TEXT_ALREADY_COPIED;
             }
 
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddHeader(clientId, clientName, "")
+                .AddText(TEXT_RECEIVED)
+                .AddText(PromptText)
+                .AddText(FullText)
+                ;
+
+            NotificationSubchannel.Singleton.Push(Builder);
+
+            /*
             ToastContent toastContent = new ToastContent()
             {
                 //Launch = "action=viewConversation&conversationId=5",
@@ -185,6 +229,7 @@ namespace FnSync
 
             // And then show it
             NotificationSubchannel.Singleton.Push(Toast, ToastDup);
+            */
         }
     }
 }

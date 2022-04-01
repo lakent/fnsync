@@ -86,6 +86,7 @@
     <System:String x:Key="PkgID">包名</System:String>
     <System:String x:Key="ConnectOnStartup">启动自动连接已知设备</System:String>
     <System:String x:Key="HideOnStartup">启动时不显示连接窗口</System:String>
+    <System:String x:Key="HideNotificationOnStartup">启动时不显示连接通知</System:String>
     <System:String x:Key="DontToastConnected">不显示“已连接”通知</System:String>
     <System:String x:Key="ClipboardSync">同步剪切板到手机（仅文本）</System:String>
     <System:String x:Key="TextCastAutoCopy">收到文本后自动复制</System:String>
@@ -143,12 +144,12 @@
     <System:String x:Key="IllegalFileName">文件名不能包含“\”和“/”。</System:String>
     <System:String x:Key="NoFilePermission">没有权限</System:String>
     <System:String x:Key="NumberOfItems">{0} 个文件夹, {1} 个文件</System:String>
-    <System:String x:Key="CopyToThisPc">复制到电脑</System:String>
+    <System:String x:Key="CopyToThisPc">复制到 PC</System:String>
     <System:String x:Key="CutInsidePhone">剪切(手机内) …</System:String>
     <System:String x:Key="CopyInsidePhone">复制(手机内) …</System:String>
-    <System:String x:Key="PasteHereInsidePhone">粘贴到当前文件夹</System:String>
-    <System:String x:Key="PasteToInsidePhone">粘贴到所选文件夹</System:String>
-    <System:String x:Key="PasteHereFromPC">粘贴到当前文件夹 (从 PC)</System:String>
-    <System:String x:Key="PasteToFromPC">粘贴到所选文件夹 (从 PC)</System:String>
+    <System:String x:Key="PasteHereInsidePhone">粘贴到当前文件夹(手机内)</System:String>
+    <System:String x:Key="PasteToInsidePhone">粘贴到所选文件夹(手机内)</System:String>
+    <System:String x:Key="PasteHereFromPC">粘贴到当前文件夹(从 PC)</System:String>
+    <System:String x:Key="PasteToFromPC">粘贴到所选文件夹(从 PC)</System:String>
     <System:String x:Key="RefreshMediaStore">为所选文件刷新媒体缓存</System:String>
 </ResourceDictionary>

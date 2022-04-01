@@ -1,5 +1,4 @@
-﻿using FnSync.FileTransmission;
-using Microsoft.QueryStringDotNET;
+﻿using Microsoft.QueryStringDotNET;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Newtonsoft.Json.Linq;
 using System;
@@ -14,7 +13,7 @@ using Windows.UI.Notifications;
 
 namespace FnSync
 {
-    public class FileReceive : BaseModule<FileReceive.ReceiveEntry>
+    public class FileReceive : FileTransHandler
     {
         public class ReceiveEntry : BaseEntry
         {
@@ -105,8 +104,6 @@ namespace FnSync
         public const string MSG_TYPE_FILE_TRANSFER_REQUEST_FROM = "file_transfer_request_from";
         public const string MSG_TYPE_FILE_TRANSFER_REQUEST_KEY = "file_transfer_request_key";
         public const string MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK = "file_transfer_request_key_ok";
-        public const string MSG_TYPE_FILE_TRANSFER_KEY_EXISTS = "file_transfer_key_exists";
-        public const string MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY = "file_transfer_key_exists_reply";
         public const string MSG_TYPE_FILE_TRANSFER_META = "file_transfer_meta";
         public const string MSG_TYPE_FILE_TRANSFER_SEEK = "file_transfer_seek";
         public const string MSG_TYPE_FILE_TRANSFER_SEEK_OK = "file_transfer_seek_ok";
@@ -162,7 +159,6 @@ namespace FnSync
                 return entries;
             }
 
-
             public static string First5Names(IEnumerable<ReceiveEntry> entries)
             {
                 StringBuilder sb = new StringBuilder();
@@ -210,7 +206,7 @@ namespace FnSync
             }
 
             ReceiveEntry[] entries = Pendings.Get(PendingKey);
-            long total = ReceiveEntry.SizeOfAllFiles(entries);
+            long total = BaseEntry.LengthOfAllFiles(entries);
 
             string header = string.Format(
                 entries.Length > 1 ? FILES_RECEIVED : ONE_FILE_RECEIVED,
@@ -220,6 +216,25 @@ namespace FnSync
 
             string body = PendingsClass.First5Names(entries);
 
+            ToastContentBuilder Builder = new ToastContentBuilder()
+                .AddHeader(id, client.Name, "")
+                .AddText(header, hintMinLines:1)
+                .AddText(body)
+                .AddButton(new ToastButton()
+                    .SetContent(SAVE_AS)
+                    .AddArgument("FileReceive_SaveAs")
+                    .AddArgument("pendingkey", PendingKey)
+                    .AddArgument("totalsize", total.ToString())
+                    .AddArgument("clientid", id))
+                .AddButton(new ToastButton()
+                    .SetContent(CANCEL)
+                    .AddArgument("FileReceive_SaveAs")
+                    .AddArgument("cancelpending", PendingKey))
+                ;
+
+            NotificationSubchannel.Singleton.Push(Builder);
+
+            /*
             ToastContent toastContent = new ToastContent()
             {
                 //Launch = "action=viewConversation&conversationId=5",
@@ -279,6 +294,7 @@ namespace FnSync
 
             // And then show it
             NotificationSubchannel.Singleton.Push(Toast, ToastDup);
+            */
         }
 
         public static void ParseQueryString(QueryString queries)
@@ -293,53 +309,93 @@ namespace FnSync
 
             string PendingKey = queries["pendingkey"];
             long total = Convert.ToInt64(queries["totalsize"]);
-            PhoneClient client = AlivePhones.Singleton[queries["clientid"]];
+            string ClientId = queries["clientid"];
 
-            if (client == null || !Pendings.Contains(PendingKey))
+            if (AlivePhones.Singleton[ClientId] == null || !Pendings.Contains(PendingKey))
             {
                 return;
             }
 
             App.FakeDispatcher.Invoke(delegate
             {
+                /*
                 new WindowFileOperation(
                     new FileReceive().Apply<IBase>(it =>
                     {
                         it.Init(client, Pendings.GetAndRemove(PendingKey), total);
                     })
                     ).Show();
+                */
+                new WindowFileOperation(DirectionClass.PHONE_TO_PC, OperationClass.COPY, ClientId)
+                .SetEntryList(Pendings.GetAndRemove(PendingKey))
+                .Show();
                 return null;
             });
         }
 
         ////////////////////////////////////////////////////////////////////////////////
 
-
-        private FileStream file = null;
-
-        private ChunkRequestCache RequestCache;
-        private ChunkSizeCalculatorClass SizeCalculator;
-
-        private bool IsDisposed = false;
-
-        private enum TransmitionStageClass
+        /*
+        private class RequestCacheClass
         {
-            NONE = 0,
-            GETTING_KEY,
-            ONE_CHUNK_RECEIVE,
-            MULTIPLE_CHUNK_RECEIVE
+            public class Entry
+            {
+                public int Count;
+                public int Length;
+
+                public override int GetHashCode()
+                {
+                    return (Count << 24) ^ Length;
+                }
+
+                public override bool Equals(object obj)
+                {
+                    return (obj is Entry e) && Count == e.Count && Length == e.Length;
+                }
+            }
+
+            private readonly string Key = null;
+
+            private readonly Dictionary<Entry, string> Cache = new Dictionary<Entry, string>(2);
+
+            public RequestCacheClass(string Key)
+            {
+                this.Key = Key;
+            }
+
+            public string Get(int Count, int Length)
+            {
+                Entry entry = new Entry { Count = Count, Length = Length };
+                if (Cache.ContainsKey(entry))
+                {
+                    return Cache[entry];
+                }
+                else
+                {
+                    string msg = new JObject
+                    {
+                        ["key"] = Key,
+                        ["count"] = Count,
+                        ["length"] = Length,
+                        [PhoneClient.MSG_TYPE_KEY] = MSG_TYPE_FILE_TRANSFER_META
+                    }.ToString(Newtonsoft.Json.Formatting.None);
+
+                    Cache[entry] = msg;
+
+                    return msg;
+                }
+            }
         }
+        */
 
-        public override event EventHandler OnErrorEvent;
 
-        private TransmitionStageClass TransmitionStage = TransmitionStageClass.NONE;
+        private FileStream CurrentFileStream = null;
 
         public FileReceive()
         {
-            Operation = OperationClass.COPY;
-            Direction = DirectionClass.PHONE_TO_PC;
         }
 
+        /*
         public override void Init(PhoneClient client, BaseEntry[] Entries, long TotalSize = -1, string FileRootOnPhone = null)
         {
             base.Init(client, Entries, TotalSize, FileRootOnPhone);
@@ -357,7 +413,7 @@ namespace FnSync
                     }.ToString(Newtonsoft.Json.Formatting.None);
                 }
             };
-            SizeCalculator = new ChunkSizeCalculatorClass();
+            ChunkSizeCalculator = new ChunkSizeCalculatorClass();
 
             PhoneMessageCenter.Singleton.Register(
                 Client.Id,
@@ -366,20 +422,18 @@ namespace FnSync
                 false
             );
         }
+        */
 
-        private void RequestNext(int UnitCount)
-        {
-            Client.WriteQueued(RequestCache.Get(UnitCount, SizeCalculator.ChunkSize));
-        }
+        public string DestinationFolder { get; private set; }
+        public string FileRootOnSource { get; private set; }
 
-        private string DestLocalFolder = null;
-        public override string DestinationFolder
+        public override void Initialization(string ClientId, BaseEntry Entry, string DestFolder = null, string SrcFolder = null,
+            string DestStorage = null, string SrcStorage = null,
+            ChunkSizeCalculatorClass ChunkSizeCaclulator = null)
         {
-            get => DestLocalFolder;
-            set
-            {
-                DestLocalFolder = value.AppendIfNotEnding("\\");
-            }
+            base.Initialization(ClientId, Entry, DestFolder, SrcFolder, DestStorage, SrcStorage, ChunkSizeCaclulator);
+            this.DestinationFolder = DestFolder.AppendIfNotEnding("\\");
+            this.FileRootOnSource = SrcFolder;
         }
 
         private async Task OneChunkReceive(ReceiveEntry entry)
@@ -387,174 +441,181 @@ namespace FnSync
             if (String.IsNullOrWhiteSpace(FileRootOnSource) ||
                 String.IsNullOrWhiteSpace(entry.ConvertedPath))
             {
-                throw new ArgumentException("FileRootOnPhone & entry.path");
+                throw new ArgumentNullException("FileRootOnPhone & entry.path");
             }
 
-            TransmitionStage = TransmitionStageClass.ONE_CHUNK_RECEIVE;
-            object MsgObject = await PhoneMessageCenter.Singleton.OneShot(
-                Client,
-                new JObject()
+            while (true) try
                 {
-                    ["path"] = FileRootOnSource + entry.path,
-                },
-                MSG_TYPE_FILE_CONTENT_GET,
-                null,
-                MSG_TYPE_FILE_CONTENT,
-                5000
-                );
+                    object MsgObject = await PhoneMessageCenter.Singleton.OneShot(
+                        Client,
+                        new JObject()
+                        {
+                            ["path"] = FileRootOnSource + entry.path,
+                        },
+                        MSG_TYPE_FILE_CONTENT_GET,
+                        null,
+                        MSG_TYPE_FILE_CONTENT,
+                        5000
+                        );
 
-            IMessageWithBinary Msg = MsgObject as IMessageWithBinary;
-            WriteBinaryToFile(Msg.Binary, 0);
+                    IMessageWithBinary Msg = MsgObject as IMessageWithBinary;
+                    WriteBinaryToFile(Msg.Binary, 0);
+
+                    return;
+                }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
         }
 
-        private async Task AcquireKey(ReceiveEntry entry, bool Force = false)
+        private async Task AcquireKey(bool Force = false)
         {
-            if (String.IsNullOrWhiteSpace(entry.key) || Force)
+            ReceiveEntry entry = Entry as ReceiveEntry;
+            if (!String.IsNullOrWhiteSpace(entry.key) && !Force)
             {
-                if (String.IsNullOrWhiteSpace(FileRootOnSource) ||
-                    String.IsNullOrWhiteSpace(entry.ConvertedPath))
-                {
-                    throw new ArgumentException("FileRootOnPhone & entry.ConvertedPath");
-                }
-
-                string key = await PhoneMessageCenter.Singleton.OneShotGetString(
-                    Client,
-                    new JObject()
-                    {
-                        ["path"] = FileRootOnSource + entry.path,
-                        //["stub_size"] = UnitSizeInBytes * UnitNumber
-                    },
-                    MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
-                    MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
-                    5000,
-                    "key",
-                    null
-                    );
-
-                if (string.IsNullOrWhiteSpace(key))
-                {
-                    throw new ArgumentException("entry.key");
-                }
-
-                entry.key = key;
+                return;
             }
 
-            RequestCache.RemoteKey = entry.key;
-        }
-
-        private void MultipleChunksReceive()
-        {
-            TransmitionStage = TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE;
-            RequestNext(10);
-        }
-
-        private SpeedWatch SpeedLong = null;
-        private double LargestSpeed = 0;
-
-        protected override void AddTransmitLength(long len)
-        {
-            base.AddTransmitLength(len);
-            SpeedLong.Add(len);
-
-            double BytesPer = SpeedLong.BytesPerSec(2000);
-            if (BytesPer >= 0)
+            if (String.IsNullOrWhiteSpace(FileRootOnSource) ||
+                String.IsNullOrWhiteSpace(entry.ConvertedPath))
             {
-                if (BytesPer > LargestSpeed)
+                throw new ArgumentException("FileRootOnPhone & entry.ConvertedPath");
+            }
+
+            while (true) try
                 {
-                    LargestSpeed = BytesPer;
-                    SizeCalculator.UnitCount += 4;
-                }
-                else
-                {
-                    /*
-                    if(UnitCoefficient > 10)
+                    string key = await PhoneMessageCenter.Singleton.OneShotGetString(
+                        Client,
+                        new JObject()
+                        {
+                            ["path"] = FileRootOnSource + entry.path,
+                        },
+                        MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
+                        MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
+                        5000,
+                        "key",
+                        null
+                        );
+
+                    if (string.IsNullOrWhiteSpace(key))
                     {
-                        UnitCoefficient -= 1;
+                        throw new ArgumentException("entry.key");
                     }
-                    */
+
+                    entry.key = key;
+
+                    return;
                 }
+                catch (PhoneMessageCenter.DisconnectedException)
+                {
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
+                }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
+        }
 
-                SpeedLong.Reset();
+        private bool ChunksReceivedCallback(object MsgObj)
+        {
+            if (!(MsgObj is MessageWithBinary mwb))
+            {
+                throw new FileTransException("");
             }
-        }
 
-        public override void StartTransmittion()
-        {
-            SpeedLong = new SpeedWatch();
-            StartWatchJob();
-            base.StartTransmittion();
-        }
+            JObject msg = mwb.Message;
+            byte[] binary = mwb.Binary;
 
-        private void WriteBinaryToFile(byte[] Binary, long Offset)
-        {
-            int length = Binary.Length;
-
-            file.Position = Offset;
-            file.Write(Binary, 0, length);
-            // XXX TODO: Not thread-safe here
-
-            AddTransmitLength(length);
-        }
-
-        private void OnBlobReceived(string id, string msgType, object msgObj, PhoneClient client)
-        {
-            if (!(msgObj is MessageWithBinary msg))
-                return;
-
-            if ((string)msg.Message["key"] != CurrentEntry?.key)
-                return;
-
-            long start = msg.Message.OptLong("position", -1);
-            int length = msg.Binary.Length;
+            long start = msg.OptLong("position", -1);
+            int length = binary.Length;
 
             if (start < 0)
             {
-                if (length > CurrentEntry.length - CurrnetTransmittedLength)
-                    return;
+                start = this.TransmittedLength;
+            }
 
-                start = CurrnetTransmittedLength;
+            if (start == 0)
+            {
+                if (length > this.Entry.length)
+                {
+                    throw new FileTransException("Wrong length");
+                }
             }
             else
             {
-                if (start + length > CurrentEntry.length)
-                    return;
+                if (start + length > this.Entry.length)
+                {
+                    throw new FileTransException("Wrong length");
+                }
             }
 
-            WriteBinaryToFile(msg.Binary, start);
+            WriteBinaryToFile(binary, start);
 
-            if (CurrnetTransmittedLength < CurrentEntry.length)
+            if (this.TransmittedLength == this.Entry.length)
             {
-                RequestNext(1);
+                return false; // false to break
+            }
+            else if (this.TransmittedLength > this.Entry.length)
+            {
+                throw new FileTransException("Wrong length");
             }
             else
             {
-                StartNext(TransmissionStatus.SUCCESSFUL);
+                // continue;
+            }
+
+            return true;
+        }
+
+        private async Task ChunksReceive()
+        {
+            while (this.TransmittedLength < this.Entry.length)
+            {
+                int Count = 10;
+
+                Task WaitingTask = PhoneMessageCenter.Singleton.WaitForMessage(
+                    Client.Id,
+                    MSG_TYPE_FILE_TRANSFER_DATA,
+                    600000,
+                    ChunksReceivedCallback,
+                    Count,
+                    Cancellation
+                    );
+
+                Client.SendMsg(
+                    new JObject
+                    {
+                        ["key"] = this.Entry.key,
+                        ["count"] = Count,
+                        ["length"] = ChunkSizeCalculator.ChunkSize,
+                    },
+                    MSG_TYPE_FILE_TRANSFER_META
+                    );
+
+                await WaitingTask;
             }
         }
 
-        protected override async Task OnReconnected()
+        private async Task MultipleChunksReceive()
         {
-            try
-            {
-                switch (TransmitionStage)
+            while (true) try
                 {
-                    case TransmitionStageClass.GETTING_KEY:
-                    case TransmitionStageClass.ONE_CHUNK_RECEIVE:
-                        StartNext(TransmissionStatus.RESET_CURRENT);
-                        break;
-
-                    case TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE:
-                        if (string.IsNullOrWhiteSpace(CurrentEntry.key))
-                        {
-                            // It this happended, there are some bugs.
-                            throw new Exception();
-                        }
-
+                    if (string.IsNullOrWhiteSpace(Entry.key))
+                    {
+                        await AcquireKey();
+                    }
+                    else
+                    {
                         bool KeyIsExist = await PhoneMessageCenter.Singleton.OneShotGetBoolean(
                             Client,
                             new JObject()
                             {
-                                ["key"] = CurrentEntry.key,
+                                ["key"] = Entry.key,
                             },
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS,
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY,
@@ -565,15 +626,15 @@ namespace FnSync
 
                         if (!KeyIsExist)
                         {
-                            await AcquireKey(CurrentEntry, true);
+                            await AcquireKey(true);
                         }
 
                         long SeekResult = await PhoneMessageCenter.Singleton.OneShotGetLong(
                             Client,
                             new JObject()
                             {
-                                ["key"] = CurrentEntry.key,
-                                ["position"] = CurrnetTransmittedLength
+                                ["key"] = Entry.key,
+                                ["position"] = TransmittedLength
                             },
                             MSG_TYPE_FILE_TRANSFER_SEEK,
                             MSG_TYPE_FILE_TRANSFER_SEEK_OK,
@@ -582,82 +643,49 @@ namespace FnSync
                             -1
                             );
 
-                        if (SeekResult != CurrnetTransmittedLength)
+                        if (SeekResult != TransmittedLength)
                         {
-                            throw new Exception();
+                            throw new FileTransException(Entry.name);
                         }
+                    }
 
-                        file.Position = SeekResult;
+                    await ChunksReceive();
 
-                        RequestNext(10);
-                        break;
-
-                    default:
-                        break;
+                    return;
                 }
-            }
-            catch (TimeoutException e)
-            {
-                return;
-            }
-            catch (PhoneMessageCenter.PhoneDisconnectedException e)
-            {
-                return;
-            }
-            catch (Exception e)
-            {
-                OnErrorEvent?.Invoke(this, null);
-                return;
-            }
-        }
-
-        protected override Task OnDisconnected()
-        {
-            if (TransmitionStage == TransmitionStageClass.MULTIPLE_CHUNK_RECEIVE &&
-                string.IsNullOrWhiteSpace(CurrentEntry.path) /* If it is from ContentProvider, cannot resume after reconnect */)
-            {
-                OnErrorEvent?.Invoke(this, null);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private void EndAll()
-        {
-            foreach (ReceiveEntry entry in EntryList)
-            {
-                if (!string.IsNullOrWhiteSpace(entry.key))
+                catch (PhoneMessageCenter.DisconnectedException)
                 {
-                    Client.SendMsg(
-                        new JObject()
-                        {
-                            ["key"] = entry.key
-                        },
-                        MSG_TYPE_FILE_TRANSFER_END
-                    );
+                    this.Client = await PhoneMessageCenter.Singleton.WaitOnline(this.Client.Id, int.MaxValue, Cancellation);
                 }
-            }
+                catch (PhoneMessageCenter.OldClientHolderException e)
+                {
+                    this.Client = e.Current;
+                }
+        }
+
+        private void WriteBinaryToFile(byte[] Binary, long Offset)
+        {
+            int length = Binary.Length;
+
+            CurrentFileStream.Position = Offset;
+            CurrentFileStream.Write(Binary, 0, length);
+
+            AddTransmitLength(length);
         }
 
         private string GetLocalPath(ReceiveEntry entry)
         {
-            return entry.ConvertedPath != null ? DestLocalFolder + entry.ConvertedPath : null;
+            return entry.ConvertedPath != null ? this.DestinationFolder + entry.ConvertedPath : null;
         }
 
         public void DeleteCurrentFileIfNotCompleted()
         {
-            try
-            {
-                file?.Close();
-            }
-            catch (Exception e) { }
-
-            if (CurrentEntry == null || CurrnetTransmittedLength >= CurrentEntry.length)
+            if (TransmittedLength == this.Entry.length)
             {
                 return;
             }
 
-            string path = GetLocalPath(CurrentEntry);
+            string path = GetLocalPath(this.Entry as ReceiveEntry);
 
             if (path == null || Directory.Exists(path) || !File.Exists(path))
             {
@@ -672,53 +700,34 @@ namespace FnSync
 
         }
 
-        public override void Dispose()
+        public override Task<bool> DetermineFileExistence()
         {
-            base.Dispose();
-            IsDisposed = true;
+            string path = GetLocalPath(this.Entry as ReceiveEntry);
 
-            PhoneMessageCenter.Singleton.Unregister(
-                Client.Id,
-                MSG_TYPE_FILE_TRANSFER_DATA,
-                OnBlobReceived
-            );
-
-            EndAll();
-
-            DeleteCurrentFileIfNotCompleted();
-        }
-
-        protected override void ResetCurrentFileTransmisionAction(ReceiveEntry entry)
-        {
-            file.Close();
-        }
-
-        protected override void FileFailedCleanUpAction(ReceiveEntry entry)
-        {
-            DeleteCurrentFileIfNotCompleted();
-        }
-
-        protected override Task<bool> DetermineFileExistence(ReceiveEntry entry)
-        {
-            string path = GetLocalPath(CurrentEntry);
-
-            if (entry.IsFolder)
+            if (this.Entry.IsFolder)
             {
                 if (File.Exists(path))
                 {
-                    throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
+                    throw new FileTransException(path);
                 }
 
-                return Task<bool>.FromResult(false);
+                return Task.FromResult(false);
             }
             else
             {
-                return Task<bool>.FromResult(File.Exists(path) || Directory.Exists(path));
+                if (Directory.Exists(path))
+                {
+                    throw new FileTransException(path);
+                }
+
+                return Task.FromResult(File.Exists(path));
             }
         }
 
-        protected override async Task Transmit(ReceiveEntry entry, FileAlreadyExistEventArgs.Measure Measure)
+        public override async Task Transmit(FileAlreadyExistEventArgs.Measure Measure)
         {
+            await base.Transmit(Measure);
+            ReceiveEntry entry = this.Entry as ReceiveEntry;
             if (Measure == FileAlreadyExistEventArgs.Measure.RENAME)
             {
                 NewNameOperation(entry);
@@ -728,61 +737,35 @@ namespace FnSync
 
             if (entry.IsFolder)
             {
-                try
-                {
-                    Directory.CreateDirectory(DestLocalPath);
-                }
-                catch (Exception e)
-                {
-                    throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
-                }
-
-                throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
+                _ = Directory.CreateDirectory(DestLocalPath);
+                return;
             }
 
             // Is a File
-            try
-            {
-                file = File.Open(DestLocalPath, FileMode.Create, FileAccess.Write, FileShare.None);
-                file.SetLength(entry.length);
-            }
-            catch (Exception e)
-            {
-                throw new TransmissionStatusReport(TransmissionStatus.FAILED_CONTINUE);
-            }
+            _ = Directory.CreateDirectory(Path.GetDirectoryName(DestLocalPath));
+            CurrentFileStream = File.Open(DestLocalPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            CurrentFileStream.SetLength(entry.length);
 
             if (entry.length == 0)
             {
-                throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
+                return;
             }
-            else if (entry.length <= Math.Max(SizeCalculator.ChunkSize, 100 * 1024) &&
-                String.IsNullOrWhiteSpace(entry.key))
+            else if (entry.length <= Math.Max(ChunkSizeCalculator.ChunkSize, 100 * 1024) /* &&
+                String.IsNullOrWhiteSpace(entry.key) */ )
             {
                 await OneChunkReceive(entry);
-                throw new TransmissionStatusReport(TransmissionStatus.SUCCESSFUL);
             }
             else
             {
-                TransmitionStage = TransmitionStageClass.GETTING_KEY;
-                await AcquireKey(entry);
-                MultipleChunksReceive();
+                await MultipleChunksReceive();
             }
-        }
 
-        protected override void FileTransmitSuccessAction(ReceiveEntry entry)
-        {
-            if (entry.IsFolder)
-                return;
-
-            if (file == null)
-                return;
-
-            string DestLocalPath = GetLocalPath(entry);
-
-            file.Close();
+            CurrentFileStream.Close();
 
             if (entry.last >= 0)
             {
+                // Set file time
+
                 DateTime time = DateTimeOffset.FromUnixTimeMilliseconds(entry.last).LocalDateTime;
 
                 File.SetLastWriteTime(
@@ -799,16 +782,6 @@ namespace FnSync
                 );
             }
 
-            if (!String.IsNullOrWhiteSpace(entry.key))
-            {
-                Client.SendMsg(
-                    new JObject()
-                    {
-                        ["key"] = entry.key
-                    },
-                    MSG_TYPE_FILE_TRANSFER_END
-                );
-            }
         }
 
         private void NewNameOperation(ReceiveEntry entry)
@@ -827,6 +800,14 @@ namespace FnSync
                     return;
                 }
             }
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            DeleteCurrentFileIfNotCompleted();
+            CurrentFileStream?.Close();
+            EndOneEntry();
         }
     }
 }
