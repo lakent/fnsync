@@ -8,7 +8,16 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Resources/NotifyIconResources.xaml" />
                 <ResourceDictionary Source="/Resources/String.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/AdonisUI;component/ColorSchemes/Light.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/AdonisUI.ClassicTheme;component/Resources.xaml"/>
+                <ResourceDictionary>
+                    <Style x:Key="{x:Type Label}" TargetType="Label">
+                        <Setter Property="FontWeight" Value="Regular"/>
+                    </Style>
+                </ResourceDictionary>
+
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
+
     </Application.Resources>
 </Application>

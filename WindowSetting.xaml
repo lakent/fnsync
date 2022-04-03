@@ -128,6 +128,13 @@
                         </Hyperlink>
                         <LineBreak/>
 
+                        <Run Text="adonis-ui"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://github.com/benruehl/adonis-ui/blob/master/LICENSE" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
                     </Paragraph>
 
                 </FlowDocument>
