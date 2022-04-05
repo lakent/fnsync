@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.ApplicationModel.Preview.Notes;
 
 namespace FnSync
 {
@@ -18,9 +17,19 @@ namespace FnSync
                          NetworkAddressChangedEventHandler(AddressChangedCallback);
         }
 
-        private static async void AddressChangedCallback(object sender, EventArgs e)
+        private static void AddressChangedCallback(object sender, EventArgs e)
+        {
+            Task.Run(AddressChangedAction);
+        }
+
+        private static void AddressChangedAction()
         {
             const int DELAY_MILLS = 5000;
+
+            if (AlivePhones.Singleton.Count == 0)
+            {
+                return;
+            }
 
             if (!Monitor.TryEnter(Lock, 0))
             {
@@ -44,8 +53,8 @@ namespace FnSync
 
                 foreach (KeyValuePair<PhoneClient, Task<bool>> p in Results)
                 {
-                    bool r = await p.Value;
-                    if (!r)
+                    p.Value.Wait();
+                    if (!p.Value.Result)
                     {
                         Targets.Add(SavedPhones.Singleton[p.Key.Id]);
                     }
@@ -53,7 +62,7 @@ namespace FnSync
 
                 PhoneListener.Singleton.StartReachInitiatively(null, true, Targets);
 
-                await FinalDelay;
+                FinalDelay.Wait();
             }
             finally
             {
