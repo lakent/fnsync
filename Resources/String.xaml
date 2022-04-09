@@ -14,6 +14,7 @@
 
     <System:String x:Key="SwitchToEnter">Connect by Connection Code</System:String>
     <System:String x:Key="SwitchToScan">Connect by QR Code</System:String>
+    <System:String x:Key="ConnectByQR">QR Code</System:String>
     <System:String x:Key="ConnectionCode">Connection Code</System:String>
     <System:String x:Key="LocalAddress">Local Address</System:String>
     <System:String x:Key="Connected">Connected</System:String>

@@ -150,6 +150,8 @@ namespace FnSync
                 }
             }
 
+            WindowMain.NewOne();
+
             ClipboardManager.Singleton.MonitorClipboardOn = MainConfig.Config.ClipboardSync;
 
             Casting._Force = 0;

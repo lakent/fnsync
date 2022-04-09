@@ -14,6 +14,7 @@
 
     <System:String x:Key="SwitchToEnter">切换到连接码</System:String>
     <System:String x:Key="SwitchToScan">切换到二维码</System:String>
+    <System:String x:Key="ConnectByQR">二维码链接</System:String>
     <System:String x:Key="ConnectionCode">连接码</System:String>
     <System:String x:Key="LocalAddress">本地 IP 地址</System:String>
     <System:String x:Key="Connected">已连接</System:String>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdonisUI.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,11 +18,39 @@ namespace FnSync
     /// <summary>
     /// Interaction logic for WindowMain.xaml
     /// </summary>
-    public partial class WindowMain : Window
+    public partial class WindowMain : AdonisWindow
     {
+        public static WindowMain CurrentWindow { get; private set; } = null;
+
+        public static void NewOne()
+        {
+            App.FakeDispatcher.Invoke(() =>
+            {
+                if (CurrentWindow == null)
+                {
+                    new WindowMain().Show();
+                }
+                else
+                {
+                    CurrentWindow.Activate();
+                }
+
+                return null;
+            });
+        }
+
         public WindowMain()
         {
             InitializeComponent();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            if(this.DataContext is IDisposable Disposable)
+            {
+                Disposable.Dispose();
+            }
         }
     }
 }

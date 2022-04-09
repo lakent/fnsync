@@ -8,7 +8,7 @@ using System.Windows.Controls;
 
 namespace FnSync
 {
-    public class UserControlExtension : UserControl
+    public abstract class UserControlExtension : UserControl
     {
         public UserControlExtension()
         {
@@ -42,5 +42,4 @@ namespace FnSync
 
         }
     }
-
 }

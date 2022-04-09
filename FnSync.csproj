@@ -130,6 +130,12 @@
     <Compile Include="AutoDisposableTimer.cs" />
     <Compile Include="Casting.cs" />
     <Compile Include="ClipboardManager.cs" />
+    <Compile Include="ControlConnectionByCode.xaml.cs">
+      <DependentUpon>ControlConnectionByCode.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlConnectionByQR.xaml.cs">
+      <DependentUpon>ControlConnectionByQR.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ControlDeviceInfomation.xaml.cs">
       <DependentUpon>ControlDeviceInfomation.xaml</DependentUpon>
     </Compile>
@@ -177,9 +183,6 @@
     <Compile Include="Unirandom.cs" />
     <Compile Include="UserControlExtension.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="WindowConnect.xaml.cs">
-      <DependentUpon>WindowConnect.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WindowDeviceMananger.xaml.cs">
       <DependentUpon>WindowDeviceMananger.xaml</DependentUpon>
     </Compile>
@@ -197,6 +200,9 @@
     </Compile>
     <Compile Include="WindowInstruction.xaml.cs">
       <DependentUpon>WindowInstruction.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="WindowMainViewModel.cs">
+      <DependentUpon>WindowMain.xaml</DependentUpon>
     </Compile>
     <Compile Include="WindowMain.xaml.cs">
       <DependentUpon>WindowMain.xaml</DependentUpon>
@@ -274,6 +280,14 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="ControlConnectionByCode.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlConnectionByQR.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ControlDeviceInfomation.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -299,10 +313,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\String.zh-CN.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowConnect.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
