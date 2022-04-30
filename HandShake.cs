@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using Windows.Media.Core;
 using Windows.UI.Xaml;
@@ -153,28 +154,27 @@ namespace FnSync
 
             byte[] data = MakePackage(OldConnection, null, targets);
 
-            new AutoDisposableTimer((state) =>
-            {
-                RefreshBroadcastAddresses();
+            _ = Task.Run(() =>
+             {
+                 RefreshBroadcastAddresses();
 
-                int remain = timeout;
-                int portIncrement = 0;
+                 int remain = timeout;
+                 int portIncrement = 0;
 
-                while (remain > 0 && ThisRound == Round)
-                {
-                    if (targets != null)
-                    {
-                        ReachTargets(data, targets, portIncrement / 2);
-                    }
+                 while (remain > 0 && ThisRound == Round)
+                 {
+                     if (targets != null)
+                     {
+                         ReachTargets(data, targets, portIncrement / 2);
+                     }
 
-                    ReachLocalNetwork(data, portIncrement);
+                     ReachLocalNetwork(data, portIncrement);
 
-                    remain -= 2500;
-                    ++portIncrement;
-                    Thread.Sleep(2500);
-                }
-
-            }, 0);
+                     remain -= 2500;
+                     ++portIncrement;
+                     Thread.Sleep(2500);
+                 }
+             });
         }
 
         public void Cancel()
