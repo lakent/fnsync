@@ -302,7 +302,7 @@ namespace FnSync
 
             if (InvokedArgs.Equals("ConnectOther"))
             {
-                WindowConnect.NewOne();
+                WindowMain.NewOne();
             }
             else if (InvokedArgs.Equals("DeviceManager"))
             {

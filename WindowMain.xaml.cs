@@ -41,12 +41,14 @@ namespace FnSync
 
         public WindowMain()
         {
+            CurrentWindow = this;
             InitializeComponent();
         }
 
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
+            CurrentWindow = null;
             if(this.DataContext is IDisposable Disposable)
             {
                 Disposable.Dispose();

@@ -24,7 +24,7 @@ namespace FnSync
         public static void ShowException(Exception e)
         {
 #if DEBUG
-            return;
+            throw e;
 #else
             Environment.SetEnvironmentVariable("LAST_ERROR_STRING", BuildString(e));
             Environment.SetEnvironmentVariable("LAST_ERROR_PID", Process.GetCurrentProcess().Id.ToString());

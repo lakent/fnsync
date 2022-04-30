@@ -23,15 +23,12 @@ namespace FnSync
                     CanExecuteFunc = () => true,
                     CommandAction = () =>
                     {
-                        WindowConnect.NewOne();
+                        WindowMain.NewOne();
                     }
                 };
             }
         }
 
-        /// <summary>
-        /// Hides the main window. This command is only enabled if a window is open.
-        /// </summary>
         public ICommand ConnectOtherCommand
         {
             get
@@ -40,7 +37,7 @@ namespace FnSync
                 {
                     CommandAction = () =>
                     {
-                        WindowConnect.NewOne();
+                        WindowMain.NewOne();
                     },
                     CanExecuteFunc = () => true
                 };

@@ -136,6 +136,9 @@
     <Compile Include="ControlConnectionByQR.xaml.cs">
       <DependentUpon>ControlConnectionByQR.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ControlDevice.xaml.cs">
+      <DependentUpon>ControlDevice.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ControlDeviceInfomation.xaml.cs">
       <DependentUpon>ControlDeviceInfomation.xaml</DependentUpon>
     </Compile>
@@ -285,6 +288,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ControlConnectionByQR.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlDevice.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

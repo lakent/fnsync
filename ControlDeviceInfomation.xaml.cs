@@ -79,21 +79,14 @@ namespace FnSync
         {
             if (DataContext is SavedPhones.Phone phone)
             {
-                ID.Text = phone.Id;
-                IPAddress.Text = phone.LastIp;
                 AlivePhones.Singleton[phone.Id]?.SendMsgNoThrow(MSG_TYPE_REQUEST_PHONE_STATE);
-            }
-            else
-            {
-                ID.Text = "";
-                IPAddress.Text = "";
             }
 
             ChargingState.Content = "";
             BatteryLevel.Content = "";
         }
 
-        private static void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (!(sender is ControlDeviceInfomation cdi))
                 return;
@@ -108,6 +101,24 @@ namespace FnSync
                 MSG_TYPE_REPLY_PHONE_STATE,
                 RefreshPhoneStateCallback
                 );
+        }
+
+        private void DeleteDevice_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(DataContext is SavedPhones.Phone phone))
+            {
+                return;
+            }
+
+            if (MessageBox.Show(
+                    (string)FindResource("ConfirmDeletion"),
+                    (string)FindResource("Delete"),
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question
+                ) == MessageBoxResult.Yes)
+            {
+                SavedPhones.Singleton.Remove(phone);
+            }
         }
     }
 }

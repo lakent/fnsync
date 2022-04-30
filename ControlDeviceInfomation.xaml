@@ -4,34 +4,39 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FnSync"
-             
+            xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
              mc:Ignorable="d" 
              d:DesignHeight="230" d:DesignWidth="369.881">
-    <Grid Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}">
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="0" Content="{DynamicResource ID}" HorizontalAlignment="Right"/>
-        <Label Grid.Row="0" Grid.Column="1">
-            <TextBox Background="Transparent" IsReadOnly="True" IsReadOnlyCaretVisible="True" x:Name="ID" Text="" BorderThickness="0"/>
-        </Label>
+        <Label Grid.Row="0" Grid.Column="0" Content="{DynamicResource ID}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBox Grid.Row="0" Grid.Column="2" Background="Transparent" IsReadOnly="True" IsReadOnlyCaretVisible="True" Text="{Binding Id, Mode=OneWay}" BorderThickness="0"/>
 
-        <Label Grid.Row="1" Grid.Column="0" Content="{DynamicResource IPAddress}" HorizontalAlignment="Right"/>
-        <Label Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch">
-            <TextBox Background="Transparent" IsReadOnly="True" IsReadOnlyCaretVisible="True" x:Name="IPAddress" Text="" BorderThickness="0"/>
-        </Label>
+        <Label Grid.Row="1" Grid.Column="0" Content="{DynamicResource Name}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Name, Mode=TwoWay}" HorizontalAlignment="Stretch"/>
 
-        <Label Grid.Row="2" Grid.Column="0" Content="{DynamicResource ChargingState}" HorizontalAlignment="Right"/>
-        <Label Grid.Row="2" Grid.Column="1" x:Name="ChargingState" Content=""/>
+        <Label Grid.Row="2" Grid.Column="0" Content="{DynamicResource IPAddress}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBox Grid.Row="2" Grid.Column="2" Background="Transparent" IsReadOnly="True" IsReadOnlyCaretVisible="True" Text="{Binding LastIp, Mode=OneWay}" BorderThickness="0" />
 
-        <Label Grid.Row="3" Grid.Column="0" Content="{DynamicResource BatteryLevel}" HorizontalAlignment="Right"/>
-        <Label Grid.Row="3" Grid.Column="1" x:Name="BatteryLevel" Content=""/>
+        <Label Grid.Row="3" Grid.Column="0" Content="{DynamicResource ChargingState}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <Label Grid.Row="3" Grid.Column="2" x:Name="ChargingState" Content=""/>
+
+        <Label Grid.Row="4" Grid.Column="0" Content="{DynamicResource BatteryLevel}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <Label Grid.Row="4" Grid.Column="2" x:Name="BatteryLevel" Content=""/>
+
+        <Button Grid.Column="2" Grid.Row="6" x:Name="DeleteDevice" Content="{DynamicResource Delete}" HorizontalAlignment="Right" Padding="16,4" Click="DeleteDevice_Click"/>
     </Grid>
 </UserControl>

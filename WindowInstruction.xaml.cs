@@ -24,7 +24,18 @@ namespace FnSync
         public static WindowInstruction CurrentWindow { get; protected set; } = null;
         public static void NewOne()
         {
-            App.FakeDispatcher.Invoke(() => { if (CurrentWindow == null) { new WindowInstruction().Show(); } else { CurrentWindow.Activate(); } return null; });
+            App.FakeDispatcher.Invoke(() =>
+            {
+                if (CurrentWindow == null)
+                {
+                    new WindowInstruction().Show();
+                }
+                else
+                {
+                    CurrentWindow.Activate();
+                }
+                return null;
+            });
         }
 
         public WindowInstruction()
@@ -45,7 +56,7 @@ namespace FnSync
             CurrentWindow = null;
             if (AlivePhones.Singleton.Count == 0)
             {
-                WindowConnect.NewOne();
+                WindowMain.NewOne();
             }
         }
 

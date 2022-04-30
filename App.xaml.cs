@@ -143,11 +143,6 @@ namespace FnSync
 
                     PhoneListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values);
                 }
-
-                if (!MainConfig.Config.HideOnStartup || SavedCount == 0)
-                {
-                    WindowConnect.NewOne();
-                }
             }
 
             WindowMain.NewOne();

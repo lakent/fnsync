@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using static FnSync.WindowFileManagerRename;
 
 namespace FnSync
@@ -255,7 +256,7 @@ namespace FnSync
         }
     }
 
-    [ValueConversion(typeof(ControlFolderListItemViewBase.UiItem), typeof(DateTime))]
+    [ValueConversion(typeof(ControlFolderListItemViewBase.UiItem), typeof(ImageSource))]
     public class FileIconConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
