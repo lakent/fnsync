@@ -154,6 +154,9 @@
     <Compile Include="ControlHistory.xaml.cs">
       <DependentUpon>ControlHistory.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ControlSettings.xaml.cs">
+      <DependentUpon>ControlSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DeviceMenuList.cs" />
     <Compile Include="FakeDispatcher.cs" />
     <Compile Include="FileCutInside.cs" />
@@ -308,6 +311,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ControlHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ControlSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

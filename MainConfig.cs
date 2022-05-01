@@ -1,17 +1,20 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace FnSync
 {
-    class MainConfig: JsonConfigFile
+    class MainConfig : JsonConfigFile, INotifyPropertyChanged
     {
         public static readonly MainConfig Config = new MainConfig();
 
-        private MainConfig(): base(SavedPhones.ConfigRoot + "\\main.config")
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private MainConfig() : base(SavedPhones.ConfigRoot + "\\main.config")
         {
             Dictionary<string, JToken> DefaultValues = new Dictionary<string, JToken>()
             {
@@ -28,113 +31,106 @@ namespace FnSync
                 // Don't assign null
             };
 
-            foreach(var item in DefaultValues)
+            foreach (KeyValuePair<string, JToken> item in DefaultValues)
             {
-                if( this[item.Key] == null)
+                if (this[item.Key] == null)
                 {
                     this[item.Key] = item.Value;
                 }
             }
         }
 
-        public string ThisId { 
-            get {
-                return (string)this["ThisId"];
-            }
+        public string ThisId
+        {
+            get => (string)this["ThisId"];
             set
             {
                 this["ThisId"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ThisId"));
             }
         }
 
         public bool ConnectOnStartup
         {
             get
-            {
-                return (bool)this["ConnectOnStartup"];
-            }
+            => (bool)this["ConnectOnStartup"];
             set
             {
                 this["ConnectOnStartup"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ConnectOnStartup"));
             }
+
         }
         public bool HideOnStartup
         {
             get
-            {
-                return (bool)this["HideOnStartup"];
-            }
+            => (bool)this["HideOnStartup"];
             set
             {
                 this["HideOnStartup"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("HideOnStartup"));
             }
         }
         public bool HideNotificationOnStartup
         {
             get
-            {
-                return (bool)this["HideNotificationOnStartup"];
-            }
+            => (bool)this["HideNotificationOnStartup"];
             set
             {
                 this["HideNotificationOnStartup"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("HideNotificationOnStartup"));
             }
         }
         public bool DontToastConnected
         {
-            get
-            {
-                return (bool)this["DontToastConnected"];
-            }
+            get => (bool)this["DontToastConnected"];
             set
             {
                 this["DontToastConnected"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("DontToastConnected"));
             }
         }
         public bool ClipboardSync
         {
-            get
-            {
-                return (bool)this["ClipboardSync"];
-            }
+            get => (bool)this["ClipboardSync"];
             set
             {
+                ClipboardManager.Singleton.MonitorClipboardOn = value;
                 this["ClipboardSync"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("ClipboardSync"));
             }
         }
 
         public bool TextCastAutoCopy
         {
             get
-            {
-                return (bool)this["TextCastAutoCopy"];
-            }
+            => (bool)this["TextCastAutoCopy"];
             set
             {
                 this["TextCastAutoCopy"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("TextCastAutoCopy"));
             }
         }
 
         public int FixedListenPort
         {
-            get
-            {
-                return (int)this["FixedListenPort"];
-            }
+            get => (int)this["FixedListenPort"];
             set
             {
                 this["FixedListenPort"] = Math.Min(Math.Max(0, value), 65535);
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FixedListenPort"));
             }
         }
 
-        public string AdditionalIPs { 
-            get {
-                return (string)this["AdditionalIPs"];
-            }
+        public string AdditionalIPs
+        {
+            get => (string)this["AdditionalIPs"];
             set
             {
                 this["AdditionalIPs"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("AdditionalIPs"));
             }
         }
+
     }
 }

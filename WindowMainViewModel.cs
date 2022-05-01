@@ -135,11 +135,19 @@ namespace FnSync.ViewModel
         {
             LeftPanelItemSet.Add(new ControlWrapper<ControlConnectionByQR>("ConnectByQR", this, true));
             LeftPanelItemSet.Add(new ControlWrapper<ControlConnectionByCode>("ConnectionCode", this, true));
+            LeftPanelItemSet.Add(new ControlWrapper<ControlSettings>("Setting", this, true));
 
             foreach (SavedPhones.Phone Phone in SavedPhones.Singleton.Values)
             {
                 LeftPanelItemSet.Add(new DeviceItem(Phone, this));
             }
+
+            PhoneMessageCenter.Singleton.Register(
+                null,
+                PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
+                OnDeviceConnected,
+                false
+            );
 
             PhoneMessageCenter.Singleton.Register(
                 null,
@@ -158,9 +166,9 @@ namespace FnSync.ViewModel
 
         private DeviceItem FindDeviceById(string Id)
         {
-            foreach(LeftPanelItemAbstract Item in LeftPanelItemSet)
+            foreach (LeftPanelItemAbstract Item in LeftPanelItemSet)
             {
-                if(Item is DeviceItem Device && Device.Id == Id)
+                if (Item is DeviceItem Device && Device.Id == Id)
                 {
                     return Device;
                 }
@@ -171,14 +179,22 @@ namespace FnSync.ViewModel
 
         private void RemoveDeviceById(string Id)
         {
-            for(int i = 0; i < LeftPanelItemSet.Count; ++i)
+            for (int i = 0; i < LeftPanelItemSet.Count; ++i)
             {
                 LeftPanelItemAbstract Item = LeftPanelItemSet[i];
-                if(Item is DeviceItem Device && Device.Id == Id)
+                if (Item is DeviceItem Device && Device.Id == Id)
                 {
                     LeftPanelItemSet.RemoveAt(i);
                     return;
                 }
+            }
+        }
+
+        private void OnDeviceConnected(string Id, string msgType, object msg, PhoneClient client)
+        {
+            if (FindDeviceById(Id) == null)
+            {
+                LeftPanelItemSet.Add(new DeviceItem(SavedPhones.Singleton[Id], this));
             }
         }
 
@@ -202,6 +218,12 @@ namespace FnSync.ViewModel
 
         public void Dispose()
         {
+            PhoneMessageCenter.Singleton.Unregister(
+                null,
+                PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
+                OnDeviceConnected
+            );
+
             PhoneMessageCenter.Singleton.Unregister(
                 null,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_NAME_CHANGED,
