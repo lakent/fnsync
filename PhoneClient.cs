@@ -344,8 +344,14 @@ namespace FnSync
             OldConnection = accept.OptBool("oldconnection", false);
             if (OldConnection)
             {
+                SavedPhones.Phone Saved = SavedPhones.Singleton[Id];
+                if(Saved == null)
+                {
+                    throw new IllegalPhoneException();
+                }
+
                 // Replace constructor-inited EncryptionManager
-                SetCode(SavedPhones.Singleton[Id].Code);
+                SetCode(Saved.Code);
             }
             else
             {
