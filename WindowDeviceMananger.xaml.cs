@@ -34,7 +34,8 @@ namespace FnSync
                     window.Show();
                     if (id != null)
                     {
-                        window.SelectDevice(id); window.DeviceList.Focus();
+                        window.SelectDevice(id);
+                        window.DeviceList.Focus();
                     }
                 }
                 else
@@ -122,6 +123,13 @@ namespace FnSync
             {
                 TabNotificationHistory.DataContext = item;
             }
+        }
+
+        private void DeviceList_Unloaded(object sender, RoutedEventArgs e)
+        {
+            // https://stackoverflow.com/a/34146475/1968839
+            DataGrid grid = (DataGrid)sender;
+            grid.CommitEdit(DataGridEditingUnit.Row, true);
         }
     }
 }
