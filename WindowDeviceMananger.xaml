@@ -21,7 +21,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DataGrid Grid.Row="0" x:Name="DeviceList" Margin="4" AutoGenerateColumns="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="DeviceList_SelectionChanged">
+        <DataGrid Grid.Row="0" x:Name="DeviceList" Margin="4" AutoGenerateColumns="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="DeviceList_SelectionChanged" Unloaded="DeviceList_Unloaded">
             <DataGrid.Resources>
                 <ContextMenu x:Key="Menu" DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="{DynamicResource Delete}" Click="Menu_Delete_Click"/>
