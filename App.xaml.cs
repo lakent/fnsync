@@ -129,7 +129,6 @@ namespace FnSync
                 MainConfig.Config.TextCastAutoCopy = true;
 
                 MainConfig.Config.Update();
-                WindowInstruction.NewOne();
             }
             else
             {
@@ -145,7 +144,10 @@ namespace FnSync
                 }
             }
 
-            WindowMain.NewOne();
+            if (!MainConfig.Config.HideOnStartup)
+            {
+                WindowMain.NewOne();
+            }
 
             ClipboardManager.Singleton.MonitorClipboardOn = MainConfig.Config.ClipboardSync;
 
@@ -177,14 +179,9 @@ namespace FnSync
             ToastContentBuilder Builder = new ToastContentBuilder()
                 .AddText((string)Application.Current.FindResource("ConnectingKnown"))
                 .AddButton(new ToastButton()
-                    .SetContent((string)Application.Current.FindResource("ConnectOther"))
-                    .AddArgument("ConnectOther")
-                    .SetBackgroundActivation())
-                .AddButton(new ToastButton()
-                    .SetContent((string)Application.Current.FindResource("DeviceManager"))
-                    .AddArgument("DeviceManager")
-                    .SetBackgroundActivation())
-                ;
+                    .SetContent((string)Application.Current.FindResource("OpenMainWindow"))
+                    .AddArgument("OpenMainWindow")
+                    .SetBackgroundActivation());
 
             NotificationSubchannel.Singleton.Push(Builder);
         }

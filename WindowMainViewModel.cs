@@ -216,6 +216,18 @@ namespace FnSync.ViewModel
             RemoveDeviceById(Id);
         }
 
+        public void JumpToDevice(string Id)
+        {
+            DeviceItem deviceItem = FindDeviceById(Id);
+
+            if (deviceItem == null)
+            {
+                return;
+            }
+
+            deviceItem.IsSelected = true;
+        }
+
         public void Dispose()
         {
             PhoneMessageCenter.Singleton.Unregister(

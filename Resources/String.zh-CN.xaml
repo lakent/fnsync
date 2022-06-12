@@ -23,7 +23,7 @@
     <System:String x:Key="PromptAccept">请在手机上接受连接</System:String>
     <System:String x:Key="Rename">重命名</System:String>
     <System:String x:Key="Disconnect">断开连接</System:String>
-    <System:String x:Key="ConnectOther">连接其它设备</System:String>
+    <System:String x:Key="OpenMainWindow">打开主界面</System:String>
     <System:String x:Key="Status">状态</System:String>
     <System:String x:Key="Online">在线</System:String>
     <System:String x:Key="Offline">离线</System:String>
@@ -46,8 +46,6 @@
     <System:String x:Key="ThirdPartyLibrary">本程序使用了以下第三方库：</System:String>
 
     <System:String x:Key="Instruction">操作步骤</System:String>
-    <System:String x:Key="GettingStarted_Screenshot">Resources\PhoneScreenshot_zh-cn.png</System:String>
-    <System:String x:Key="GettingStarted_Screenshot_Scan">Resources\PhoneScreenshot_scan_zh-cn.png</System:String>
     <System:String x:Key="DownloadAndroidCompanion">下载安卓端 APP（Google Play）</System:String>
     <System:String x:Key="Instructions" xml:space="preserve">操作步骤:
 0、将手机和电脑连接到同一个局域网中。
@@ -86,7 +84,7 @@
     <System:String x:Key="APPName">应用名称</System:String>
     <System:String x:Key="PkgID">包名</System:String>
     <System:String x:Key="ConnectOnStartup">启动自动连接已知设备</System:String>
-    <System:String x:Key="HideOnStartup">启动时不显示连接窗口</System:String>
+    <System:String x:Key="HideOnStartup">启动时不显示主窗口</System:String>
     <System:String x:Key="HideNotificationOnStartup">启动时不显示连接通知</System:String>
     <System:String x:Key="DontToastConnected">不显示“已连接”通知</System:String>
     <System:String x:Key="ClipboardSync">同步剪切板到手机（仅文本）</System:String>

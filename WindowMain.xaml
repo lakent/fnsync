@@ -9,7 +9,7 @@
         xmlns:local="clr-namespace:FnSync"
         xmlns:localViewModel="clr-namespace:FnSync.ViewModel"
         mc:Ignorable="d"
-        Title="WindowMain" Height="450" Width="800"
+        Title="WindowMain" Height="510" Width="800"
         PlaceTitleBarOverContent="True"
                              >
     <Window.DataContext>

@@ -300,13 +300,9 @@ namespace FnSync
                 return;
             }
 
-            if (InvokedArgs.Equals("ConnectOther"))
+            if (InvokedArgs.Equals("OpenMainWindow"))
             {
                 WindowMain.NewOne();
-            }
-            else if (InvokedArgs.Equals("DeviceManager"))
-            {
-                WindowDeviceMananger.NewOne(null);
             }
 
             QueryString queries = QueryString.Parse(InvokedArgs);

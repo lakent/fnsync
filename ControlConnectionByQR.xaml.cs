@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,6 +28,13 @@ namespace FnSync
         public ControlConnectionByQR()
         {
             InitializeComponent();
+            if (Thread.CurrentThread.CurrentCulture.Name.Equals("zh-CN"))
+            {
+                DownloadAndroidCompanionCoolApk.Visibility = Visibility.Visible;
+            }
+#if DEBUG
+            DownloadAndroidCompanionCoolApk.Visibility = Visibility.Visible;
+#endif
             RefreshQrCode();
         }
 
@@ -92,6 +100,14 @@ namespace FnSync
         private void QRCode_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             RefreshQrCode();
+        }
+
+        private void DownloadAndroidCompanion_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        {
+            if (sender is Hyperlink link)
+            {
+                System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri);
+            }
         }
     }
 }

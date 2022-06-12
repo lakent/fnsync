@@ -17,14 +17,11 @@
         <Separator x:Name="PhonesAbove"/>
         <MenuItem IsEnabled="True" Header="{DynamicResource FileManager}" Command="{Binding FileManagerCommand}" />
         <Separator />
-        <MenuItem x:Name="ConnectOther" IsEnabled="True" Header="{DynamicResource ConnectOther}" Command="{Binding ConnectOtherCommand}" />
-        <MenuItem IsEnabled="True" Header="{DynamicResource DeviceManager}" Command="{Binding DeviceManagerCommand}" />
+        <MenuItem x:Name="OpenMainWindow" IsEnabled="True" Header="{DynamicResource OpenMainWindow}" Command="{Binding OpenMainWindowCommand}" />
         <MenuItem IsEnabled="True" Header="{DynamicResource Setting}" Command="{Binding SettingCommand}" />
         <Separator />
-        <MenuItem Header="{DynamicResource Instruction}" Command="{Binding InstructionCommand}"/>
         <MenuItem Header="{DynamicResource Exit}" Command="{Binding ExitApplicationCommand}" />
     </ContextMenu>
-
 
     <!-- the application's NotifyIcon - started from App.xaml.cs. Declares its own view model. -->
     <tb:TaskbarIcon x:Key="NotifyIcon"

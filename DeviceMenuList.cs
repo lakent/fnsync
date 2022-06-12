@@ -99,7 +99,8 @@ namespace FnSync
             {
                 if (AlivePhones.Singleton[id]?.IsAlive ?? false)
                 {
-                    WindowDeviceMananger.NewOne(id);
+                    WindowMain.NewOne();
+                    WindowMain.JumpToDevice(id);
                 }
                 else if (SavedPhones.Singleton.ContainsKey(id))
                 {

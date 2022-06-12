@@ -189,9 +189,6 @@
     <Compile Include="Unirandom.cs" />
     <Compile Include="UserControlExtension.cs" />
     <Compile Include="Utils.cs" />
-    <Compile Include="WindowDeviceMananger.xaml.cs">
-      <DependentUpon>WindowDeviceMananger.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WindowFileAlreadyExists.xaml.cs">
       <DependentUpon>WindowFileAlreadyExists.xaml</DependentUpon>
     </Compile>
@@ -204,17 +201,11 @@
     <Compile Include="WindowFileOperation.xaml.cs">
       <DependentUpon>WindowFileOperation.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WindowInstruction.xaml.cs">
-      <DependentUpon>WindowInstruction.xaml</DependentUpon>
-    </Compile>
     <Compile Include="WindowMainViewModel.cs">
       <DependentUpon>WindowMain.xaml</DependentUpon>
     </Compile>
     <Compile Include="WindowMain.xaml.cs">
       <DependentUpon>WindowMain.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowSetting.xaml.cs">
-      <DependentUpon>WindowSetting.xaml</DependentUpon>
     </Compile>
     <Compile Include="WindowUnhandledException.xaml.cs">
       <DependentUpon>WindowUnhandledException.xaml</DependentUpon>
@@ -330,10 +321,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WindowDeviceMananger.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="WindowFileAlreadyExists.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -350,15 +337,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="WindowInstruction.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="WindowMain.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowSetting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -391,14 +370,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\baseline_settings_black_24dp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\PhoneScreenshot_en.png" />
-    <Resource Include="Resources\PhoneScreenshot_zh-cn.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\PhoneScreenshot_scan_en.png" />
-    <Resource Include="Resources\PhoneScreenshot_scan_zh-cn.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="app.ico" />

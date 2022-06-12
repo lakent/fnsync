@@ -23,7 +23,7 @@
     <System:String x:Key="PromptAccept">You may accept the connection on your phone</System:String>
     <System:String x:Key="Rename">Rename</System:String>
     <System:String x:Key="Disconnect">Disconnect</System:String>
-    <System:String x:Key="ConnectOther">Connect Other Device</System:String>
+    <System:String x:Key="OpenMainWindow">Open Main Window</System:String>
     <System:String x:Key="Status">Status</System:String>
     <System:String x:Key="Online">Online</System:String>
     <System:String x:Key="Offline">Offline</System:String>
@@ -46,8 +46,6 @@
     <System:String x:Key="ThirdPartyLibrary">This program uses these third party libraries:</System:String>
 
     <System:String x:Key="Instruction">Instruction</System:String>
-    <System:String x:Key="GettingStarted_Screenshot">Resources\PhoneScreenshot_en.png</System:String>
-    <System:String x:Key="GettingStarted_Screenshot_Scan">Resources\PhoneScreenshot_scan_en.png</System:String>
     <System:String x:Key="DownloadAndroidCompanion">Download Android Companion APP from Google Play</System:String>
     <System:String x:Key="Instructions" xml:space="preserve">Instructions:
 0. Make sure your phone and PC are at the same network.
@@ -87,7 +85,7 @@
     <System:String x:Key="APPName">APP Name</System:String>
     <System:String x:Key="PkgID">Package ID</System:String>
     <System:String x:Key="ConnectOnStartup">Connect known phones on startup</System:String>
-    <System:String x:Key="HideOnStartup">Don't show Connect window on startup</System:String>
+    <System:String x:Key="HideOnStartup">Don't show main window on startup</System:String>
     <System:String x:Key="HideNotificationOnStartup">Don't show connect toast on startup</System:String>
     <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
     <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>

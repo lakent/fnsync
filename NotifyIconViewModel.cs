@@ -29,7 +29,7 @@ namespace FnSync
             }
         }
 
-        public ICommand ConnectOtherCommand
+        public ICommand OpenMainWindowCommand
         {
             get
             {
@@ -38,20 +38,6 @@ namespace FnSync
                     CommandAction = () =>
                     {
                         WindowMain.NewOne();
-                    },
-                    CanExecuteFunc = () => true
-                };
-            }
-        }
-        public ICommand DeviceManagerCommand
-        {
-            get
-            {
-                return new NotifyIconContextMenuCommand
-                {
-                    CommandAction = () =>
-                    {
-                        WindowDeviceMananger.NewOne(null);
                     },
                     CanExecuteFunc = () => true
                 };
@@ -80,23 +66,7 @@ namespace FnSync
                 {
                     CommandAction = () =>
                     {
-                       WindowSetting.NewOne();
-                    },
-                    CanExecuteFunc = () => true
-                };
-            }
-        }
-
-
-        public ICommand InstructionCommand
-        {
-            get
-            {
-                return new NotifyIconContextMenuCommand
-                {
-                    CommandAction = () =>
-                    {
-                        WindowInstruction.NewOne();
+                       WindowMain.NewOne();
                     },
                     CanExecuteFunc = () => true
                 };

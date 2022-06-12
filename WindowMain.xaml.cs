@@ -1,4 +1,5 @@
 ﻿using AdonisUI.Controls;
+using FnSync.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,11 +40,22 @@ namespace FnSync
             });
         }
 
+        public static void JumpToDevice(string Id)
+        {
+            if(!(CurrentWindow?.DataContext is WindowMainViewModel viewModel))
+            {
+                return;
+            }
+
+            viewModel.JumpToDevice(Id);
+        }
+
         public WindowMain()
         {
             CurrentWindow = this;
             InitializeComponent();
         }
+
 
         protected override void OnClosed(EventArgs e)
         {
