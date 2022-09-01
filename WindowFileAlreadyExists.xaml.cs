@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdonisUI.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,14 +12,14 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static FnSync.FileTransHandler;
+using static FnSync.FileTransmissionAbstract;
 
 namespace FnSync
 {
     /// <summary>
     /// Interaction logic for WindowFileAlreadyExists.xaml
     /// </summary>
-    public partial class WindowFileAlreadyExists : Window
+    public partial class WindowFileAlreadyExists : AdonisWindow
     {
         public class ExistAction : EventArgs
         {
@@ -54,13 +55,15 @@ namespace FnSync
         {
             FileAlreadyExistEventArgs.Measure action = FileAlreadyExistEventArgs.Measure.SKIP;
 
-            if( Skip.IsChecked == true )
+            if (Skip.IsChecked == true)
             {
                 action = FileAlreadyExistEventArgs.Measure.SKIP;
-            } else if( Overwrite.IsChecked == true)
+            }
+            else if (Overwrite.IsChecked == true)
             {
                 action = FileAlreadyExistEventArgs.Measure.OVERWRITE;
-            } else if( Rename.IsChecked == true)
+            }
+            else if (Rename.IsChecked == true)
             {
                 action = FileAlreadyExistEventArgs.Measure.RENAME;
             }

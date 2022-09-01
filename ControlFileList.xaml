@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FnSync"
+             xmlns:controlfolderlist="clr-namespace:FnSync.ViewModel.ControlFolderList"
+             d:DataContext="{d:DesignInstance Type=controlfolderlist:ViewModel}"
              mc:Ignorable="d"
              d:DesignHeight="250" d:DesignWidth="300">
 
@@ -13,27 +15,58 @@
         <local:FileIconConverter x:Key="FileIconConverter" />
         <local:NonNullToVisibleConverter x:Key="NonNullToVisibleConverter" />
 
-        <ContextMenu x:Key="RightClickMenu" DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}, Mode=OneWay}">
-            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}"/>
-            <Separator/>
-            <MenuItem Header="{DynamicResource CopyToThisPc}" Command="{Binding CopyToPcCommand}"/>
-            <MenuItem Header="{DynamicResource PasteHereFromPC}" Command="{Binding PasteHereFromPCCommand}"/>
-            <Separator/>
-            <MenuItem Header="{DynamicResource CutInsidePhone}" Command="{Binding CutInsideCommand}"/>
-            <MenuItem Header="{DynamicResource CopyInsidePhone}" Command="{Binding CopyInsideCommand}"/>
-            <MenuItem Header="{DynamicResource PasteHereInsidePhone}" Command="{Binding PasteHereInsideCommand}"/>
-            <MenuItem Header="{DynamicResource PasteToInsidePhone}" Command="{Binding PasteToInsideCommand}"/>
-            <Separator/>
-            <MenuItem Header="{DynamicResource RefreshMediaStore}" Command="{Binding RefreshMediaStoreCommand}"/>
-            <Separator/>
-            <MenuItem Header="{DynamicResource Rename}" Command="{Binding RenameCommand}"/>
-            <MenuItem Header="{DynamicResource Delete}" Command="{Binding DeleteCommand}"/>
-        </ContextMenu>
+        <ContextMenu x:Key="ContextMenu">
+            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding Refresh}"/>
 
+            <Separator/>
+            <!-- https://stackoverflow.com/a/25965943/1968839 -->
+            <!-- https://stackoverflow.com/a/37654709/1968839 -->
+            <MenuItem Header="{DynamicResource CopyToThisPc}"
+                      Command="{Binding CopyToPc}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+            <MenuItem Header="{DynamicResource PasteHereFromPC}"
+                      Command="{Binding PasteHereFromPC}"
+                      />
+            <Separator/>
+            <MenuItem Header="{DynamicResource CutInsidePhone}"
+                      Command="{Binding CutInside}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+            <MenuItem Header="{DynamicResource CopyInsidePhone}"
+                      Command="{Binding CopyInside}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+            <MenuItem Header="{DynamicResource PasteHereInsidePhone}"
+                      Command="{Binding PasteHereInside}"
+                      />
+            <Separator/>
+            <MenuItem Header="{DynamicResource RefreshMediaStore}"
+                      Command="{Binding RefreshMediaStore}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+            <Separator/>
+            <MenuItem Header="{DynamicResource Rename}"
+                      Command="{Binding Rename}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+            <MenuItem Header="{DynamicResource Delete}"
+                      Command="{Binding Delete}"
+                      CommandParameter="{Binding Path=PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+                      />
+        </ContextMenu>
     </Control.Resources>
 
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <DataGrid x:Name="ListView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False" IsReadOnly="True" ItemsSource="{Binding}" GridLinesVisibility="None" CanUserResizeRows="False" HeadersVisibility="Column" IsSynchronizedWithCurrentItem="True" EnableRowVirtualization="True" VirtualizingPanel.IsVirtualizing="True" SelectionUnit="FullRow" MouseDown="ListView_MouseDown" PreviewKeyDown="ListView_KeyDown" MouseDoubleClick="ListView_MouseDoubleClick" ContextMenu="{StaticResource RightClickMenu}" Tag="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ControlFileList}}}">
+        <DataGrid x:Name="FileListGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+              AutoGenerateColumns="False" IsReadOnly="True"
+              ItemsSource="{Binding Path=SelectedItem.AllChildrenInfo}"
+              GridLinesVisibility="None" CanUserResizeRows="False" HeadersVisibility="Column"
+              IsSynchronizedWithCurrentItem="True" EnableRowVirtualization="True"
+              VirtualizingPanel.IsVirtualizing="True" SelectionUnit="FullRow"
+              MouseDown="ListView_MouseDown" PreviewKeyDown="ListView_KeyDown"
+              MouseDoubleClick="ListView_MouseDoubleClick" ContextMenu="{StaticResource ContextMenu}"
+              >
             <DataGrid.Resources>
                 <Style TargetType="Label">
                     <Style.Triggers>
@@ -111,10 +144,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-
             </DataGrid.Columns>
         </DataGrid>
-
-        <!-- <Label Content="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}}" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{Binding Path=FolderList.Prompt, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:ControlFileList}, Converter={StaticResource NonNullToVisibleConverter}}"/> -->
     </Grid>
 </local:UserControlExtension>

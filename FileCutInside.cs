@@ -12,7 +12,7 @@ namespace FnSync
         public class CutInsideEntry : BaseEntry { }
         public FileCutInside(): base()
         {
-            Operation = OperationClass.CUT;
+            Operation = Operations.CUT;
         }
     }
 }

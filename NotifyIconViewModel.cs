@@ -11,24 +11,6 @@ namespace FnSync
     /// </summary>
     public class NotifyIconViewModel
     {
-        /// <summary>
-        /// Shows a window, if none is already open.
-        /// </summary>
-        public ICommand ShowWindowCommand
-        {
-            get
-            {
-                return new NotifyIconContextMenuCommand
-                {
-                    CanExecuteFunc = () => true,
-                    CommandAction = () =>
-                    {
-                        WindowMain.NewOne();
-                    }
-                };
-            }
-        }
-
         public ICommand OpenMainWindowCommand
         {
             get
@@ -66,16 +48,13 @@ namespace FnSync
                 {
                     CommandAction = () =>
                     {
-                       WindowMain.NewOne();
+                        WindowMain.NewOne();
                     },
                     CanExecuteFunc = () => true
                 };
             }
         }
 
-        /// <summary>
-        /// Shuts down the application.
-        /// </summary>
         public ICommand ExitApplicationCommand
         {
             get

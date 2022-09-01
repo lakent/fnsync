@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using AdonisUI.Controls;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using Ookii.Dialogs.Wpf;
 using System;
@@ -13,14 +14,18 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using static FnSync.FileTransHandler;
+using static FnSync.FileTransmissionAbstract;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxImage = System.Windows.MessageBoxImage;
+using MessageBoxResult = System.Windows.MessageBoxResult;
 
 namespace FnSync
 {
     /// <summary>
     /// Interaction logic for WindowFileReceive.xaml
     /// </summary>
-    public partial class WindowFileOperation : Window
+    public partial class WindowFileOperation : AdonisWindow
     {
         private bool PromptOnClose = false;
         private bool CloseAutomatically = true;
@@ -28,9 +33,9 @@ namespace FnSync
 
         public IList<BaseEntry> EntryList = null;
         public Func<IList<BaseEntry>> PrepareEntryList { get; private set; } = null;
-        private FileTransHandler.HandlerList HandlerList = null;
+        private FileTransmissionAbstract.HandlerList HandlerList = null;
 
-        public readonly DirectionClass Direction;
+        public readonly Directions Direction;
 
         public readonly string ClientId = null;
         public string DestFolder { get; private set; } = null;
@@ -43,8 +48,8 @@ namespace FnSync
         private event EventHandler OnExitEvent;
 
         public WindowFileOperation(
-            DirectionClass Direction,
-            OperationClass Operation,
+            Directions Direction,
+            Operations Operation,
             string ClientId,
             string DestFolder = null,
             string SrcFolder = null,
@@ -83,20 +88,20 @@ namespace FnSync
             return this;
         }
 
-        private void SetTitle(DirectionClass Direction, OperationClass Operation)
+        private void SetTitle(Directions Direction, Operations Operation)
         {
             string PatternString;
             switch (Direction)
             {
-                case DirectionClass.INSIDE_PHONE:
+                case Directions.INSIDE_PHONE:
                     PatternString = (string)FindResource("FileOperation_InsidePhone");
                     break;
 
-                case DirectionClass.PC_TO_PHONE:
+                case Directions.PC_TO_PHONE:
                     PatternString = (string)FindResource("FileOperation_PcToPhone");
                     break;
 
-                case DirectionClass.PHONE_TO_PC:
+                case Directions.PHONE_TO_PC:
                     PatternString = (string)FindResource("FileOperation_PhoneToPc");
                     break;
 
@@ -107,11 +112,11 @@ namespace FnSync
             string OperationString;
             switch (Operation)
             {
-                case OperationClass.COPY:
+                case Operations.COPY:
                     OperationString = (string)FindResource("Copy");
                     break;
 
-                case OperationClass.CUT:
+                case Operations.CUT:
                     OperationString = (string)FindResource("Cut");
                     break;
 
@@ -138,7 +143,7 @@ namespace FnSync
                 throw new ArgumentNullException("EntryList");
             }
 
-            if (this.DestFolder == null && this.Direction == DirectionClass.PHONE_TO_PC)
+            if (this.DestFolder == null && this.Direction == Directions.PHONE_TO_PC)
             {
                 if (this.EntryList.Count == 1)
                 {
@@ -195,7 +200,7 @@ namespace FnSync
             {
             }
 
-            HandlerList = new FileTransHandler.HandlerList(this.EntryList, ClientId, DestFolder, SrcFolder, DestStorage, SrcStorage);
+            HandlerList = new FileTransmissionAbstract.HandlerList(this.EntryList, ClientId, DestFolder, SrcFolder, DestStorage, SrcStorage);
 
             StartTramsmission();
         }
@@ -329,7 +334,7 @@ namespace FnSync
             FilesTotal.Content = HandlerList.Count.ToString();
 
             int i = 0;
-            foreach (FileTransHandler Handler in this.HandlerList)
+            foreach (FileTransmissionAbstract Handler in this.HandlerList)
             {
                 if (this.HandlerList.IsDisposed)
                 {
@@ -388,7 +393,7 @@ namespace FnSync
             });
         }
 
-        private void Handler_ProgressChangedEvent(object sender, FileTransHandler.ProgressChangedEventArgs e)
+        private void Handler_ProgressChangedEvent(object sender, FileTransmissionAbstract.ProgressChangedEventArgs e)
         {
             App.FakeDispatcher.Invoke(() =>
             {

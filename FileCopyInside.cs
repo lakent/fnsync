@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FnSync
 {
-    class FileCopyInside : FileTransHandler
+    class FileCopyInside : FileTransmissionAbstract
     {
         public class CopyInsideEntry : BaseEntry { }
 
@@ -19,11 +19,11 @@ namespace FnSync
         public string DestinationFolder { get; private set; }
         public string FileRootOnSource { get; private set; }
 
-        public OperationClass Operation{ get; protected set; }
+        public Operations Operation{ get; protected set; }
 
         public FileCopyInside()
         {
-            Operation = OperationClass.COPY;
+            Operation = Operations.COPY;
         }
 
         public override void Initialization(string ClientId, BaseEntry Entry, string DestFolder = null, string SrcFolder = null,
@@ -67,8 +67,8 @@ namespace FnSync
                             ["to"] = DestinationFolder,
                             ["exist_action"] = ExistAction
                         },
-                        Operation == OperationClass.CUT ? MSG_TYPE_FILE_MOVE : MSG_TYPE_FILE_COPY,
-                        Operation == OperationClass.CUT ? MSG_TYPE_MOVE_DONE : MSG_TYPE_COPY_DONE,
+                        Operation == Operations.CUT ? MSG_TYPE_FILE_MOVE : MSG_TYPE_FILE_COPY,
+                        Operation == Operations.CUT ? MSG_TYPE_MOVE_DONE : MSG_TYPE_COPY_DONE,
                         int.MaxValue,
                         "success",
                         false

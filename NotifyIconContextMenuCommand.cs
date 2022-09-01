@@ -7,9 +7,6 @@ using System.Windows.Input;
 
 namespace FnSync
 {
-    /// <summary>
-    /// Simplistic delegate command for the demo.
-    /// </summary>
     public class NotifyIconContextMenuCommand : ICommand
     {
         public Action CommandAction { get; set; }
@@ -22,7 +19,7 @@ namespace FnSync
 
         public bool CanExecute(object parameter)
         {
-            return CanExecuteFunc == null  || CanExecuteFunc();
+            return CanExecuteFunc == null || CanExecuteFunc();
         }
 
         public event EventHandler CanExecuteChanged
@@ -30,4 +27,5 @@ namespace FnSync
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
-    }}
+    }
+}

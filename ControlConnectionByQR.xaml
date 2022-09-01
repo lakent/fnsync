@@ -6,7 +6,18 @@
              xmlns:local="clr-namespace:FnSync"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Margin="16,8,16,16">
+    <UserControl.Resources>
+        <!-- https://stackoverflow.com/a/25460015/1968839 -->
+        <Style x:Key="OpacityChangesOnMouseover" TargetType="Label">
+            <Setter Property="Opacity" Value="0.5"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="true">
+                    <Setter Property="Opacity" Value="1" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -14,13 +25,13 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Image x:Name="QRCode" Grid.Row="0" Source="Resources/ic_launcher.png" Height="256" Margin="0,24,0,0" Cursor="Hand" MouseLeftButtonDown="QRCode_MouseLeftButtonDown"/>
-        <Label Grid.Row="1" Content="{DynamicResource Instructions}"/>
-        <Label Grid.Row="2">
+        <Label Grid.Row="1" Content="{DynamicResource Instructions}" Style="{StaticResource OpacityChangesOnMouseover}"/>
+        <Label Grid.Row="2" Style="{StaticResource OpacityChangesOnMouseover}">
             <Hyperlink NavigateUri="https://play.google.com/store/apps/details?id=holmium.fnsync" RequestNavigate="DownloadAndroidCompanion_RequestNavigate">
                 <TextBlock Text="{DynamicResource DownloadAndroidCompanion}"/>
             </Hyperlink>
         </Label>
-        <Label Grid.Row="3" Visibility="Collapsed" x:Name="DownloadAndroidCompanionCoolApk" >
+        <Label Grid.Row="3" Visibility="Collapsed" x:Name="DownloadAndroidCompanionCoolApk" Style="{StaticResource OpacityChangesOnMouseover}">
             <Hyperlink NavigateUri="https://www.coolapk.com/apk/269031" RequestNavigate="DownloadAndroidCompanion_RequestNavigate">
                 <TextBlock Text="下载安卓端 APP（酷安）"/>
             </Hyperlink>

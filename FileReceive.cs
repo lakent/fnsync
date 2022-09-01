@@ -13,7 +13,7 @@ using Windows.UI.Notifications;
 
 namespace FnSync
 {
-    public class FileReceive : FileTransHandler
+    public class FileReceive : FileTransmissionAbstract
     {
         public class ReceiveEntry : BaseEntry
         {
@@ -326,7 +326,7 @@ namespace FnSync
                     })
                     ).Show();
                 */
-                new WindowFileOperation(DirectionClass.PHONE_TO_PC, OperationClass.COPY, ClientId)
+                new WindowFileOperation(Directions.PHONE_TO_PC, Operations.COPY, ClientId)
                 .SetEntryList(Pendings.GetAndRemove(PendingKey))
                 .Show();
                 return null;

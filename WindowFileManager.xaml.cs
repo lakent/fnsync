@@ -4,66 +4,66 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using AdonisUI.Controls;
 
 namespace FnSync
 {
     /// <summary>
     /// Interaction logic for WindowFileManager.xaml
     /// </summary>
-    public partial class WindowFileManager : Window
+    public partial class WindowFileManager : AdonisWindow
     {
-        private static WindowFileManager ThisWindow = null;
-        public static void NewOne()
+        public static void NewOne(string Id = null)
         {
             App.FakeDispatcher.Invoke(() =>
             {
-                if (ThisWindow != null)
-                {
-                    ThisWindow.Activate();
-                }
-                else
-                {
-                    WindowFileManager window = new WindowFileManager();
-                    window.Show();
-                }
+                WindowFileManager window = new WindowFileManager(Id);
+                window.Show();
                 return null;
             });
         }
 
-        public WindowFileManager()
+        private readonly ViewModel.ControlFolderList.ViewModel viewModel;
+        public WindowFileManager(string Id)
         {
             InitializeComponent();
-            FolderTree.DataContext = AlivePhones.Singleton;
-            ThisWindow = this;
+            viewModel = new ViewModel.ControlFolderList.ViewModel(Id);
+            this.DataContext = this.viewModel;
+            FolderTree.DataContext = this.viewModel;
+            FileList.DataContext = this.viewModel;
         }
 
         private void UpButton_Click(object sender, RoutedEventArgs e)
         {
-            FolderTree.ToUpfolder();
+            viewModel.ToParentFolder();
         }
 
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if( e.Key == Key.F5)
+            if (e.Key == Key.F5)
             {
                 e.Handled = true;
-                FolderTree.RefreshCurrentSelected();
+                viewModel.RefreshCurrentSelected();
             }
         }
 
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
-            ThisWindow = null;
+        }
+
+        private void ProgressBar_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            /*
+              Force update prompt,
+              https://stackoverflow.com/a/5676257/1968839
+             */
+
+            Prompt.GetBindingExpression(ContentProperty).UpdateTarget();
         }
     }
 
@@ -72,7 +72,7 @@ namespace FnSync
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Boolean.Equals(value, true) ? Visibility.Visible : Visibility.Collapsed;
+            return Equals(value, true) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

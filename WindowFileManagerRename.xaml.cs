@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdonisUI.Controls;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
@@ -6,21 +7,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Media.TextFormatting;
-using System.Windows.Shapes;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace FnSync
 {
     /// <summary>
     /// Interaction logic for WindowFileManagerRename.xaml
     /// </summary>
-    public partial class WindowFileManagerRename : Window
+    public partial class WindowFileManagerRename : AdonisWindow
     {
         public class RenameSubmitEventArgs : EventArgs
         {
@@ -70,7 +68,7 @@ namespace FnSync
             {
                 if (NewName.Contains('/') || NewName.Contains('\\'))
                 {
-                    MessageBox.Show(
+                    _ = MessageBox.Show(
                         (string)FindResource("IllegalFileName"),
                         (string)FindResource("Prompt"),
                         MessageBoxButton.OK,

@@ -6,10 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FnSync.Model.ControlFolderList;
+using FileInfo = System.IO.FileInfo;
 
 namespace FnSync
 {
-    class FileSend : FileTransHandler 
+    class FileSend : FileTransmissionAbstract 
     {
         public class SendEntry : BaseEntry
         {
@@ -437,7 +439,7 @@ namespace FnSync
                     {
                         ["paths"] = DestinationFolder + Entry.RemotePath,
                     },
-                    ControlFolderListPhoneRootItem.MSG_TYPE_FILE_DELETE);
+                    FileBaseModel.MSG_TYPE_FILE_DELETE);
             }
         }
 

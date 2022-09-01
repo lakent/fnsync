@@ -93,7 +93,7 @@
     <System:String x:Key="Port">端口</System:String>
     <System:String x:Key="RequireRestart">* 重启程序生效。</System:String>
     <System:String x:Key="AdditionalIPs">附加 IP 地址</System:String>
-    <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用冒号(;)分割。</System:String>
+    <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用冒号(;)分割。修改后需要刷新二维码。</System:String>
 
     <System:String x:Key="FileOperation">文件操作</System:String>
     <System:String x:Key="Cut">剪切</System:String>
@@ -147,7 +147,6 @@
     <System:String x:Key="CutInsidePhone">剪切(手机内) …</System:String>
     <System:String x:Key="CopyInsidePhone">复制(手机内) …</System:String>
     <System:String x:Key="PasteHereInsidePhone">粘贴到当前文件夹(手机内)</System:String>
-    <System:String x:Key="PasteToInsidePhone">粘贴到所选文件夹(手机内)</System:String>
     <System:String x:Key="PasteHereFromPC">粘贴到当前文件夹(从 PC)</System:String>
     <System:String x:Key="PasteToFromPC">粘贴到所选文件夹(从 PC)</System:String>
     <System:String x:Key="RefreshMediaStore">为所选文件刷新媒体缓存</System:String>

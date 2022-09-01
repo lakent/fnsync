@@ -10,7 +10,7 @@
   <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
 
-  <Product Id="*" Name="FnSync" Language="1033" Version="0.7.1.0" Manufacturer="holmium" UpgradeCode="9ad7c0b9-c690-4cf2-bbb6-093d68c50100" >
+  <Product Id="*" Name="FnSync" Language="1033" Version="0.8.0.0" Manufacturer="holmium" UpgradeCode="9ad7c0b9-c690-4cf2-bbb6-093d68c50100" >
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -79,6 +79,13 @@
 
       <Component Id="FnSync.exe.config">
         <File Source="$(var.FnSync.TargetDir)\FnSync.exe.config" />
+      </Component>
+
+      <Component Id="AdonisUI.ClassicTheme.dll">
+        <File Source="$(var.FnSync.TargetDir)\AdonisUI.ClassicTheme.dll" />
+      </Component>
+      <Component Id="AdonisUI.dll">
+        <File Source="$(var.FnSync.TargetDir)\AdonisUI.dll" />
       </Component>
       <Component Id="BouncyCastle.Crypto.dll">
         <File Source="$(var.FnSync.TargetDir)\BouncyCastle.Crypto.dll" />
@@ -392,6 +399,7 @@
       <Component Id="System.Xml.XPath.XDocument.dll">
         <File Source="$(var.FnSync.TargetDir)\System.Xml.XPath.XDocument.dll" />
       </Component>
+
     </ComponentGroup>
   </Fragment>
 </Wix>

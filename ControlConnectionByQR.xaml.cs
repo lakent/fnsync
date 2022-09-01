@@ -25,6 +25,7 @@ namespace FnSync
     /// </summary>
     public partial class ControlConnectionByQR : UserControlExtension
     {
+
         public ControlConnectionByQR()
         {
             InitializeComponent();
@@ -35,6 +36,10 @@ namespace FnSync
 #if DEBUG
             DownloadAndroidCompanionCoolApk.Visibility = Visibility.Visible;
 #endif
+        }
+
+        public override void OnShow()
+        {
             RefreshQrCode();
         }
 
@@ -102,11 +107,11 @@ namespace FnSync
             RefreshQrCode();
         }
 
-        private void DownloadAndroidCompanion_RequestNavigate(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
+        private void DownloadAndroidCompanion_RequestNavigate(object sender, RequestNavigateEventArgs e)
         {
             if (sender is Hyperlink link)
             {
-                System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri);
+                _ = System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri);
             }
         }
     }

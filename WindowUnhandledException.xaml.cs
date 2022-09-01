@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AdonisUI.Controls;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -19,7 +20,7 @@ namespace FnSync
     /// <summary>
     /// Interaction logic for WindowUnhandledException.xaml
     /// </summary>
-    public partial class WindowUnhandledException : Window
+    public partial class WindowUnhandledException : AdonisWindow
     {
         public static void ShowException(Exception e)
         {
@@ -28,7 +29,7 @@ namespace FnSync
 #else
             Environment.SetEnvironmentVariable("LAST_ERROR_STRING", BuildString(e));
             Environment.SetEnvironmentVariable("LAST_ERROR_PID", Process.GetCurrentProcess().Id.ToString());
-            Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location, "-LE");
+            _ = Process.Start(System.Reflection.Assembly.GetExecutingAssembly().Location, "-LE");
 #endif
         }
 
@@ -43,30 +44,30 @@ namespace FnSync
             Message.Text = e;
         }
 
-        private static String BuildString(Exception e)
+        private static string BuildString(Exception e)
         {
             StringBuilder sb = new StringBuilder();
             while (e != null)
             {
                 if (sb.Length > 0)
                 {
-                    sb.Append("\n\nCaused By:\n");
+                    _ = sb.Append("\n\nCaused By:\n");
                 }
 
-                sb.Append(e.Message).Append('\n')
+                _ = sb.Append(e.Message).Append('\n')
                     .Append(e.StackTrace);
 
                 e = e.InnerException;
             }
 
-            sb.Append('\n');
+            _ = sb.Append('\n');
 
             return sb.ToString();
         }
 
         private void QuitThis_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("taskkill", "/F /PID " + Environment.GetEnvironmentVariable("LAST_ERROR_PID"));
+            _ = Process.Start("taskkill", "/F /PID " + Environment.GetEnvironmentVariable("LAST_ERROR_PID"));
             Close();
         }
 

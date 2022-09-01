@@ -501,11 +501,21 @@ namespace FnSync
             };
         }
 
-        public void OneShot(PhoneClient Client, JObject DispatchedMsg, string DispatchedType, byte[] DispatchedBinary, string ExpectedType, int TimeoutMillseconds, OneShotAction OnDoneCallback, bool OnMainThread)
+        public void OneShot(
+            PhoneClient Client, JObject DispatchedMsg,
+            string DispatchedType, byte[] DispatchedBinary,
+            string ExpectedType, int TimeoutMillseconds,
+            OneShotAction OnDoneCallback, bool OnMainThread
+            )
         {
             if (OnDoneCallback == null)
             {
                 throw new ArgumentNullException("OnDone");
+            }
+
+            if (DispatchedMsg == null)
+            {
+                DispatchedMsg = new JObject();
             }
 
             string RequestToken = Guid.NewGuid().ToString();
@@ -519,7 +529,7 @@ namespace FnSync
 
             void MessageCallbackWrapper(string _, string ReceivedType, object ReceivedMsgObj, PhoneClient __)
             {
-                if(ReceivedType == MSG_FAKE_TYPE_ON_DISCONNECTED)
+                if (ReceivedType == MSG_FAKE_TYPE_ON_DISCONNECTED)
                 {
                     FireAndCleanUp?.Dispose(MSG_FAKE_TYPE_ON_DISCONNECTED);
                     return;
@@ -629,7 +639,8 @@ namespace FnSync
                             FireAndCleanUp.Dispose(ReceivedMsgObj);
                             return;
                         }
-                    } catch (Exception E)
+                    }
+                    catch (Exception E)
                     {
                         FireAndCleanUp.Dispose(E);
                         return;
@@ -865,4 +876,22 @@ namespace FnSync
             client.SendMsgNoThrow(MSG_TYPE_SCREEN_LOCKED);
         }
     }
+
+    public static class PhoneMessageCenterExtension
+    {
+        public static Task<object> OneShot(
+            this PhoneClient client,
+            JObject Msg,
+            string MsgType,
+            byte[] binary,
+            string ExpectedType,
+            int TimeoutMillseconds
+            )
+        {
+            return PhoneMessageCenter.Singleton.OneShot(
+                client, Msg, MsgType, binary, ExpectedType, TimeoutMillseconds
+                );
+        }
+    }
 }
+

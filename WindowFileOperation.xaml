@@ -1,13 +1,15 @@
-﻿<Window x:Class="FnSync.WindowFileOperation"
+﻿<adonisControls:AdonisWindow x:Class="FnSync.WindowFileOperation"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
+        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:local="clr-namespace:FnSync"
         mc:Ignorable="d"
         ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen" Icon="Resources/icon.ico" 
-        Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
         Loaded="Window_Loaded"
         Title="{DynamicResource FileOperation}" Width="600" Height="400">
 
@@ -46,7 +48,7 @@
         <ProgressBar Grid.Row="2" x:Name="Percent" Margin="8" Height="32" Maximum="100" Value="0"/>
 
         <Separator Grid.Row="3" Margin="8" />
-        <Label Grid.Row="3" Content="{DynamicResource Total}" HorizontalAlignment="Center" Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"/>
+        <Label Grid.Row="3" Content="{DynamicResource Total}" HorizontalAlignment="Center"/>
 
         <Grid HorizontalAlignment="Stretch" Grid.Row="4">
             <Grid.ColumnDefinitions >
@@ -71,7 +73,10 @@
             </StackPanel>
         </Grid>
         <ProgressBar Grid.Row="5" x:Name="PercentTotal" Margin="8" Height="32" Maximum="100" Value="0"/>
-        <TextBox x:Name="Logs" Grid.Row="6" Margin="8, 0" IsReadOnly="True"  IsReadOnlyCaretVisible="True" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="Logs" Grid.Row="6" Margin="8, 0" IsReadOnly="True" 
+             IsReadOnlyCaretVisible="True"
+             VerticalContentAlignment="Top"
+             ScrollViewer.VerticalScrollBarVisibility="Auto"/>
         <Grid HorizontalAlignment="Center" Grid.Row="7">
             <Grid.ColumnDefinitions >
                 <ColumnDefinition Width="Auto"/>
@@ -79,4 +84,4 @@
             <Button x:Name="Cancel" Margin="0,8,0,8" Padding="8,4" Content="{DynamicResource Cancel}" Click="Cancel_Click"/>
         </Grid>
     </Grid>
-</Window>
+</adonisControls:AdonisWindow>

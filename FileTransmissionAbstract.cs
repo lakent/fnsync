@@ -2,28 +2,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using FnSync.Model.ControlFolderList;
 
 namespace FnSync
 {
-    public abstract class FileTransHandler : IDisposable
+    public abstract class FileTransmissionAbstract : IDisposable
     {
-        public enum ListModeClass
+        public enum ListModes
         {
             DEEP,
             PLAIN_WITHOUT_FOLDER_LENGTH,
             PLAIN_WITH_FOLDER_LENGTH,
         }
 
-        public enum OperationClass
+        public enum Operations
         {
             CUT,
             COPY
         }
 
-        public enum DirectionClass
+        public enum Directions
         {
             INSIDE_PHONE,
             PHONE_TO_PC,
@@ -32,7 +32,7 @@ namespace FnSync
 
         public class BaseEntry
         {
-            private static async Task<IList<ControlFolderListItemViewBase.UiItem>> ListDirFiles(PhoneClient Client, string FullPath)
+            private static async Task<IList<PhoneFileInfo>> ListDirFiles(PhoneClient Client, string FullPath)
             {
                 JObject List = await PhoneMessageCenter.Singleton.OneShotMsgPart(
                     Client,
@@ -41,29 +41,34 @@ namespace FnSync
                         ["path"] = FullPath,
                         ["recursive"] = true
                     },
-                    ControlFolderListPhoneRootItem.MSG_TYPE_LIST_FOLDER,
+                    FileBaseModel.MSG_TYPE_LIST_FOLDER,
                     null,
-                    ControlFolderListPhoneRootItem.MSG_TYPE_FOLDER_CONTENT,
+                    FileBaseModel.MSG_TYPE_FOLDER_CONTENT,
                     60000
                 );
 
                 JArray ListPart = (JArray)List["files"];
-                List<ControlFolderListItemViewBase.UiItem> Files = ListPart.ToObject<List<ControlFolderListItemViewBase.UiItem>>();
+                List<PhoneFileInfo> Files = ListPart.ToObject<List<PhoneFileInfo>>();
 
                 return Files;
             }
 
-            public static async Task<T[]> ConvertFromUiItems<T>(IEnumerable<ControlFolderListItemViewBase.UiItem> UiItems, String RootOnPhone, PhoneClient Client, ListModeClass ListMode = ListModeClass.DEEP) where T : BaseEntry, new()
+            public static async Task<T[]> ConvertFromUiItems<T>(
+                IEnumerable<PhoneFileInfo> UiItems,
+                string RootOnPhone,
+                PhoneClient Client,
+                ListModes ListMode = ListModes.DEEP
+                ) where T : BaseEntry, new()
             {
                 List<T> ResultEntries = new List<T>();
 
-                foreach (ControlFolderListItemViewBase.UiItem item in UiItems)
+                foreach (PhoneFileInfo item in UiItems)
                 {
-                    if (item.type == "dir")
+                    if (item.type == ItemType.Directory)
                     {
                         string FolderPathOnPhone = item.path.AppendIfNotEnding("/");
 
-                        if (ListMode == ListModeClass.DEEP)
+                        if (ListMode == ListModes.DEEP)
                         {
                             ResultEntries.Add(new T()
                             {
@@ -75,11 +80,11 @@ namespace FnSync
                                 last = item.last
                             });
 
-                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
+                            IList<PhoneFileInfo> Files = await ListDirFiles(Client, RootOnPhone + item.path);
 
-                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
+                            foreach (PhoneFileInfo i in Files)
                             {
-                                if (i.type == "dir")
+                                if (i.type == ItemType.Directory)
                                 {
                                     ResultEntries.Add(new T()
                                     {
@@ -91,7 +96,7 @@ namespace FnSync
                                         last = item.last
                                     });
                                 }
-                                else if (i.type == "file")
+                                else if (i.type == ItemType.File)
                                 {
                                     ResultEntries.Add(new T()
                                     {
@@ -105,12 +110,12 @@ namespace FnSync
                                 }
                             }
                         }
-                        else if (ListMode == ListModeClass.PLAIN_WITH_FOLDER_LENGTH)
+                        else if (ListMode == ListModes.PLAIN_WITH_FOLDER_LENGTH)
                         {
-                            IList<ControlFolderListItemViewBase.UiItem> Files = await ListDirFiles(Client, RootOnPhone + item.path);
+                            IList<PhoneFileInfo> Files = await ListDirFiles(Client, RootOnPhone + item.path);
 
                             long DirLength = 0;
-                            foreach (ControlFolderListItemViewBase.UiItem i in Files)
+                            foreach (PhoneFileInfo i in Files)
                             {
                                 DirLength += i.size;
                             }
@@ -125,7 +130,7 @@ namespace FnSync
                                 last = item.last
                             });
                         }
-                        else if (ListMode == ListModeClass.PLAIN_WITHOUT_FOLDER_LENGTH)
+                        else if (ListMode == ListModes.PLAIN_WITHOUT_FOLDER_LENGTH)
                         {
                             ResultEntries.Add(new T()
                             {
@@ -138,7 +143,7 @@ namespace FnSync
                             });
                         }
                     }
-                    else if (item.type == "file")
+                    else if (item.type == ItemType.File)
                     {
                         ResultEntries.Add(new T()
                         {
@@ -204,9 +209,9 @@ namespace FnSync
             }
         }
 
-        public class HandlerList : IList<FileTransHandler>, IDisposable
+        public class HandlerList : IList<FileTransmissionAbstract>, IDisposable
         {
-            private class HandlerEnum : IEnumerator<FileTransHandler>
+            private class HandlerEnum : IEnumerator<FileTransmissionAbstract>
             {
                 public HandlerList HList;
 
@@ -240,7 +245,7 @@ namespace FnSync
                     }
                 }
 
-                public FileTransHandler Current
+                public FileTransmissionAbstract Current
                 {
                     get
                     {
@@ -257,7 +262,7 @@ namespace FnSync
             }
 
             public readonly IList<BaseEntry> EntryList;
-            private readonly List<FileTransHandler> InnerList;
+            private readonly List<FileTransmissionAbstract> InnerList;
 
             private readonly string ClientId;
             private readonly string DestFolder;
@@ -283,7 +288,7 @@ namespace FnSync
                 this.DestStorage = DestStorage;
                 this.SrcStorage = SrcStorage;
 
-                this.InnerList = new List<FileTransHandler>(EntryList.Count);
+                this.InnerList = new List<FileTransmissionAbstract>(EntryList.Count);
                 for (int i = 0; i < EntryList.Count; ++i)
                 {
                     this.InnerList.Add(null);
@@ -303,15 +308,15 @@ namespace FnSync
                 }
             }
 
-            public FileTransHandler this[int index]
+            public FileTransmissionAbstract this[int index]
             {
                 get
                 {
-                    FileTransHandler at = this.InnerList[index];
+                    FileTransmissionAbstract at = this.InnerList[index];
                     if (at == null)
                     {
                         BaseEntry Entry = EntryList[index];
-                        FileTransHandler NewEntry;
+                        FileTransmissionAbstract NewEntry;
                         if (Entry is FileSend.SendEntry)
                         {
                             NewEntry = new FileSend();
@@ -350,27 +355,27 @@ namespace FnSync
 
             public bool IsReadOnly => true;
 
-            void ICollection<FileTransHandler>.Add(FileTransHandler item)
+            void ICollection<FileTransmissionAbstract>.Add(FileTransmissionAbstract item)
             {
                 throw new NotImplementedException();
             }
 
-            void ICollection<FileTransHandler>.Clear()
+            void ICollection<FileTransmissionAbstract>.Clear()
             {
                 throw new NotImplementedException();
             }
 
-            bool ICollection<FileTransHandler>.Contains(FileTransHandler item)
+            bool ICollection<FileTransmissionAbstract>.Contains(FileTransmissionAbstract item)
             {
                 throw new NotImplementedException();
             }
 
-            void ICollection<FileTransHandler>.CopyTo(FileTransHandler[] array, int arrayIndex)
+            void ICollection<FileTransmissionAbstract>.CopyTo(FileTransmissionAbstract[] array, int arrayIndex)
             {
                 throw new NotImplementedException();
             }
 
-            public IEnumerator<FileTransHandler> GetEnumerator()
+            public IEnumerator<FileTransmissionAbstract> GetEnumerator()
             {
                 return new HandlerEnum(this);
             }
@@ -380,22 +385,22 @@ namespace FnSync
                 return this.GetEnumerator();
             }
 
-            int IList<FileTransHandler>.IndexOf(FileTransHandler item)
+            int IList<FileTransmissionAbstract>.IndexOf(FileTransmissionAbstract item)
             {
                 throw new NotImplementedException();
             }
 
-            void IList<FileTransHandler>.Insert(int index, FileTransHandler item)
+            void IList<FileTransmissionAbstract>.Insert(int index, FileTransmissionAbstract item)
             {
                 throw new NotImplementedException();
             }
 
-            bool ICollection<FileTransHandler>.Remove(FileTransHandler item)
+            bool ICollection<FileTransmissionAbstract>.Remove(FileTransmissionAbstract item)
             {
                 throw new NotImplementedException();
             }
 
-            void IList<FileTransHandler>.RemoveAt(int index)
+            void IList<FileTransmissionAbstract>.RemoveAt(int index)
             {
                 throw new NotImplementedException();
             }
@@ -406,7 +411,7 @@ namespace FnSync
             {
                 if (Interlocked.CompareExchange(ref _IsDisposed, 1, 0) == 0)
                 {
-                    foreach (FileTransHandler Handler in this)
+                    foreach (FileTransmissionAbstract Handler in this)
                     {
                         Handler.Dispose();
                     }
@@ -542,8 +547,9 @@ namespace FnSync
             this.Client = AlivePhones.Singleton[ClientId];
             if (this.Client == null)
             {
-                throw new ArgumentException("Client " + ClientId + " not found");
+                throw new ArgumentException($"Client {ClientId} not found");
             }
+
             this.Entry = Entry;
 
             this.ChunkSizeCalculator = ChunkSizeCalculator ?? new ChunkSizeCalculatorClass();
@@ -560,6 +566,7 @@ namespace FnSync
             {
                 throw new ArgumentException("Don't pass SKIP to this method");
             }
+
             SpeedShortTerm.Reset();
             Watcher();
 

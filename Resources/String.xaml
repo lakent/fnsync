@@ -94,7 +94,7 @@
     <System:String x:Key="Port">Port</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
     <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>
-    <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and can be used when your phone is connecting to this PC. Use semicolon(;) as delimiter.</System:String>
+    <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and can be used when your phone is connecting to this PC. Use semicolon(;) as delimiter. Refresh QR code after changing this.</System:String>
 
     <System:String x:Key="FileOperation">File Operation</System:String>
     <System:String x:Key="Cut">Cut</System:String>
@@ -147,8 +147,7 @@ etc. {0} items in total.</System:String>
     <System:String x:Key="CopyToThisPc">Copy to PC</System:String>
     <System:String x:Key="CutInsidePhone">Cut (Inside Phone) …</System:String>
     <System:String x:Key="CopyInsidePhone">Copy (Inside Phone) …</System:String>
-    <System:String x:Key="PasteHereInsidePhone">Paste to current folder</System:String>
-    <System:String x:Key="PasteToInsidePhone">Paste to selected folder</System:String>
+    <System:String x:Key="PasteHereInsidePhone">Paste to current folder (Inside Phone)</System:String>
     <System:String x:Key="PasteHereFromPC">Paste to current folder (From PC)</System:String>
     <System:String x:Key="PasteToFromPC">Paste to selected folder (From PC)</System:String>
     <System:String x:Key="RefreshMediaStore">Refresh Media Store for selected file</System:String>

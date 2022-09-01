@@ -8,17 +8,12 @@
         reuse the same context menu (which is a resource) again (which will have its DataContext set to the old TaskbarIcon)
   -->
     <ContextMenu x:Shared="false" x:Key="SysTrayMenu">
-        <!-- <MenuItem Header="Show Window" Command="{Binding ShowWindowCommand}" />
-        <MenuItem Header="Hide Window" Command="{Binding HideWindowCommand}" />
-        <Separator />
-        -->
         <MenuItem x:Name="ConnectedPhonesTitle" IsEnabled="False" Header="{DynamicResource ConnectedPhones}"/>
         <MenuItem x:Name="ConnectedPhonesNone" IsEnabled="False" Header="{DynamicResource ConnectedPhonesNone}"/>
         <Separator x:Name="PhonesAbove"/>
         <MenuItem IsEnabled="True" Header="{DynamicResource FileManager}" Command="{Binding FileManagerCommand}" />
-        <Separator />
         <MenuItem x:Name="OpenMainWindow" IsEnabled="True" Header="{DynamicResource OpenMainWindow}" Command="{Binding OpenMainWindowCommand}" />
-        <MenuItem IsEnabled="True" Header="{DynamicResource Setting}" Command="{Binding SettingCommand}" />
+        <!--<MenuItem IsEnabled="True" Header="{DynamicResource Setting}" Command="{Binding SettingCommand}" />-->
         <Separator />
         <MenuItem Header="{DynamicResource Exit}" Command="{Binding ExitApplicationCommand}" />
     </ContextMenu>
@@ -26,7 +21,7 @@
     <!-- the application's NotifyIcon - started from App.xaml.cs. Declares its own view model. -->
     <tb:TaskbarIcon x:Key="NotifyIcon"
                     IconSource="icon.ico"
-                    DoubleClickCommand="{Binding ShowWindowCommand}"
+                    DoubleClickCommand="{Binding OpenMainWindowCommand}"
                     ContextMenu="{StaticResource SysTrayMenu}"
                     ToolTipText="{DynamicResource FnSyncTooltip}"
                     >

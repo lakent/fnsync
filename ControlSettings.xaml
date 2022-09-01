@@ -10,7 +10,7 @@
         <local:SpecificPortConverter x:Key="SpecificPortConverter" />
     </UserControl.Resources>
 
-    <TabControl Background="Transparent" Margin="4">
+    <TabControl>
         <TabItem Header="{DynamicResource General}">
             <ScrollViewer>
                 <StackPanel x:Name="Settings" Margin="8">

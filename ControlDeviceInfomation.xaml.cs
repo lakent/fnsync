@@ -21,14 +21,17 @@ namespace FnSync
     /// <summary>
     /// Interaction logic for ControlDeviceInfomation.xaml
     /// </summary>
-    public partial class ControlDeviceInfomation : UserControl
+    public partial class ControlDeviceInfomation : UserControlExtension
     {
         public const string MSG_TYPE_REQUEST_PHONE_STATE = "request_phone_state";
         public const string MSG_TYPE_REPLY_PHONE_STATE = "reply_phone_state";
 
         private void RefreshPhoneStateCallback(string id, string msgType, object msgObject, PhoneClient client)
         {
-            if (!(msgObject is JObject msg)) return;
+            if (!(msgObject is JObject msg))
+            {
+                return;
+            }
 
             if (!(DataContext is SavedPhones.Phone phone) || phone.Id != id)
             {
@@ -58,7 +61,6 @@ namespace FnSync
         public ControlDeviceInfomation()
         {
             InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
 
             PhoneMessageCenter.Singleton.Register(
                 null,
@@ -86,15 +88,12 @@ namespace FnSync
             BatteryLevel.Content = "";
         }
 
-        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        protected override void OnDataContextLoaded()
         {
-            if (!(sender is ControlDeviceInfomation cdi))
-                return;
-
-            cdi.LoadDataContext();
+            LoadDataContext();
         }
 
-        private void OnClosing()
+        protected override void OnClosing()
         {
             PhoneMessageCenter.Singleton.Unregister(
                 null,
@@ -120,5 +119,16 @@ namespace FnSync
                 SavedPhones.Singleton.Remove(phone);
             }
         }
+
+        private void FileManager_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(DataContext is SavedPhones.Phone phone))
+            {
+                return;
+            }
+
+            WindowFileManager.NewOne(phone.Id);
+        }
     }
 }
+

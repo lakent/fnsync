@@ -24,7 +24,7 @@ namespace FnSync
             };
         }
 
-        protected virtual void LoadDataContext()
+        protected virtual void OnDataContextLoaded()
         {
 
         }
@@ -34,12 +34,18 @@ namespace FnSync
             if (!(sender is UserControlExtension uce))
                 return;
 
-            uce.LoadDataContext();
+            uce.OnDataContextLoaded();
+        }
+
+        public virtual void OnShow()
+        {
+
         }
 
         protected virtual void OnClosing()
         {
 
         }
+
     }
 }

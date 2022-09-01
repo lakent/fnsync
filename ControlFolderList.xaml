@@ -4,46 +4,54 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FnSync"
-             mc:Ignorable="d"
-             d:DesignHeight="210" d:DesignWidth="179.94">
+             xmlns:models="clr-namespace:FnSync.Model.ControlFolderList"
+             xmlns:controlfolderlist="clr-namespace:FnSync.ViewModel.ControlFolderList"
+             d:DataContext="{d:DesignInstance Type=controlfolderlist:ViewModel}"
+             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="140"
+             >
 
     <Control.Resources>
-        <ContextMenu x:Key="RootRightClickMenu" DataContext="{Binding Path=PlacementTarget.DataContext.Root.ThisControl, RelativeSource={RelativeSource self}}">
-            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding RefreshCommand}" CommandParameter="{Binding Path=PlacementTarget, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+        <ContextMenu x:Key="ContextMenu">
+            <!-- https://stackoverflow.com/a/38971643/1968839 -->
+            <MenuItem Header="{DynamicResource Refresh}" Command="{Binding Source={x:Reference Name=FolderList}, Path=DataContext.Refresh}"/>
         </ContextMenu>
     </Control.Resources>
 
-    <TreeView x:Name="ListView" VirtualizingPanel.IsVirtualizing="False" Tag="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type local:ControlFolderList}}}">
+    <TreeView x:Name="FolderList"
+              VirtualizingPanel.IsVirtualizing="True"
+              ItemsSource="{Binding Path=Roots}"
+              SelectedItemChanged="FolderList_SelectedItemChanged"
+              >
         <TreeView.ItemContainerStyle>
             <Style TargetType="{x:Type TreeViewItem}">
                 <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                 <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                <Setter Property="ContextMenu" Value="{StaticResource RootRightClickMenu}" />
+                <Setter Property="ContextMenu" Value="{StaticResource ContextMenu}" />
 
                 <EventSetter Event="MouseRightButtonDown" Handler="ItemMouseRightButtonDown"/>
-                <!--<EventSetter Event="Selected" Handler="TreeViewItem_Selected" /> -->
+                <EventSetter Event="Selected" Handler="TreeViewItem_Selected" />
             </Style>
         </TreeView.ItemContainerStyle>
         <TreeView.Resources>
-            <HierarchicalDataTemplate DataType="{x:Type local:ControlFolderListPlaceholder}">
+            <HierarchicalDataTemplate DataType="{x:Type models:Placeholder}">
                 <TextBlock Text="{Binding Name}" />
             </HierarchicalDataTemplate>
 
-            <HierarchicalDataTemplate DataType="{x:Type local:ControlFolderListPhoneRootItem}" ItemsSource="{Binding Children}">
+            <HierarchicalDataTemplate DataType="{x:Type models:RootModel}" ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{Binding Source={x:Static local:IconUtil.CellPhone}}"></Image>
                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
 
-            <HierarchicalDataTemplate DataType="{x:Type local:ControlFolderListPhoneStorageItem}" ItemsSource="{Binding Children}">
+            <HierarchicalDataTemplate DataType="{x:Type models:StorageModel}" ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{Binding Source={x:Static local:IconUtil.Storage}}"></Image>
                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                 </StackPanel>
             </HierarchicalDataTemplate>
 
-            <HierarchicalDataTemplate DataType="{x:Type local:ControlFolderListPhoneFolderItem}" ItemsSource="{Binding Children}">
+            <HierarchicalDataTemplate DataType="{x:Type models:FolderModel}" ItemsSource="{Binding Children}">
                 <StackPanel Orientation="Horizontal">
                     <Image Source="{Binding Source={x:Static local:IconUtil.Folder}}"></Image>
                     <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
@@ -52,3 +60,4 @@
         </TreeView.Resources>
     </TreeView>
 </local:UserControlExtension>
+

@@ -455,4 +455,18 @@ namespace FnSync
             Cache.Clear();
         }
     }
+
+    class Unirandom
+    {
+        private static readonly Random random = new Random();
+
+        public static int Next()
+        {
+            return random.Next();
+        }
+        public static int Next(int l, int u)
+        {
+            return random.Next(l, u);
+        }
+    }
 }

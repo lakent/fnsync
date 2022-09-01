@@ -3,25 +3,17 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Media;
 
-namespace FnSync.ViewModel
+namespace FnSync.ViewModel.WindowMain
 {
-    public class WindowMainViewModel : INotifyPropertyChanged, IDisposable
+    namespace LeftPanel
     {
-        public abstract class LeftPanelItemAbstract : INotifyPropertyChanged
+        public abstract class PanelItemAbstract : INotifyPropertyChanged
         {
             public ImageSource Icon { get; protected set; } = null;
             //private string name;
+
             public abstract string Name { get; set; }
-            /*
-        {
-            get => name;
-            protected set
-            {
-                this.name = value;
-                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Name"));
-            }
-        }
-            */
+
             public abstract UserControlExtension View { get; } // Should be lazy initializing
 
             private bool isSelected = false;
@@ -33,18 +25,21 @@ namespace FnSync.ViewModel
                 get => isSelected;
                 set
                 {
-                    this.isSelected = value;
-                    if (value)
+                    if (this.isSelected != value)
                     {
-                        this.ViewModel.SelectedView = this.View;
+                        this.isSelected = value;
+                        if (value)
+                        {
+                            this.ViewModel.SelectedView = this.View;
+                        }
+                        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsSelected"));
                     }
-                    this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("IsSelected"));
                 }
             }
 
-            public WindowMainViewModel ViewModel { get; private set; }
+            public ViewModel ViewModel { get; private set; }
 
-            public LeftPanelItemAbstract(WindowMainViewModel ViewModel)
+            public PanelItemAbstract(ViewModel ViewModel)
             {
                 this.ViewModel = ViewModel;
             }
@@ -55,7 +50,7 @@ namespace FnSync.ViewModel
             }
         }
 
-        private class ControlWrapper<C> : LeftPanelItemAbstract where C : UserControlExtension, new()
+        internal class ControlWrapper<C> : PanelItemAbstract where C : UserControlExtension, new()
         {
             public override string Name { get; set; }
 
@@ -73,13 +68,13 @@ namespace FnSync.ViewModel
                 }
             }
 
-            public ControlWrapper(string Name, WindowMainViewModel ViewModel, bool IsResourceName = false) : base(ViewModel)
+            public ControlWrapper(string Name, ViewModel ViewModel, bool IsResourceName = false) : base(ViewModel)
             {
-                this.Name = IsResourceName ? (string)App.Current.FindResource(Name) : Name;
+                this.Name = IsResourceName ? (string)System.Windows.Application.Current.FindResource(Name) : Name;
             }
         }
 
-        private class DeviceItem : LeftPanelItemAbstract
+        internal class DeviceItem : PanelItemAbstract
         {
             public override string Name
             {
@@ -108,38 +103,47 @@ namespace FnSync.ViewModel
                 }
             }
 
-            public DeviceItem(SavedPhones.Phone Saved, WindowMainViewModel ViewModel) : base(ViewModel)
+            public DeviceItem(SavedPhones.Phone Saved, ViewModel ViewModel) : base(ViewModel)
             {
                 this.Id = Saved.Id;
                 this.Saved = Saved;
                 this.Icon = IconUtil.CellPhone;
             }
         }
+    }
 
+    public class ViewModel : INotifyPropertyChanged, IDisposable
+    {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<LeftPanelItemAbstract> LeftPanelItemSet { get; } = new ObservableCollection<LeftPanelItemAbstract>();
+        public ObservableCollection<LeftPanel.PanelItemAbstract> LeftPanelItemSet { get; } = new ObservableCollection<LeftPanel.PanelItemAbstract>();
 
         private UserControlExtension selected = null;
         public UserControlExtension SelectedView
         {
             get => selected;
-            private set
+            internal set
             {
-                selected = value;
-                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedView"));
+                if (selected != value)
+                {
+                    selected = value;
+                    selected.OnShow();
+                    this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SelectedView"));
+                }
             }
         }
 
-        public WindowMainViewModel()
+        public ViewModel() : this(null) { }
+
+        public ViewModel(string id)
         {
-            LeftPanelItemSet.Add(new ControlWrapper<ControlConnectionByQR>("ConnectByQR", this, true));
-            LeftPanelItemSet.Add(new ControlWrapper<ControlConnectionByCode>("ConnectionCode", this, true));
-            LeftPanelItemSet.Add(new ControlWrapper<ControlSettings>("Setting", this, true));
+            LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<ControlConnectionByQR>("ConnectByQR", this, true));
+            LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<ControlConnectionByCode>("ConnectionCode", this, true));
+            LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<ControlSettings>("Setting", this, true));
 
             foreach (SavedPhones.Phone Phone in SavedPhones.Singleton.Values)
             {
-                LeftPanelItemSet.Add(new DeviceItem(Phone, this));
+                LeftPanelItemSet.Add(new LeftPanel.DeviceItem(Phone, this));
             }
 
             PhoneMessageCenter.Singleton.Register(
@@ -162,13 +166,18 @@ namespace FnSync.ViewModel
                 OnRemoved,
                 false
                 );
+
+            if (id != null)
+            {
+                JumpToDevice(id);
+            }
         }
 
-        private DeviceItem FindDeviceById(string Id)
+        private LeftPanel.DeviceItem FindDeviceById(string Id)
         {
-            foreach (LeftPanelItemAbstract Item in LeftPanelItemSet)
+            foreach (LeftPanel.PanelItemAbstract Item in LeftPanelItemSet)
             {
-                if (Item is DeviceItem Device && Device.Id == Id)
+                if (Item is LeftPanel.DeviceItem Device && Device.Id == Id)
                 {
                     return Device;
                 }
@@ -181,8 +190,8 @@ namespace FnSync.ViewModel
         {
             for (int i = 0; i < LeftPanelItemSet.Count; ++i)
             {
-                LeftPanelItemAbstract Item = LeftPanelItemSet[i];
-                if (Item is DeviceItem Device && Device.Id == Id)
+                LeftPanel.PanelItemAbstract Item = LeftPanelItemSet[i];
+                if (Item is LeftPanel.DeviceItem Device && Device.Id == Id)
                 {
                     LeftPanelItemSet.RemoveAt(i);
                     return;
@@ -194,15 +203,18 @@ namespace FnSync.ViewModel
         {
             if (FindDeviceById(Id) == null)
             {
-                LeftPanelItemSet.Add(new DeviceItem(SavedPhones.Singleton[Id], this));
+                LeftPanelItemSet.Add(new LeftPanel.DeviceItem(SavedPhones.Singleton[Id], this));
             }
         }
 
         private void OnNameChanged(string Id, string msgType, object msg, PhoneClient client)
         {
-            if (!(msg is string NewName)) return;
+            if (!(msg is string NewName))
+            {
+                return;
+            }
 
-            DeviceItem Device = FindDeviceById(Id);
+            LeftPanel.DeviceItem Device = FindDeviceById(Id);
             if (Device == null)
             {
                 return;
@@ -218,7 +230,7 @@ namespace FnSync.ViewModel
 
         public void JumpToDevice(string Id)
         {
-            DeviceItem deviceItem = FindDeviceById(Id);
+            LeftPanel.DeviceItem deviceItem = FindDeviceById(Id);
 
             if (deviceItem == null)
             {
@@ -250,3 +262,4 @@ namespace FnSync.ViewModel
         }
     }
 }
+

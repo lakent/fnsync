@@ -162,9 +162,9 @@ namespace FnSync
 
         public static void ExitApp()
         {
-            App.NotifyIcon?.Dispose();
+            NotifyIcon?.Dispose();
             SavedPhones.Singleton.DisposeAll();
-            Application.Current.Shutdown();
+            Current.Shutdown();
             Environment.Exit(Environment.ExitCode);
         }
 
@@ -227,58 +227,6 @@ namespace FnSync
                 ;
 
             NotificationSubchannel.Singleton.Push(Builder);
-
-            /*
-            ToastContent toastContent = new ToastContent()
-            {
-                //Launch = "action=viewConversation&conversationId=5",
-
-                Header = new ToastHeader(id, client.Name, ""),
-
-                Visual = new ToastVisual()
-                {
-                    BindingGeneric = new ToastBindingGeneric()
-                    {
-                        Children =
-                        {
-                            new AdaptiveText()
-                            {
-                                Text = CONNECTED,
-                                //HintMaxLines = 1
-                            },
-                            new AdaptiveText()
-                            {
-                                Text = Id,
-                            }
-                        }
-                    }
-                },
-
-                Actions = new ToastActionsCustom()
-                {
-                    Buttons =
-                    {
-                        new ToastButton((string)Application.Current.FindResource("Rename"), "rename")
-                        {
-                            ActivationType = ToastActivationType.Foreground
-                        },
-                    }
-                }
-
-                DisplayTimestamp = DateTime.Now
-            };
-
-            // Create the XML document (BE SURE TO REFERENCE WINDOWS.DATA.XML.DOM)
-            var doc = new XmlDocument();
-            doc.LoadXml(toastContent.GetContent());
-
-            // And create the Toast notification
-            var Toast = new ToastNotification(doc);
-            var ToastDup = new ToastNotification(doc);
-
-            // And then show it
-            NotificationSubchannel.Singleton.Push(Toast, ToastDup);
-            */
         }
 
         private static void OnDeviceChangedUIWorks(string id, string msgType, object msg, PhoneClient client)

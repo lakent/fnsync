@@ -145,10 +145,13 @@
     <Compile Include="ControlFileList.xaml.cs">
       <DependentUpon>ControlFileList.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ControlFileListCommands.xaml.cs">
-      <DependentUpon>ControlFileList.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ControlFolderList.xaml.cs">
+      <DependentUpon>ControlFolderList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlFolderListViewModel.cs">
+      <DependentUpon>ControlFolderList.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ControlFolderListModel.cs">
       <DependentUpon>ControlFolderList.xaml</DependentUpon>
     </Compile>
     <Compile Include="ControlHistory.xaml.cs">
@@ -162,8 +165,7 @@
     <Compile Include="FileCutInside.cs" />
     <Compile Include="FileCopyInside.cs" />
     <Compile Include="FileSend.cs" />
-    <Compile Include="FileTransHandler.cs" />
-    <Compile Include="FileTransmissionBase.cs" />
+    <Compile Include="FileTransmissionAbstract.cs" />
     <Compile Include="FileReceive.cs" />
     <Compile Include="MainConfig.cs" />
     <Compile Include="QueuedAsyncTask.cs" />
@@ -186,7 +188,6 @@
     <Compile Include="LengthPrefixedStreamBuffer.cs" />
     <Compile Include="PhoneClient.cs" />
     <Compile Include="SpeedWatch.cs" />
-    <Compile Include="Unirandom.cs" />
     <Compile Include="UserControlExtension.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WindowFileAlreadyExists.xaml.cs">

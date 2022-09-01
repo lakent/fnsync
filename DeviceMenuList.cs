@@ -15,7 +15,7 @@ namespace FnSync
     {
         private readonly ContextMenu Menu;
         private readonly MenuItem NoneItem;
-        private readonly Dictionary<String, MenuItem> Map = new Dictionary<string, MenuItem>();
+        private readonly Dictionary<string, MenuItem> Map = new Dictionary<string, MenuItem>();
         public int Count => Map.Count;
 
         public DeviceMenuList(ContextMenu Menu)
@@ -56,7 +56,7 @@ namespace FnSync
         {
             for (int i = 0; i < Menu.Items.Count; ++i)
             {
-                Object item = Menu.Items[i];
+                object item = Menu.Items[i];
                 if (item is MenuItem item1 && "ConnectedPhonesTitle" == item1.Name)
                 {
                     return i;
@@ -70,7 +70,7 @@ namespace FnSync
         {
             for (int i = Start + 1; i < Menu.Items.Count; ++i)
             {
-                Object item = Menu.Items[i];
+                object item = Menu.Items[i];
                 if (item is Separator separator && "PhonesAbove" == separator.Name)
                 {
                     return i;
@@ -81,26 +81,18 @@ namespace FnSync
         }
 
 
-        private MenuItem FindExist(String id)
+        private MenuItem FindExist(string id)
         {
-            if (Map.ContainsKey(id))
-            {
-                return Map[id];
-            }
-            else
-            {
-                return null;
-            }
+            return Map.ContainsKey(id) ? Map[id] : null;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is MenuItem item && item.Tag is String id)
+            if (sender is MenuItem item && item.Tag is string id)
             {
                 if (AlivePhones.Singleton[id]?.IsAlive ?? false)
                 {
-                    WindowMain.NewOne();
-                    WindowMain.JumpToDevice(id);
+                    WindowMain.NewOne(id);
                 }
                 else if (SavedPhones.Singleton.ContainsKey(id))
                 {
@@ -111,7 +103,7 @@ namespace FnSync
 
         private void UpdateState(MenuItem item, PhoneClient client)
         {
-            String Header = client.IsAlive ?
+            string Header = client.IsAlive ?
                 (string)Application.Current.FindResource("Online") + " - " + client.Name :
                 string.Format(
                     (string)Application.Current.FindResource("OfflineWithPhone"),
@@ -121,7 +113,7 @@ namespace FnSync
             item.Header = Header;
         }
 
-        private MenuItem NewItem(String id)
+        private MenuItem NewItem(string id)
         {
             MenuItem New = new MenuItem
             {

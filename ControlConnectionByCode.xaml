@@ -6,20 +6,29 @@
              xmlns:local="clr-namespace:FnSync"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-        <Grid x:Name="ByConnCode" Grid.Row="0" Width="256" VerticalAlignment="Center">
+    <Grid Grid.Row="0" VerticalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Width="256" Grid.Row="0" VerticalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-
             <Image Grid.Row="0" Source="Resources/ic_launcher.png" Margin="20,10" Height="128" HorizontalAlignment="Stretch" />
 
-            <TextBox x:Name="ConnectionCode" Grid.Row="1" Padding="2" HorizontalAlignment="Stretch" Height="Auto" TextWrapping="Wrap" VerticalAlignment="Top" Width="Auto" TextAlignment="Center" MinWidth="150" FontFamily="Consolas" FontSize="20" MaxLength="10"/>
+            <TextBox Grid.Row="1" x:Name="ConnectionCode" HorizontalAlignment="Stretch" Height="Auto" TextWrapping="Wrap" VerticalAlignment="Top" Width="Auto" TextAlignment="Center" MinWidth="150" FontFamily="Consolas" FontSize="20" MaxLength="10"/>
 
-            <Label Height="{Binding ActualHeight, ElementName=ConnectionCode}" Grid.Row="1" x:Name="Placeholder" IsHitTestVisible="False" Content="{DynamicResource EnterConnectionCodeHere}" HorizontalContentAlignment="Center" VerticalAlignment="Top" HorizontalAlignment="Stretch" Foreground="DarkGray" >
+            <Label Grid.Row="1" x:Name="Placeholder" IsHitTestVisible="False"
+                   Height="{Binding ActualHeight, ElementName=ConnectionCode, Mode=OneWay}"
+                   Content="{DynamicResource EnterConnectionCodeHere}"
+                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                   VerticalContentAlignment="Center"  HorizontalContentAlignment="Center"
+                   Foreground="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" >
                 <Label.Style>
                     <Style TargetType="{x:Type Label}">
                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -54,7 +63,8 @@
                     Padding="8,4"
                     />
             </Grid>
-            <ProgressBar x:Name="Progress" Grid.Row="3" Height="10" IsIndeterminate="False" Visibility="Visible" Margin="0,8,0,0" />
-            <Label x:Name="PromptAccept" Grid.Row="4" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Content="{DynamicResource PromptAccept}" Visibility="Hidden"/>
+            <Label Grid.Row="3" x:Name="PromptAccept" HorizontalContentAlignment="Center" HorizontalAlignment="Stretch" Content="{DynamicResource PromptAccept}" Visibility="Hidden"/>
         </Grid>
+        <ProgressBar Grid.Row="1" x:Name="Progress" Height="10" IsIndeterminate="False" Visibility="Visible" Margin="0,8,0,0" />
+    </Grid>
 </local:UserControlExtension>

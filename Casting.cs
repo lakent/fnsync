@@ -7,12 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 
 namespace FnSync
 {
-    class Casting
+    public class Casting
     {
         public const string MSG_TYPE_TEXT_CAST = "text_cast";
         public static int _Force = -1;
@@ -72,7 +70,7 @@ namespace FnSync
             {
                 foreach (string copyable in copyables)
                 {
-                    Builder.AddButton(new ToastButton()
+                    _ = Builder.AddButton(new ToastButton()
                         .SetContent(copyable)
                         .AddArgument("Copy", copyable)
                         .SetBackgroundActivation()

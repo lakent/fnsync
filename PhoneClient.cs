@@ -270,7 +270,7 @@ namespace FnSync
 
         public void SendMsg(string type)
         {
-            SendMsg(JObject.Parse("{}"), type);
+            SendMsg(new JObject(), type);
         }
 
         public void SendMsgNoThrow(string type)
@@ -345,7 +345,7 @@ namespace FnSync
             if (OldConnection)
             {
                 SavedPhones.Phone Saved = SavedPhones.Singleton[Id];
-                if(Saved == null)
+                if (Saved == null)
                 {
                     throw new IllegalPhoneException();
                 }
@@ -384,14 +384,9 @@ namespace FnSync
             ReplyBack();
 
             // Get phone's literal name
-            if (!SavedPhones.Singleton.ContainsKey(Id))
-            {
-                Name = reply.OptString("phonename", "(Unknown)");
-            }
-            else
-            {
-                Name = SavedPhones.Singleton[Id].Name;
-            }
+            Name = SavedPhones.Singleton.ContainsKey(Id) ?
+                SavedPhones.Singleton[Id].Name :
+                reply.OptString("phonename", "(Unknown)");
         }
 
         private async Task HandShakeStep3_WaitingForAcceptance()

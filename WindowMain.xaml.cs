@@ -1,14 +1,11 @@
 ﻿using AdonisUI.Controls;
-using FnSync.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -25,43 +22,40 @@ namespace FnSync
 
         public static void NewOne()
         {
+            NewOne(null);
+        }
+
+        public static void NewOne(string id)
+        {
             App.FakeDispatcher.Invoke(() =>
             {
                 if (CurrentWindow == null)
                 {
-                    new WindowMain().Show();
+                    new WindowMain(id).Show();
                 }
                 else
                 {
-                    CurrentWindow.Activate();
+                    _ = CurrentWindow.Activate();
                 }
 
                 return null;
             });
         }
 
-        public static void JumpToDevice(string Id)
-        {
-            if(!(CurrentWindow?.DataContext is WindowMainViewModel viewModel))
-            {
-                return;
-            }
+        public WindowMain() : this(null) { }
 
-            viewModel.JumpToDevice(Id);
-        }
-
-        public WindowMain()
+        public WindowMain(string id)
         {
             CurrentWindow = this;
+            this.DataContext = new ViewModel.WindowMain.ViewModel(id);
             InitializeComponent();
         }
-
 
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
             CurrentWindow = null;
-            if(this.DataContext is IDisposable Disposable)
+            if (this.DataContext is IDisposable Disposable)
             {
                 Disposable.Dispose();
             }

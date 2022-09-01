@@ -7,14 +7,17 @@
         xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
         xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
         xmlns:local="clr-namespace:FnSync"
-        xmlns:localViewModel="clr-namespace:FnSync.ViewModel"
+        xmlns:localViewModel="clr-namespace:FnSync.ViewModel.WindowMain"
+        d:DataContext="{d:DesignInstance Type=localViewModel:ViewModel}"
         mc:Ignorable="d"
-        Title="WindowMain" Height="510" Width="800"
+        Title="{DynamicResource FnSync}" Height="510" Width="800"
         PlaceTitleBarOverContent="True"
                              >
+    <!--
     <Window.DataContext>
-        <localViewModel:WindowMainViewModel />
+        <localViewModel:ViewModel />
     </Window.DataContext>
+    -->
 
     <Window.Resources>
         <local:NonNullToVisibleConverter x:Key="NonNullToVisibleConverter" />
@@ -26,8 +29,8 @@
         </Grid.ColumnDefinitions>
         <GroupBox Grid.Column="0"
                   Padding="0">
-            <StackPanel                                      
-                adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay" adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True"> 
+            <StackPanel
+                adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay" adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True">
 
                 <Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />
                 <ListBox ItemsSource="{Binding LeftPanelItemSet}" SelectedIndex="0">
@@ -53,12 +56,15 @@
         </GroupBox>
         <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
-                <RowDefinition Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}"/>
+                <RowDefinition Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Content="{Binding SelectedView}" Padding="16,0,16,16"
-                adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay" adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True"> 
+
+            <ScrollViewer Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                Content="{Binding SelectedView}" Padding="16,0,16,16"
+                adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay" adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True">
             </ScrollViewer>
+
         </Grid>
     </Grid>
 </adonisControls:AdonisWindow>
