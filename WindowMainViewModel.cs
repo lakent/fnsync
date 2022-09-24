@@ -150,21 +150,21 @@ namespace FnSync.ViewModel.WindowMain
                 null,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
                 OnDeviceConnected,
-                false
+                true
             );
 
             PhoneMessageCenter.Singleton.Register(
                 null,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_NAME_CHANGED,
                 OnNameChanged,
-                false
+                true
             );
 
             PhoneMessageCenter.Singleton.Register(
                 null,
                 PhoneMessageCenter.MSG_FAKE_TYPE_ON_REMOVED,
                 OnRemoved,
-                false
+                true
                 );
 
             if (id != null)

@@ -10,6 +10,7 @@
     <System:String x:Key="Cancel">Cancel</System:String>
     <System:String x:Key="Cancelling">Cancelling</System:String>
     <System:String x:Key="Prompt">Prompt</System:String>
+    <System:String x:Key="DatetimeNotMatched">Please check the datetimes of both of your devices, the difference must be less than 5min.</System:String>
     <System:String x:Key="PleaseEnterConnectionCode">Please enter connection code.</System:String>
 
     <System:String x:Key="SwitchToEnter">Connect by Connection Code</System:String>
@@ -89,12 +90,12 @@
     <System:String x:Key="HideNotificationOnStartup">Don't show connect toast on startup</System:String>
     <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
     <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>
-    <System:String x:Key="TextCastAutoCopy">Auto copy text when text is received</System:String>
-    <System:String x:Key="FixedListenPort">Listen on a specific port</System:String>
+    <System:String x:Key="TextCastAutoCopy">Copy text automatically when received</System:String>
+    <System:String x:Key="FixedListenPort">Listen on a fixed port</System:String>
     <System:String x:Key="Port">Port</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
     <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>
-    <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and can be used when your phone is connecting to this PC. Use semicolon(;) as delimiter. Refresh QR code after changing this.</System:String>
+    <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and are used by the phone APP when connecting. Use semicolon(;) as delimiter. You need refresh QR code after changing this.</System:String>
 
     <System:String x:Key="FileOperation">File Operation</System:String>
     <System:String x:Key="Cut">Cut</System:String>

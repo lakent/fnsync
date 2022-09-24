@@ -114,7 +114,10 @@ namespace FnSync.ViewModel.ControlFolderList
 
             foreach (PhoneClient c in Clients)
             {
-                roots.Add(new RootModel(c));
+                if (c.IsAlive)
+                {
+                    roots.Add(new RootModel(c));
+                }
             }
         }
 

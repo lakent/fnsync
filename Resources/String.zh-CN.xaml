@@ -10,6 +10,7 @@
     <System:String x:Key="Cancel">取消</System:String>
     <System:String x:Key="Cancelling">取消</System:String>
     <System:String x:Key="Prompt">提示</System:String>
+    <System:String x:Key="DatetimeNotMatched">请检查您设备的日期和时间，两个设备的时间差不能超过 5 分钟</System:String>
     <System:String x:Key="PleaseEnterConnectionCode">请输入连接码。</System:String>
 
     <System:String x:Key="SwitchToEnter">切换到连接码</System:String>
@@ -93,7 +94,7 @@
     <System:String x:Key="Port">端口</System:String>
     <System:String x:Key="RequireRestart">* 重启程序生效。</System:String>
     <System:String x:Key="AdditionalIPs">附加 IP 地址</System:String>
-    <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用冒号(;)分割。修改后需要刷新二维码。</System:String>
+    <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用英文冒号(;)分割。修改后需要刷新二维码。</System:String>
 
     <System:String x:Key="FileOperation">文件操作</System:String>
     <System:String x:Key="Cut">剪切</System:String>

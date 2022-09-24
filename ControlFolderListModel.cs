@@ -172,14 +172,19 @@ namespace FnSync.Model.ControlFolderList
     public class Placeholder : IFileModel
     {
         /* Placeholder for non-file item, such as Loading, No Permission and Device Offline  */
-        public static readonly Placeholder Dummy = new Placeholder((string)App.Current.FindResource("LoadingContent"));
-        public static readonly Placeholder NoPermission = new Placeholder((string)App.Current.FindResource("NoFilePermission"));
-        public static readonly Placeholder PhoneOffline = new Placeholder((string)App.Current.FindResource("DeviceIsOffline"));
+        public static readonly Placeholder Dummy =
+            new Placeholder((string)Application.Current.FindResource("LoadingContent"));
+        public static readonly Placeholder NoPermission =
+            new Placeholder((string)Application.Current.FindResource("NoFilePermission"));
+        public static readonly Placeholder PhoneOffline =
+            new Placeholder((string)Application.Current.FindResource("DeviceIsOffline"));
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public bool IsExpanded { get; set; }
-        public bool IsSelected { get; set; }
+        public IList<PhoneFileInfo> AllChildrenInfo { get; } = new List<PhoneFileInfo>();
+
+        public bool IsExpanded { get => false; set { } }
+        public bool IsSelected { get => false; set { } }
         public bool IsRequesting => false;
 
         public string Name { get; }

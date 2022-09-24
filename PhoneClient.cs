@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using System.Windows;
 
 namespace FnSync
 {
@@ -374,6 +375,18 @@ namespace FnSync
              }
             */
             JObject reply = await ReadJSON();
+            if (reply == null)
+            {
+                _ = MessageBox.Show(
+                    (string)Application.Current.FindResource("DatetimeNotMatched"),
+                    (string)Application.Current.FindResource("Prompt"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                    );
+
+                throw new IllegalPhoneException();
+            }
+
             string id = (string)reply["phoneid"];
 
             if (!Id.Equals(id))
