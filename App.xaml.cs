@@ -1,20 +1,10 @@
 ﻿using Hardcodet.Wpf.TaskbarNotification;
 using Microsoft.Toolkit.Uwp.Notifications;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Threading;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 
 namespace FnSync
 {
@@ -54,13 +44,13 @@ namespace FnSync
             }
         }
 
-        void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             WindowUnhandledException.ShowException(e.Exception);
             e.Handled = true;
         }
 
-        void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        private void OnAppDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             if (e.ExceptionObject is Exception exception)
             {
@@ -118,7 +108,7 @@ namespace FnSync
                 true
             );
 
-            if (String.IsNullOrWhiteSpace(MainConfig.Config.ThisId))
+            if (string.IsNullOrWhiteSpace(MainConfig.Config.ThisId))
             {
                 MainConfig.Config.ThisId = Guid.NewGuid().ToString();
 
@@ -135,9 +125,9 @@ namespace FnSync
                 int SavedCount = SavedPhones.Singleton.Count;
                 if (MainConfig.Config.ConnectOnStartup && SavedCount > 0)
                 {
-                    if (!e.Args.Contains("-ToastActivated") && !MainConfig.Config.HideNotificationOnStartup)
+                    if (!MainConfig.Config.HideNotificationOnStartup)
                     {
-                        ToastConnectingKnown(MainConfig.Config.HideOnStartup);
+                        ToastConnectingKnown();
                     }
 
                     PhoneListener.Singleton.StartReachInitiatively(null, true, SavedPhones.Singleton.Values);
@@ -154,8 +144,8 @@ namespace FnSync
             Casting._Force = 0;
             FileReceive._Force = 0;
 
-            App.NotifyIcon.ToolTipText = string.Format(
-                (string)App.Current.FindResource("FnSyncTooltip"),
+            NotifyIcon.ToolTipText = string.Format(
+                (string)Current.FindResource("FnSyncTooltip"),
                 PhoneListener.Singleton.Port
                 );
         }
@@ -174,12 +164,12 @@ namespace FnSync
             base.OnExit(e);
         }
 
-        private static void ToastConnectingKnown(bool ShowConnectOthers)
+        private static void ToastConnectingKnown()
         {
             ToastContentBuilder Builder = new ToastContentBuilder()
-                .AddText((string)Application.Current.FindResource("ConnectingKnown"))
+                .AddText((string)Current.FindResource("ConnectingKnown"))
                 .AddButton(new ToastButton()
-                    .SetContent((string)Application.Current.FindResource("OpenMainWindow"))
+                    .SetContent((string)Current.FindResource("OpenMainWindow"))
                     .AddArgument("OpenMainWindow")
                     .SetBackgroundActivation());
 
@@ -190,9 +180,6 @@ namespace FnSync
         {
             ResourceDictionary dict = new ResourceDictionary();
 
-            dict.Source = new Uri("..\\Resources\\String.xaml", UriKind.Relative);
-            Resources.MergedDictionaries.Add(dict);
-
             switch (Thread.CurrentThread.CurrentCulture.Name)
             {
                 case "zh-CN":
@@ -200,6 +187,7 @@ namespace FnSync
                     break;
 
                 default:
+                    dict.Source = new Uri("..\\Resources\\String.xaml", UriKind.Relative);
                     break;
             }
 
@@ -235,3 +223,4 @@ namespace FnSync
         }
     }
 }
+

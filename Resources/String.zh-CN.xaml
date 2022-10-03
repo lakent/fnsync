@@ -13,9 +13,11 @@
     <System:String x:Key="DatetimeNotMatched">请检查您设备的日期和时间，两个设备的时间差不能超过 5 分钟</System:String>
     <System:String x:Key="PleaseEnterConnectionCode">请输入连接码。</System:String>
 
-    <System:String x:Key="SwitchToEnter">切换到连接码</System:String>
-    <System:String x:Key="SwitchToScan">切换到二维码</System:String>
-    <System:String x:Key="ConnectByQR">二维码链接</System:String>
+    <System:String x:Key="MethodCode" xml:space="preserve">方式二
+输入连接码</System:String>
+    <System:String x:Key="MethodScan" xml:space="preserve">方式一
+扫描二维码</System:String>
+    <System:String x:Key="Connection">连接</System:String>
     <System:String x:Key="ConnectionCode">连接码</System:String>
     <System:String x:Key="LocalAddress">本地 IP 地址</System:String>
     <System:String x:Key="Connected">已连接</System:String>
@@ -48,8 +50,7 @@
 
     <System:String x:Key="Instruction">操作步骤</System:String>
     <System:String x:Key="DownloadAndroidCompanion">下载安卓端 APP（Google Play）</System:String>
-    <System:String x:Key="Instructions" xml:space="preserve">操作步骤:
-0、将手机和电脑连接到同一个局域网中。
+    <System:String x:Key="Instructions" xml:space="preserve">0、将手机和电脑连接到同一个局域网中。
 1、下载并打开安卓端 APP。
 2、在安卓端软件中开启想要使用的功能。
 3、用手机扫描电脑端软件显示的二维码，或者在电脑端软件输入手机上生成的“连接码”再点击“链接”。</System:String>
@@ -124,7 +125,8 @@
     <System:String x:Key="Failed">失败</System:String>
     <System:String x:Key="Skipped">跳过</System:String>
     <System:String x:Key="Succeed">成功</System:String>
-    <System:String x:Key="SameFolder">源文件夹和目标文件夹相同，无法粘贴</System:String>
+    <System:String x:Key="OneOrMoreFailed">有一个或多个文件传输失败，请检查</System:String>
+    <System:String x:Key="SameFolderCannotPaste">源文件夹和目标文件夹相同，无法粘贴</System:String>
 
     <System:String x:Key="ErrorEncountered">遇到错误</System:String>
     <System:String x:Key="ErrorLabel">很抱歉，程序遇到了一个错误。您可以将以下信息反馈给我们，我们的邮箱是 fnsync_app@outlook.com。您也可以在 https://gitee.com/holmium/fnsync/issues 创建一个 Issue 。</System:String>
@@ -132,6 +134,7 @@
     <System:String x:Key="Ignore">忽略此错误</System:String>
 
     <System:String x:Key="FileManager">文件管理器</System:String>
+    <System:String x:Key="NoConnectedDevice">没有已连接的设备</System:String>
     <System:String x:Key="LoadingContent">加载中…</System:String>
     <System:String x:Key="FileName">文件名</System:String>
     <System:String x:Key="FileSize">大小</System:String>
@@ -141,7 +144,7 @@
     <System:String x:Key="AndSomeMore" xml:space="preserve">
 等共 {0} 项。</System:String>
     <System:String x:Key="ProvideANewName">请输入新名称：</System:String>
-    <System:String x:Key="IllegalFileName">文件名不能包含“\”和“/”。</System:String>
+    <System:String x:Key="IllegalFileName">文件名不能包含“\”和“/”</System:String>
     <System:String x:Key="NoFilePermission">没有权限</System:String>
     <System:String x:Key="NumberOfItems">{0} 个文件夹, {1} 个文件</System:String>
     <System:String x:Key="CopyToThisPc">复制到 PC</System:String>

@@ -69,32 +69,31 @@ namespace FnSync
             HandShaker.Cancel();
         }
 
-        public void StartReachInitiatively(String code, bool OldConnection, IEnumerable<SavedPhones.Phone> targets)
+        public void StartReachInitiatively(string Code, bool OldConnection, IEnumerable<SavedPhones.Phone> Targets)
         {
-            if( targets != null && !targets.Any())
+            if( Targets != null && !Targets.Any())
             {
                 return;
             }
 
             if (!OldConnection)
             {
-                if (code == null)
+                if (Code == null)
                 {
                     throw new ArgumentNullException();
                 }
             }
             else
             {
-                if (code == null)
+                if (Code == null)
                 {
-                    code = "*";
+                    Code = "*";
                 }
             }
 
-            this.Code = code;
+            this.Code = Code;
 
-            //WindowConnect.ControlCallback.Connecting();
-            HandShaker.Reach(FIRST_ACCEPT_TIMEOUT_MILLS, OldConnection, targets);
+            HandShaker.Reach(FIRST_ACCEPT_TIMEOUT_MILLS, OldConnection, Targets);
         }
 
         private async void StartAccept()

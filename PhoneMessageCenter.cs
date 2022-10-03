@@ -122,8 +122,8 @@ namespace FnSync
                 Specific
             }
 
-            public String MsgType { get; }
-            public String Id { get; }
+            public string MsgType { get; }
+            public string Id { get; }
 
             public ConditionType Type
             {
@@ -162,7 +162,7 @@ namespace FnSync
                 }
                 else if (obj is Condition target)
                 {
-                    return String.Equals(this.MsgType, target.MsgType) && String.Equals(this.Id, target.Id);
+                    return string.Equals(this.MsgType, target.MsgType) && string.Equals(this.Id, target.Id);
                 }
                 else
                 {

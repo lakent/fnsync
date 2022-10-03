@@ -9,6 +9,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using AdonisUI.Controls;
+using MessageBox = System.Windows.MessageBox;
+using MessageBoxButton = System.Windows.MessageBoxButton;
+using MessageBoxImage = System.Windows.MessageBoxImage;
 
 namespace FnSync
 {
@@ -21,6 +24,18 @@ namespace FnSync
         {
             App.FakeDispatcher.Invoke(() =>
             {
+                if (AlivePhones.Singleton.Count == 0)
+                {
+                    _ = MessageBox.Show(
+                            (string)Application.Current.FindResource("NoConnectedDevice"),
+                            (string)Application.Current.FindResource("Prompt"),
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation
+                            );
+
+                    return null;
+                }
+
                 WindowFileManager window = new WindowFileManager(Id);
                 window.Show();
                 return null;
@@ -72,7 +87,13 @@ namespace FnSync
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Equals(value, true) ? Visibility.Visible : Visibility.Collapsed;
+            if (!(value is bool boolval))
+            {
+                throw new ArgumentException();
+            }
+
+            bool inverse = Equals("true", parameter);
+            return boolval != inverse ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -95,3 +116,4 @@ namespace FnSync
         }
     }
 }
+

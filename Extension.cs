@@ -5,13 +5,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace FnSync
@@ -161,7 +167,8 @@ namespace FnSync
             if (!orig.EndsWith(text))
             {
                 return orig + text;
-            } else
+            }
+            else
             {
                 return orig;
             }
@@ -319,6 +326,27 @@ namespace FnSync
         public static long Available(this FileStream self)
         {
             return self.Length - self.Position;
+        }
+    }
+
+    static class BitmapExtension
+    {
+        [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool DeleteObject([In] IntPtr hObject);
+
+        // https://stackoverflow.com/a/35274172/1968839
+        public static ImageSource ToImageSource(this Bitmap bmp)
+        {
+            IntPtr handle = bmp.GetHbitmap();
+            try
+            {
+                return Imaging.CreateBitmapSourceFromHBitmap(handle, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            }
+            finally
+            {
+                _ = DeleteObject(handle);
+            }
         }
     }
 }

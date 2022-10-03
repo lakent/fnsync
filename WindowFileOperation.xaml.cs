@@ -228,9 +228,9 @@ namespace FnSync
         { }
         */
 
-        private static readonly string FAILED = (string)App.Current.FindResource("Failed");
-        private static readonly string SKIPPED = (string)App.Current.FindResource("Skipped");
-        private static readonly string SUCCEED = (string)App.Current.FindResource("Succeed");
+        private static readonly string FAILED = (string)Application.Current.FindResource("Failed");
+        private static readonly string SKIPPED = (string)Application.Current.FindResource("Skipped");
+        private static readonly string SUCCEED = (string)Application.Current.FindResource("Succeed");
 
         private readonly StringBuilder LogBuffer = new StringBuilder();
 
@@ -381,8 +381,16 @@ namespace FnSync
                 Handler.Dispose();
             }
 
+            await Task.Delay(1500);
+
             App.FakeDispatcher.Invoke(() =>
             {
+                if (!CloseAutomatically)
+                {
+                    Logs.AppendText("\n");
+                    Logs.AppendText((string)Application.Current.FindResource("OneOrMoreFailed"));
+                }
+
                 PromptOnClose = false;
                 if (!IsClosing && CloseAutomatically)
                 {
@@ -393,7 +401,7 @@ namespace FnSync
             });
         }
 
-        private void Handler_ProgressChangedEvent(object sender, FileTransmissionAbstract.ProgressChangedEventArgs e)
+        private void Handler_ProgressChangedEvent(object sender, ProgressChangedEventArgs e)
         {
             App.FakeDispatcher.Invoke(() =>
             {

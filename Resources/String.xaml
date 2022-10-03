@@ -13,9 +13,11 @@
     <System:String x:Key="DatetimeNotMatched">Please check the datetimes of both of your devices, the difference must be less than 5min.</System:String>
     <System:String x:Key="PleaseEnterConnectionCode">Please enter connection code.</System:String>
 
-    <System:String x:Key="SwitchToEnter">Connect by Connection Code</System:String>
-    <System:String x:Key="SwitchToScan">Connect by QR Code</System:String>
-    <System:String x:Key="ConnectByQR">QR Code</System:String>
+    <System:String x:Key="MethodCode" xml:space="preserve">Method 2
+Use Connection Code</System:String>
+    <System:String x:Key="MethodScan" xml:space="preserve">Method 1
+Scan QR Code</System:String>
+    <System:String x:Key="Connection">Connection</System:String>
     <System:String x:Key="ConnectionCode">Connection Code</System:String>
     <System:String x:Key="LocalAddress">Local Address</System:String>
     <System:String x:Key="Connected">Connected</System:String>
@@ -24,7 +26,7 @@
     <System:String x:Key="PromptAccept">You may accept the connection on your phone</System:String>
     <System:String x:Key="Rename">Rename</System:String>
     <System:String x:Key="Disconnect">Disconnect</System:String>
-    <System:String x:Key="OpenMainWindow">Open Main Window</System:String>
+    <System:String x:Key="OpenMainWindow">Main Window</System:String>
     <System:String x:Key="Status">Status</System:String>
     <System:String x:Key="Online">Online</System:String>
     <System:String x:Key="Offline">Offline</System:String>
@@ -48,8 +50,7 @@
 
     <System:String x:Key="Instruction">Instruction</System:String>
     <System:String x:Key="DownloadAndroidCompanion">Download Android Companion APP from Google Play</System:String>
-    <System:String x:Key="Instructions" xml:space="preserve">Instructions:
-0. Make sure your phone and PC are at the same network.
+    <System:String x:Key="Instructions" xml:space="preserve">0. Make sure your phone and PC are at the same network.
 1. Download the Android companion app and run it.
 2. Turn on features you need on your phone.
 3. Either, with your phone scan the QR code on the PC companion app,
@@ -117,7 +118,8 @@
     <System:String x:Key="Failed">Failed</System:String>
     <System:String x:Key="Skipped">Skipped</System:String>
     <System:String x:Key="Succeed">Succeed</System:String>
-    <System:String x:Key="SameFolder">The source and destination folders are the same, therefore cannot paste.</System:String>
+    <System:String x:Key="OneOrMoreFailed">One or more files failed, please check</System:String>
+    <System:String x:Key="SameFolderCannotPaste">The source and destination are the same, cannot paste.</System:String>
 
     <System:String x:Key="FileAlreadyExistsTitle">File Already Exists</System:String>
     <System:String x:Key="FileAlreadyExists">This file/folder already exists: </System:String>
@@ -133,6 +135,7 @@
     <System:String x:Key="Ignore">Ignore This Error</System:String>
 
     <System:String x:Key="FileManager">File Manager</System:String>
+    <System:String x:Key="NoConnectedDevice">No connected device.</System:String>
     <System:String x:Key="LoadingContent">Loading Content...</System:String>
     <System:String x:Key="FileName">Name</System:String>
     <System:String x:Key="FileSize">Size</System:String>

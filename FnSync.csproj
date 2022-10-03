@@ -130,11 +130,11 @@
     <Compile Include="AutoDisposableTimer.cs" />
     <Compile Include="Casting.cs" />
     <Compile Include="ClipboardManager.cs" />
-    <Compile Include="ControlConnectionByCode.xaml.cs">
-      <DependentUpon>ControlConnectionByCode.xaml</DependentUpon>
+    <Compile Include="ControlConnecting.xaml.cs">
+      <DependentUpon>ControlConnecting.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ControlConnectionByQR.xaml.cs">
-      <DependentUpon>ControlConnectionByQR.xaml</DependentUpon>
+    <Compile Include="ControlConnectingViewModel.cs">
+      <DependentUpon>ControlConnecting.xaml</DependentUpon>
     </Compile>
     <Compile Include="ControlDevice.xaml.cs">
       <DependentUpon>ControlDevice.xaml</DependentUpon>
@@ -256,7 +256,7 @@
       <Version>7.1.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Windows.SDK.Contracts">
-      <Version>10.0.22000.196</Version>
+      <Version>10.0.22621.2</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.1</Version>
@@ -278,11 +278,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="ControlConnectionByCode.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlConnectionByQR.xaml">
+    <Page Include="ControlConnecting.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

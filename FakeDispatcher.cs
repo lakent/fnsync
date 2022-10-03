@@ -12,7 +12,7 @@ namespace FnSync
     {
         public static bool IsOnUIThread()
         {
-            return App.Current.Dispatcher.CheckAccess();
+            return System.Windows.Application.Current.Dispatcher.CheckAccess();
         }
 
         public static FakeDispatcher Init()

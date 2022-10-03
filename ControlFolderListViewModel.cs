@@ -223,7 +223,22 @@ namespace FnSync.ViewModel.ControlFolderList
 
         public bool CanExecute(object parameter)
         {
-            return parameter is IList selected && selected.Count > 0;
+            if (!(parameter is IList selected))
+            {
+                return false;
+            }
+
+            if (selected.Count == 0)
+            {
+                return false;
+            }
+
+            if (viewModel.SelectedModel is RootModel)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         public void Execute(object parameter)
@@ -317,7 +332,7 @@ namespace FnSync.ViewModel.ControlFolderList
             if (DestFolder == viewModel.SharedExecutingDescriptor.SourceFolder)
             {
                 _ = MessageBox.Show(
-                    (string)Application.Current.FindResource("SameFolder"),
+                    (string)Application.Current.FindResource("SameFolderCannotPaste"),
                     (string)Application.Current.FindResource("Prompt"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Exclamation
@@ -506,13 +521,18 @@ namespace FnSync.ViewModel.ControlFolderList
 
             int Count = selected.Count;
 
-            if (MessageBox.Show(
+            string promptText =
                 string.Format(
                     "{0}\n\n{1}{2}",
                     (string)Application.Current.FindResource("BeSureToDelete"),
                     JoinItems(selected, "\n", 5),
-                    Count > 5 ? string.Format((string)App.Current.FindResource("AndSomeMore"), Count) : ""
-                    ),
+                    Count > 5 ?
+                        string.Format((string)Application.Current.FindResource("AndSomeMore"), Count) :
+                        ""
+                    );
+
+            if (MessageBox.Show(
+                promptText,
                 (string)Application.Current.FindResource("Prompt"),
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question,

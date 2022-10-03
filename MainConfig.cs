@@ -3,8 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FnSync
 {
@@ -103,8 +101,7 @@ namespace FnSync
 
         public bool TextCastAutoCopy
         {
-            get
-            => (bool)this["TextCastAutoCopy"];
+            get => (bool)this["TextCastAutoCopy"];
             set
             {
                 this["TextCastAutoCopy"] = value;
@@ -134,3 +131,4 @@ namespace FnSync
 
     }
 }
+
