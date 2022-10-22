@@ -30,39 +30,37 @@
             <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <GroupBox Grid.Column="0" Padding="0">
-            <ScrollViewer Padding="0" Margin="0"
+        <ScrollViewer Grid.Column="0" Padding="0" Margin="0"
                 VerticalAlignment="Stretch" VerticalContentAlignment="Top"
                 adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay"
                 adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True"
                 >
-                <StackPanel>
-                    <!--<Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />-->
-                    <Image Source="Resources/ic_launcher.png" Margin="5"/>
-                    <ListBox ItemsSource="{Binding LeftPanelItemSet}" SelectedIndex="0">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" >
-                                    <Image Width="16" Height="16" Margin="0,0,8,0"
+            <StackPanel>
+                <!--<Border Height="{Binding Path=TitleBarActualHeight, RelativeSource={RelativeSource AncestorType={x:Type adonisControls:AdonisWindow}}}" />-->
+                <Image Source="Resources/ic_launcher.png" Margin="5"/>
+                <ListBox ItemsSource="{Binding LeftPanelItemSet}" SelectedIndex="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" >
+                                <Image Width="16" Height="16" Margin="0,0,8,0"
                                            Visibility="{Binding Icon, Converter={StaticResource NonNullToVisibleConverter}}"
                                            Source="{Binding Icon}">
-                                    </Image>
-                                    <TextBlock Text="{Binding Name}"/>
-                                </StackPanel>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                        <ListBox.ItemContainerStyle>
-                            <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
-                                <Setter Property="BorderThickness" Value="0"/>
-                                <!--<Setter Property="Padding" Value="{adonisUi:Space 3, 1, 2, 1}"/>-->
-                                <Setter Property="Padding" Value="24,8,16,8"/>
-                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
-                            </Style>
-                        </ListBox.ItemContainerStyle>
-                    </ListBox>
-                </StackPanel>
-            </ScrollViewer>
-        </GroupBox>
+                                </Image>
+                                <TextBlock Text="{Binding Name}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <!--<Setter Property="Padding" Value="{adonisUi:Space 3, 1, 2, 1}"/>-->
+                            <Setter Property="Padding" Value="24,8,16,8"/>
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </StackPanel>
+        </ScrollViewer>
 
         <Grid Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
@@ -70,14 +68,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <ScrollViewer Grid.Row="1" Padding="16,0,16,16"
+            <ContentControl Grid.Row="1" Margin="16,0,16,16"
                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                Content="{Binding SelectedView}" 
-                adonisExtensions:ScrollViewerExtension.VerticalScrollBarPlacement="Overlay"
-                adonisExtensions:ScrollViewerExtension.HideScrollBarsUntilMouseOver="True"
-                >
-            </ScrollViewer>
-
+                Content="{Binding SelectedView}" />
         </Grid>
     </Grid>
 </adonisControls:AdonisWindow>

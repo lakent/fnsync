@@ -192,6 +192,7 @@ namespace FnSync
 
         public static readonly string ONE_FILE_RECEIVED = (string)Application.Current.FindResource("YouReceivedAFile");
         public static readonly string FILES_RECEIVED = (string)Application.Current.FindResource("YouReceivedFiles");
+        public static readonly string SAVE = (string)Application.Current.FindResource("Save");
         public static readonly string SAVE_AS = (string)Application.Current.FindResource("SaveAs");
         public static readonly string CANCEL = (string)Application.Current.FindResource("Cancel");
         private static void OnRequestReceived(string id, string msgType, object msgObj, PhoneClient client)
@@ -218,9 +219,22 @@ namespace FnSync
 
             ToastContentBuilder Builder = new ToastContentBuilder()
                 .AddHeader(id, client.Name, "")
-                .AddText(header, hintMinLines:1)
-                .AddText(body)
-                .AddButton(new ToastButton()
+                .AddText(header, hintMinLines: 1)
+                .AddText(body);
+
+            if (!string.IsNullOrWhiteSpace(MainConfig.Config.FileDefaultSaveFolder))
+            {
+                _ = Builder.AddButton(new ToastButton()
+                        .SetContent(SAVE)
+                        .AddArgument("FileReceive_SaveAs")
+                        .AddArgument("location", MainConfig.Config.FileDefaultSaveFolder)
+                        .AddArgument("pendingkey", PendingKey)
+                        .AddArgument("totalsize", total.ToString())
+                        .AddArgument("clientid", id));
+            }
+
+
+            _ = Builder.AddButton(new ToastButton()
                     .SetContent(SAVE_AS)
                     .AddArgument("FileReceive_SaveAs")
                     .AddArgument("pendingkey", PendingKey)
@@ -233,68 +247,6 @@ namespace FnSync
                 ;
 
             NotificationSubchannel.Singleton.Push(Builder);
-
-            /*
-            ToastContent toastContent = new ToastContent()
-            {
-                //Launch = "action=viewConversation&conversationId=5",
-
-                Header = new ToastHeader(id, client.Name, ""),
-
-                Visual = new ToastVisual()
-                {
-                    BindingGeneric = new ToastBindingGeneric()
-                    {
-                        Children =
-                        {
-                            new AdaptiveText()
-                            {
-                                Text = header,
-                                HintMaxLines = 1
-                            },
-                            new AdaptiveText()
-                            {
-                                Text = body,
-                            },
-                        },
-                    }
-                },
-
-                Actions = new ToastActionsCustom()
-                {
-                    ContextMenuItems = { },
-                    Buttons = {
-                        new ToastButton(
-                            SAVE_AS,
-                            new QueryString(){
-                                { "FileReceive_SaveAs"},
-                                { "pendingkey", PendingKey},
-                                { "totalsize", total.ToString()},
-                                { "clientid", id},
-                            }.ToString())
-                            {
-                                ActivationType = ToastActivationType.Foreground
-                            },
-                        new ToastButton(CANCEL,
-                            new QueryString(){
-                                { "FileReceive_SaveAs"},
-                                { "cancelpending", PendingKey},
-                            }.ToString())
-                    }
-                }
-            };
-
-            // Create the XML document (BE SURE TO REFERENCE WINDOWS.DATA.XML.DOM)
-            var doc = new XmlDocument();
-            doc.LoadXml(toastContent.GetContent());
-
-            // And create the Toast notification
-            var Toast = new ToastNotification(doc);
-            var ToastDup = new ToastNotification(doc);
-
-            // And then show it
-            NotificationSubchannel.Singleton.Push(Toast, ToastDup);
-            */
         }
 
         public static void ParseQueryString(QueryString queries)
@@ -316,19 +268,17 @@ namespace FnSync
                 return;
             }
 
+            string location = queries.OptString("location");
+
             App.FakeDispatcher.Invoke(delegate
             {
-                /*
                 new WindowFileOperation(
-                    new FileReceive().Apply<IBase>(it =>
-                    {
-                        it.Init(client, Pendings.GetAndRemove(PendingKey), total);
-                    })
-                    ).Show();
-                */
-                new WindowFileOperation(Directions.PHONE_TO_PC, Operations.COPY, ClientId)
-                .SetEntryList(Pendings.GetAndRemove(PendingKey))
-                .Show();
+                    Directions.PHONE_TO_PC, Operations.COPY, ClientId,
+                    DestFolder: location
+                    )
+                    .SetEntryList(Pendings.GetAndRemove(PendingKey))
+                    .Show();
+
                 return null;
             });
         }

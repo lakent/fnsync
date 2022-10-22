@@ -86,6 +86,8 @@ Scan QR Code</System:String>
     <System:String x:Key="NotificationClickEvent">Notification Click Event (Not Finished)</System:String>
     <System:String x:Key="APPName">APP Name</System:String>
     <System:String x:Key="PkgID">Package ID</System:String>
+    <System:String x:Key="Startup">Startup</System:String>
+    <System:String x:Key="Transmitting">Transmitting</System:String>
     <System:String x:Key="ConnectOnStartup">Connect known phones on startup</System:String>
     <System:String x:Key="HideOnStartup">Don't show main window on startup</System:String>
     <System:String x:Key="HideNotificationOnStartup">Don't show connect toast on startup</System:String>
@@ -95,6 +97,10 @@ Scan QR Code</System:String>
     <System:String x:Key="FixedListenPort">Listen on a fixed port</System:String>
     <System:String x:Key="Port">Port</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
+    <System:String x:Key="FileDefaultSaveFolder">Save File To</System:String>
+    <System:String x:Key="Browse">Browse</System:String>
+    <System:String x:Key="Clear">Clear</System:String>
+    <System:String x:Key="FileDefaultSaveFolderNote">Save received file to this location. You can leave this empty, so you need choose a location every time files are received.</System:String>
     <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>
     <System:String x:Key="AdditionalIPsNote">You could specify additional IP addresses. These addresses would be embedded in the QR code and are used by the phone APP when connecting. Use semicolon(;) as delimiter. You need refresh QR code after changing this.</System:String>
 
@@ -104,9 +110,11 @@ Scan QR Code</System:String>
     <System:String x:Key="FileOperation_InsidePhone">File Operation ({0} from Phone to Phone)</System:String>
     <System:String x:Key="FileOperation_PhoneToPc">File Operation ({0} from Phone to PC)</System:String>
     <System:String x:Key="FileOperation_PcToPhone">File Operation ({0} from PC to Phone)</System:String>
+    <System:String x:Key="ChooseAFolder">Choose a Folder</System:String>
     <System:String x:Key="SaveTo">Save to</System:String>
     <System:String x:Key="YouReceivedAFile">You just received a file. {1} in size</System:String>
     <System:String x:Key="YouReceivedFiles">You just received {0} files. Total {1} in size</System:String>
+    <System:String x:Key="Save">Save</System:String>
     <System:String x:Key="SaveAs">Save As</System:String>
     <System:String x:Key="Files">Files/Folders: </System:String>
     <System:String x:Key="Transferred">Transferred: </System:String>

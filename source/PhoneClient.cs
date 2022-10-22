@@ -298,6 +298,30 @@ namespace FnSync
             }
         }
 
+        public void SendMsgNoThrow(JObject msg, string type)
+        {
+            try
+            {
+                SendMsg(msg, type);
+            }
+            catch (IOException e)
+            {
+
+            }
+            catch (SocketException e)
+            {
+
+            }
+            catch (SendQueueClass.Exited e)
+            {
+
+            }
+            catch (PhoneMessageCenter.DisconnectedException e)
+            {
+
+            }
+        }
+
         private void SetCode(string newCode)
         {
             encryptionManager = new EncryptionManager(newCode);

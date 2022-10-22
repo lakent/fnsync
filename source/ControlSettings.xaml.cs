@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ookii.Dialogs.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,10 +12,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace FnSync
 {
@@ -55,6 +52,25 @@ namespace FnSync
             {
                 _ = System.Diagnostics.Process.Start(link.NavigateUri.AbsoluteUri);
             }
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog
+            {
+                Description = (string)FindResource("ChooseAFolder"),
+                UseDescriptionForTitle = true
+            };
+
+            if (dialog.ShowDialog(Window.GetWindow(this)) == true)
+            {
+                FileDefaultSaveFolder.Text = dialog.SelectedPath.AppendIfNotEnding("\\");
+            }
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            FileDefaultSaveFolder.Text = "";
         }
     }
 

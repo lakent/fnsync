@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:FnSync"
+             d:DataContext="{d:DesignInstance Type=local:MainConfig}"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
@@ -14,26 +15,63 @@
         <TabItem Header="{DynamicResource General}">
             <ScrollViewer>
                 <StackPanel x:Name="Settings" Margin="8">
-                    <CheckBox Margin="0,4" Content="{DynamicResource ConnectOnStartup}" IsChecked="{Binding ConnectOnStartup, Mode=TwoWay}"/>
-                    <CheckBox Margin="0,4" Content="{DynamicResource HideOnStartup}" IsChecked="{Binding HideOnStartup, Mode=TwoWay}"/>
-                    <CheckBox Margin="0,4" Content="{DynamicResource HideNotificationOnStartup}" IsChecked="{Binding HideNotificationOnStartup, Mode=TwoWay}"/>
-                    <CheckBox Margin="0,4" Content="{DynamicResource DontToastConnected}" IsChecked="{Binding DontToastConnected, Mode=TwoWay}"/>
-                    <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}"/>
-                    <CheckBox Margin="0,4" x:Name="TextCastAutoCopy" Content="{DynamicResource TextCastAutoCopy}" IsChecked="{Binding TextCastAutoCopy, Mode=TwoWay}" />
-                    <CheckBox Margin="0,4" x:Name="FixedListenPort" Content="{DynamicResource FixedListenPort}" IsChecked="{Binding FixedListenPort, Mode=OneWay, Converter={StaticResource SpecificPortConverter}}" Checked="FixedListenPort_Checked" Unchecked="FixedListenPort_Unchecked"/>
-                    <StackPanel IsEnabled="{Binding IsChecked, ElementName=FixedListenPort}"  HorizontalAlignment="Left" Margin="32,0,0,0" Orientation="Horizontal">
-                        <TextBlock Text="{DynamicResource Port}"/>
-                        <TextBlock Text=" : " Margin="0,0,8,0"/>
-                        <TextBox x:Name="PortNumber" Width="70" Text="{Binding FixedListenPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
-                    <Label Margin="32,0,0,0">
-                        <TextBlock Text="{DynamicResource RequireRestart}" TextWrapping="WrapWithOverflow" />
-                    </Label>
-                    <Label Content="{DynamicResource AdditionalIPs}"/>
-                    <TextBox x:Name="AdditionalIPs" Margin="32,0,0,0" Text="{Binding AdditionalIPs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Label Margin="32,0,0,0">
-                        <TextBlock Text="{DynamicResource AdditionalIPsNote}" TextWrapping="WrapWithOverflow" />
-                    </Label>
+                    <GroupBox Header="{DynamicResource Startup}">
+                        <StackPanel>
+                            <CheckBox Margin="0,4" Content="{DynamicResource ConnectOnStartup}" IsChecked="{Binding ConnectOnStartup, Mode=TwoWay}"/>
+                            <CheckBox Margin="0,4" Content="{DynamicResource HideOnStartup}" IsChecked="{Binding HideOnStartup, Mode=TwoWay}"/>
+                            <CheckBox Margin="0,4" Content="{DynamicResource HideNotificationOnStartup}" IsChecked="{Binding HideNotificationOnStartup, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="{DynamicResource Connection}">
+                        <StackPanel>
+                            <CheckBox Margin="0,4" Content="{DynamicResource DontToastConnected}" IsChecked="{Binding DontToastConnected, Mode=TwoWay}"/>
+                            <CheckBox Margin="0,4" x:Name="FixedListenPort" Content="{DynamicResource FixedListenPort}" IsChecked="{Binding FixedListenPort, Mode=OneWay, Converter={StaticResource SpecificPortConverter}}" Checked="FixedListenPort_Checked" Unchecked="FixedListenPort_Unchecked"/>
+                            <StackPanel IsEnabled="{Binding IsChecked, ElementName=FixedListenPort}"  HorizontalAlignment="Left" Margin="32,0,0,0" Orientation="Horizontal">
+                                <TextBlock Text="{DynamicResource Port}"/>
+                                <TextBlock Text=" : " Margin="0,0,8,0"/>
+                                <TextBox x:Name="PortNumber" Width="70" Text="{Binding FixedListenPort, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </StackPanel>
+                            <Label Margin="32,0,0,0">
+                                <TextBlock Text="{DynamicResource RequireRestart}" TextWrapping="WrapWithOverflow" />
+                            </Label>
+                            <Label Content="{DynamicResource AdditionalIPs}"/>
+                            <TextBox x:Name="AdditionalIPs" Margin="32,0,0,0" Text="{Binding AdditionalIPs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Label Margin="32,0,0,0">
+                                <TextBlock Text="{DynamicResource AdditionalIPsNote}" TextWrapping="WrapWithOverflow" />
+                            </Label>
+                        </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="{DynamicResource Transmitting}">
+                        <StackPanel>
+                            <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}"/>
+                            <CheckBox Margin="0,4" x:Name="TextCastAutoCopy" Content="{DynamicResource TextCastAutoCopy}" IsChecked="{Binding TextCastAutoCopy, Mode=TwoWay}" />
+
+                            <Label Content="{DynamicResource FileDefaultSaveFolder}"/>
+                            <Grid Margin="32,0,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBox Grid.Column="0" x:Name="FileDefaultSaveFolder"
+                             IsReadOnly="True" IsReadOnlyCaretVisible="True"
+                             Text="{Binding FileDefaultSaveFolder, Mode=TwoWay,
+                             UpdateSourceTrigger=PropertyChanged}" />
+
+                                <Button Grid.Column="1" Padding="5, 0" Margin="5,0,0,0"
+                                Content="{DynamicResource Browse}" Click="BrowseButton_Click"/>
+
+                                <Button Grid.Column="2" Padding="5, 0" Margin="5,0,0,0"
+                                Content="{DynamicResource Clear}" Click="ClearButton_Click"/>
+
+                            </Grid>
+                            <Label Margin="32,0,0,0">
+                                <TextBlock Text="{DynamicResource FileDefaultSaveFolderNote}" TextWrapping="WrapWithOverflow" />
+
+                            </Label>
+                        </StackPanel>
+                    </GroupBox>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>

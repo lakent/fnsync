@@ -1,4 +1,5 @@
 ﻿using FnSync.Properties;
+using Microsoft.QueryStringDotNET;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.BC;
 using System;
@@ -22,7 +23,7 @@ using System.Windows.Threading;
 
 namespace FnSync
 {
-    static class SocketExtension
+    internal static class SocketExtension
     {
         public static bool IsListening(this Socket socket)
         {
@@ -76,7 +77,7 @@ namespace FnSync
             return null;
         }
     }
-    static class JObjectExtension
+    internal static class JObjectExtension
     {
         public static bool OptBool(this JObject jObject, string key, bool defval)
         {
@@ -84,7 +85,6 @@ namespace FnSync
             {
                 return defval;
             }
-
             try
             {
                 if (jObject.ContainsKey(key))
@@ -92,10 +92,7 @@ namespace FnSync
                     return (bool)jObject[key];
                 }
             }
-            catch (Exception e)
-            {
-            }
-
+            catch (Exception e) { }
             return defval;
         }
 
@@ -159,7 +156,7 @@ namespace FnSync
 
         public static string AppendIfNotEnding(this string orig, string text)
         {
-            if (orig == null || String.IsNullOrEmpty(text))
+            if (orig == null || string.IsNullOrEmpty(text))
             {
                 return orig;
             }
@@ -183,21 +180,23 @@ namespace FnSync
         }
     }
 
-    static class StringBuilderExtension
+    internal static class StringBuilderExtension
     {
         public static bool EndsWith(this StringBuilder builder, string str)
         {
             if (builder.Length < str.Length)
+            {
                 return false;
+            }
 
             string end = builder.ToString(builder.Length - str.Length, str.Length);
             return end.Equals(str);
         }
     }
 
-    static class EndPointExtension
+    internal static class EndPointExtension
     {
-        public static String ConvertToString(this EndPoint endPoint)
+        public static string ConvertToString(this EndPoint endPoint)
         {
             if (endPoint is IPEndPoint end)
             {
@@ -218,7 +217,7 @@ namespace FnSync
         }
     }
 
-    static class DispatherExtension
+    internal static class DispatherExtension
     {
         public static void InvokeIfNecessaryWithThrow(this Dispatcher dispatcher, Action action, bool IsNecessary = true)
         {
@@ -251,17 +250,17 @@ namespace FnSync
 
         public static void InvokeAsyncCatchable(this Dispatcher dispatcher, Action action)
         {
-            dispatcher.InvokeAsync(delegate
-            {
-                try
-                {
-                    action?.Invoke();
-                }
-                catch (Exception e)
-                {
-                    WindowUnhandledException.ShowException(e);
-                }
-            });
+            _ = dispatcher.InvokeAsync(delegate
+              {
+                  try
+                  {
+                      action?.Invoke();
+                  }
+                  catch (Exception e)
+                  {
+                      WindowUnhandledException.ShowException(e);
+                  }
+              });
         }
 
         public static void InvokeIfNecessaryNoThrow(this Dispatcher dispatcher, Action action, bool Necessary = true)
@@ -284,7 +283,7 @@ namespace FnSync
         }
     }
 
-    static class ObjectExtension
+    internal static class ObjectExtension
     {
         public static T Apply<T>(this T self, Action<T> block)
         {
@@ -293,7 +292,7 @@ namespace FnSync
         }
     }
 
-    static class IListExtension
+    internal static class IListExtension
     {
         public static IList<T> CloneToTypedList<T>(this IList self)
         {
@@ -321,7 +320,7 @@ namespace FnSync
         }
     }
 
-    static class FileStreamExtension
+    internal static class FileStreamExtension
     {
         public static long Available(this FileStream self)
         {
@@ -329,7 +328,7 @@ namespace FnSync
         }
     }
 
-    static class BitmapExtension
+    internal static class BitmapExtension
     {
         [DllImport("gdi32.dll", EntryPoint = "DeleteObject")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -347,6 +346,20 @@ namespace FnSync
             {
                 _ = DeleteObject(handle);
             }
+        }
+    }
+
+    internal static class QueryStringExtension
+    {
+        public static string OptString(this QueryString queries, string key)
+        {
+
+            if (queries.TryGetValue(key, out string value))
+            {
+                return value;
+            }
+
+            return null;
         }
     }
 }

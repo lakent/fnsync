@@ -25,6 +25,7 @@ namespace FnSync
                 ["TextCastAutoCopy"] = true,
                 ["FixedListenPort"] = 0,
                 ["AdditionalIPs"] = "",
+                ["FileDefaultSaveFolder"] = "",
 
                 // Don't assign null
             };
@@ -126,6 +127,16 @@ namespace FnSync
             {
                 this["AdditionalIPs"] = value;
                 this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("AdditionalIPs"));
+            }
+        }
+
+        public string FileDefaultSaveFolder
+        {
+            get => (string)this["FileDefaultSaveFolder"];
+            set
+            {
+                this["FileDefaultSaveFolder"] = value;
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FileDefaultSaveFolder"));
             }
         }
 

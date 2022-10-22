@@ -623,7 +623,7 @@ namespace FnSync
         {
             if (!string.IsNullOrWhiteSpace(Entry.key))
             {
-                Client.SendMsg(
+                Client.SendMsgNoThrow(
                     new JObject()
                     {
                         ["key"] = Entry.key

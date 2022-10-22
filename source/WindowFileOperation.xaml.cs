@@ -1,6 +1,5 @@
 ﻿using AdonisUI.Controls;
 using Microsoft.Win32;
-using Newtonsoft.Json.Linq;
 using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections;
@@ -11,9 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using static FnSync.FileTransmissionAbstract;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
