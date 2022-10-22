@@ -1,18 +1,77 @@
+# FnSync - Sync with Your Windows
+
+FnSync provides you with:
+
+1. Notification Synchronization, from phone to Windows PCs.
+2. Clipboard Synchronization (Bidirectional, Text Only).
+If you use Android 10 or above, you can also send text to PC through system text selection menu and share menu.
+3. Lock PCs' screen when you unplug your phone.
+4. File transfer.
+
+Download: https://gitee.com/holmium/fnsync/releases
+
+Currently only Windows 10 is supported. Windows 11 may also be fine (not tested).
+
+Requires an Android Companion APP installed on your phone. Link: https://play.google.com/store/apps/details?id=holmium.fnsync
+
+# Screenshot
+
+## Connecting
+
+QR、Connection Code（For devices without camera）
+
+![](readme/Connect_en.png)
+
+## Notification Synchronization
+
+You can copy the whole text or URLs/numbers
+
+![](readme/Notification_en.png)
+
+## Black/White List for Notification Synchronization
+
+![](readme/NotificationBlacklist_en.png)
+
+## File Manager
+
+Cut, copy and transfer files & folders
+
+![](readme/FileManager_en.png)
+
+## File Transfer
+
+Supports resume after break
+
+![](readme/FileTransmit_en.png)
+
+## Send File to PC
+
+![](readme/Share_en.png)
+
+## Settings
+
+![](readme/Settings_en.png)
+
+## Phone Status
+
+![](readme/PhoneStatus_en.png)
+
 # FnSync - 与电脑同步
 
 本软件提供的功能有：
- 1. 手机通知同步至电脑； 
- 2. 剪切板同步（仅文本，双向）；
+
+1. 手机通知同步至电脑； 
+2. 剪切板同步（仅文本，双向）；
 针对 Android 10 及以上版本的系统，可以通过系统文本选择菜单和分享菜单发送文本到电脑。 
- 3. 手机控制电脑锁屏；
- 4. 文件管理和文件传输功能；
- 5. 分享手机文件到电脑；
+3. 手机控制电脑锁屏；
+4. 文件管理和文件传输功能；
+5. 分享手机文件到电脑；
 
 下载地址：https://gitee.com/holmium/fnsync/releases
 
-此软件需结合 Android 端 APP 一起使用。Android 端 APP 的地址是：https://www.coolapk.com/apk/269031 或者 https://play.google.com/store/apps/details?id=holmium.fnsync
-
 目前仅支持 Windows 10。
+
+此软件需结合 Android 端 APP 一起使用。Android 端 APP 的地址是：https://www.coolapk.com/apk/269031 或者 https://play.google.com/store/apps/details?id=holmium.fnsync
 
 用户交流QQ群：`246938957`
 

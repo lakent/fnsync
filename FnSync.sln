@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnSync", "FnSync.csproj", "{06F280A9-52CD-4555-A659-810C2F7951A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FnSync", "source\FnSync.csproj", "{06F280A9-52CD-4555-A659-810C2F7951A0}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "FnSyncPackage", "FnSyncPackage\FnSyncPackage.wapproj", "{5075C872-09FF-4280-A42F-04E2BB616853}"
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "FnSyncPackage", "source\FnSyncPackage\FnSyncPackage.wapproj", "{5075C872-09FF-4280-A42F-04E2BB616853}"
 EndProject
-Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "FnSyncSideload", "FnSyncSideload\FnSyncSideload.wapproj", "{798858FC-CCBB-435B-A851-D8BCFEEBF8B3}"
+Project("{C7167F0D-BC9F-4E6E-AFE1-012C56B48DB5}") = "FnSyncSideload", "source\FnSyncSideload\FnSyncSideload.wapproj", "{798858FC-CCBB-435B-A851-D8BCFEEBF8B3}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "WixInstaller", "wix\WixInstaller.wixproj", "{3C410864-BE13-410C-9A4A-0E8611FA0F68}"
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "WixInstaller", "source\wix\WixInstaller.wixproj", "{3C410864-BE13-410C-9A4A-0E8611FA0F68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
