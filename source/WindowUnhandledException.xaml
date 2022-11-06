@@ -19,7 +19,9 @@
         </Grid.RowDefinitions>
         <TextBox Grid.Row="0" Text="{DynamicResource ErrorLabel}" Background="Transparent" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden" Margin="0,4" BorderThickness="0"/>
 
-        <TextBox x:Name="Message" Grid.Row="1" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"/>
+        <TextBox x:Name="Message" Grid.Row="1" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+             VerticalContentAlignment="Top" VerticalAlignment="Stretch"
+             />
         <StackPanel Grid.Row="2" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
             <Button x:Name="QuitThis" Content="{DynamicResource Quit}" Padding="8,4" Click="QuitThis_Click"/>
             <Button x:Name="IgnoreThis" Content="{DynamicResource Ignore}" Margin="8,0,0,0" Padding="8,4" Click="IgnoreThis_Click"/>

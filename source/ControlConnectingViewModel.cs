@@ -17,9 +17,12 @@ namespace FnSync.ViewModel.ControlConnecting
 {
     public partial class ViewModel : INotifyPropertyChanged, IDisposable
     {
+        private static readonly char[] IpDelimeters =
+            new char[] { ',', ';', '|', '，', '；', '｜' };
+
         private static string GetAdditionalIPs()
         {
-            string[] ips = MainConfig.Config.AdditionalIPs.Split(new char[] { ';', '|' });
+            string[] ips = MainConfig.Config.AdditionalIPs.Split(IpDelimeters);
             StringBuilder Builder = new StringBuilder();
 
             foreach (string ip in ips)
@@ -109,7 +112,8 @@ namespace FnSync.ViewModel.ControlConnecting
                             );
 
                         PhoneListener.Singleton.StartReachInitiatively(ConnectionCode, false, null);
-                    } else
+                    }
+                    else
                     {
                         PhoneListener.Singleton.StopReach();
 

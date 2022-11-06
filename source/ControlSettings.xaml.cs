@@ -67,11 +67,6 @@ namespace FnSync
                 FileDefaultSaveFolder.Text = dialog.SelectedPath.AppendIfNotEnding("\\");
             }
         }
-
-        private void ClearButton_Click(object sender, RoutedEventArgs e)
-        {
-            FileDefaultSaveFolder.Text = "";
-        }
     }
 
     [ValueConversion(typeof(int), typeof(bool))]

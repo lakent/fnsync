@@ -46,30 +46,27 @@
                             <CheckBox Margin="0,4" x:Name="ClipboardSync" Content="{DynamicResource ClipboardSync}" IsChecked="{Binding ClipboardSync, Mode=TwoWay}"/>
                             <CheckBox Margin="0,4" x:Name="TextCastAutoCopy" Content="{DynamicResource TextCastAutoCopy}" IsChecked="{Binding TextCastAutoCopy, Mode=TwoWay}" />
 
-                            <Label Content="{DynamicResource FileDefaultSaveFolder}"/>
-                            <Grid Margin="32,0,0,0">
+                            <CheckBox Margin="0,4" x:Name="SaveFileAutomatically" Content="{DynamicResource SaveFileAutomatically}" IsChecked="{Binding SaveFileAutomatically, Mode=TwoWay}" />
+                            <Grid Margin="32,0,0,0"
+                                IsEnabled="{Binding Path=IsChecked, ElementName=SaveFileAutomatically}"
+                                >
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <TextBox Grid.Column="0" x:Name="FileDefaultSaveFolder"
-                             IsReadOnly="True" IsReadOnlyCaretVisible="True"
-                             Text="{Binding FileDefaultSaveFolder, Mode=TwoWay,
-                             UpdateSourceTrigger=PropertyChanged}" />
-
-                                <Button Grid.Column="1" Padding="5, 0" Margin="5,0,0,0"
-                                Content="{DynamicResource Browse}" Click="BrowseButton_Click"/>
+                                <Label Grid.Column="0" Content="{DynamicResource FileDefaultSaveFolder}"/>
+                                <TextBox Grid.Column="1" x:Name="FileDefaultSaveFolder"
+                                    VerticalContentAlignment="Center"
+                                    IsReadOnly="True" IsReadOnlyCaretVisible="True"
+                                    Text="{Binding FileDefaultSaveFolder, Mode=TwoWay,
+                                    UpdateSourceTrigger=PropertyChanged}" />
 
                                 <Button Grid.Column="2" Padding="5, 0" Margin="5,0,0,0"
-                                Content="{DynamicResource Clear}" Click="ClearButton_Click"/>
-
+                                Content="{DynamicResource Browse}" Click="BrowseButton_Click"/>
                             </Grid>
-                            <Label Margin="32,0,0,0">
-                                <TextBlock Text="{DynamicResource FileDefaultSaveFolderNote}" TextWrapping="WrapWithOverflow" />
-
-                            </Label>
                         </StackPanel>
                     </GroupBox>
                 </StackPanel>

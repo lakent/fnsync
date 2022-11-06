@@ -2,14 +2,13 @@
 using Microsoft.Toolkit.Uwp.Notifications;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Windows.Data.Xml.Dom;
-using Windows.UI.Notifications;
 
 namespace FnSync
 {
@@ -90,7 +89,9 @@ namespace FnSync
                         int SlashIndex = ConvertedPath.IndexOf("\\");
 
                         if (SlashIndex >= 0 && SlashIndex != ConvertedPath.Length - 1)
+                        {
                             return true;
+                        }
                     }
 
                     return false;
@@ -116,7 +117,8 @@ namespace FnSync
 
         public class PendingsClass
         {
-            private readonly Dictionary<string, ReceiveEntry[]> map = new Dictionary<string, ReceiveEntry[]>();
+            private readonly ConcurrentDictionary<string, ReceiveEntry[]> map =
+                new ConcurrentDictionary<string, ReceiveEntry[]>();
 
             public PendingsClass()
             {
@@ -128,11 +130,16 @@ namespace FnSync
                 List<ReceiveEntry> entries = files.ToObject<List<ReceiveEntry>>();
 
                 if (entries == null || entries.Count == 0)
+                {
                     return null;
+                }
 
                 string pendingKey = Guid.NewGuid().ToString();
 
-                map.Add(pendingKey, entries.ToArray());
+                if (!map.TryAdd(pendingKey, entries.ToArray()))
+                {
+                    return null;
+                }
 
                 return pendingKey;
             }
@@ -149,14 +156,19 @@ namespace FnSync
 
             public void Remove(string PendingKey)
             {
-                map.Remove(PendingKey);
+                _ = GetAndRemove(PendingKey);
             }
 
             public ReceiveEntry[] GetAndRemove(string PendingKey)
             {
-                ReceiveEntry[] entries = Get(PendingKey);
-                Remove(PendingKey);
-                return entries;
+                if (map.TryRemove(PendingKey, out ReceiveEntry[] result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             public static string First5Names(IEnumerable<ReceiveEntry> entries)
@@ -167,13 +179,17 @@ namespace FnSync
                 foreach (ReceiveEntry entry in entries)
                 {
                     if (count >= 5)
+                    {
                         break;
+                    }
 
                     sb.AppendLine(entry.name);
                 }
 
                 if (entries.Count() > 5)
+                {
                     sb.Append("……");
+                }
 
                 return sb.ToString();
 
@@ -206,24 +222,10 @@ namespace FnSync
                 return;
             }
 
-            ReceiveEntry[] entries = Pendings.Get(PendingKey);
-            long total = BaseEntry.LengthOfAllFiles(entries);
-
-            string header = string.Format(
-                entries.Length > 1 ? FILES_RECEIVED : ONE_FILE_RECEIVED,
-                entries.Length,
-                Utils.ToHumanReadableSize(total)
-                );
-
-            string body = PendingsClass.First5Names(entries);
-
-            ToastContentBuilder Builder = new ToastContentBuilder()
-                .AddHeader(id, client.Name, "")
-                .AddText(header, hintMinLines: 1)
-                .AddText(body);
-
-            if (!string.IsNullOrWhiteSpace(MainConfig.Config.FileDefaultSaveFolder))
+            if (MainConfig.Config.SaveFileAutomatically &&
+                !string.IsNullOrWhiteSpace(MainConfig.Config.FileDefaultSaveFolder))
             {
+                /*
                 _ = Builder.AddButton(new ToastButton()
                         .SetContent(SAVE)
                         .AddArgument("FileReceive_SaveAs")
@@ -231,22 +233,58 @@ namespace FnSync
                         .AddArgument("pendingkey", PendingKey)
                         .AddArgument("totalsize", total.ToString())
                         .AddArgument("clientid", id));
+                */
+
+
+                App.FakeDispatcher.Invoke(delegate
+                {
+                    new WindowFileOperation(
+                        Directions.PHONE_TO_PC, Operations.COPY, id,
+                        DestFolder: MainConfig.Config.FileDefaultSaveFolder
+                        )
+                        .SetEntryList(Pendings.GetAndRemove(PendingKey))
+                        .Show();
+
+                    return null;
+                });
             }
+            else
+            {
+                ReceiveEntry[] entries = Pendings.Get(PendingKey);
+                long total = BaseEntry.LengthOfAllFiles(entries);
 
+                string header = string.Format(
+                    entries.Length > 1 ? FILES_RECEIVED : ONE_FILE_RECEIVED,
+                    entries.Length,
+                    Utils.ToHumanReadableSize(total)
+                    );
 
-            _ = Builder.AddButton(new ToastButton()
-                    .SetContent(SAVE_AS)
-                    .AddArgument("FileReceive_SaveAs")
-                    .AddArgument("pendingkey", PendingKey)
-                    .AddArgument("totalsize", total.ToString())
-                    .AddArgument("clientid", id))
-                .AddButton(new ToastButton()
-                    .SetContent(CANCEL)
-                    .AddArgument("FileReceive_SaveAs")
-                    .AddArgument("cancelpending", PendingKey))
-                ;
+                string body = PendingsClass.First5Names(entries);
 
-            NotificationSubchannel.Singleton.Push(Builder);
+                ToastContentBuilder Builder = new ToastContentBuilder()
+                    .AddHeader(id, client.Name, "")
+                    .AddText(header, hintMinLines: 1)
+                    .AddText(body);
+
+                _ = Builder.AddButton(new ToastButton()
+                        .SetContent(SAVE_AS)
+                        .AddArgument("FileReceive_SaveAs")
+                        .AddArgument("pendingkey", PendingKey)
+                        .AddArgument("totalsize", total.ToString())
+                        .AddArgument("clientid", id))
+                    .AddButton(new ToastButton()
+                        .SetContent(CANCEL)
+                        .AddArgument("FileReceive_SaveAs")
+                        .AddArgument("cancelpending", PendingKey))
+                    ;
+
+                NotificationSubchannel.Singleton.Push(Builder);
+            }
+        }
+
+        private static void SaveAutomatically()
+        {
+
         }
 
         public static void ParseQueryString(QueryString queries)
@@ -268,13 +306,13 @@ namespace FnSync
                 return;
             }
 
-            string location = queries.OptString("location");
+            // string location = queries.OptString("location");
 
             App.FakeDispatcher.Invoke(delegate
             {
                 new WindowFileOperation(
-                    Directions.PHONE_TO_PC, Operations.COPY, ClientId,
-                    DestFolder: location
+                    Directions.PHONE_TO_PC, Operations.COPY, ClientId
+                    // DestFolder: location
                     )
                     .SetEntryList(Pendings.GetAndRemove(PendingKey))
                     .Show();

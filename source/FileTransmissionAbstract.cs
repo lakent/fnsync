@@ -209,6 +209,79 @@ namespace FnSync
             }
         }
 
+        public class FileTransmittionWatcher : IDisposable
+        {
+            private bool IsDisposed = false;
+            private bool Pause = false;
+
+            private readonly string ClientID;
+            public PhoneClient Client;
+
+            private void ConnectedCallback(string id, string msgType, object msgObject, PhoneClient Client)
+            {
+                this.Client = Client;
+                Pause = false;
+            }
+
+            private void DisonnectedCallback(string id, string msgType, object msgObject, PhoneClient Client)
+            {
+                Pause = true;
+            }
+
+            public FileTransmittionWatcher(string ClientID)
+            {
+                this.ClientID = ClientID;
+                this.Client = AlivePhones.Singleton[ClientID];
+
+                PhoneMessageCenter.Singleton.Register(
+                    ClientID,
+                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
+                    ConnectedCallback,
+                    false
+                );
+
+                PhoneMessageCenter.Singleton.Register(
+                    ClientID,
+                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
+                    DisonnectedCallback,
+                    false
+                );
+            }
+
+            public async void Start()
+            {
+                long LastSeenAt = Client?.SeenAt ?? 0;
+                while (!IsDisposed)
+                {
+                    await Task.Delay(500);
+                    long seen = Client?.SeenAt ?? 0;
+                    if (!Pause && seen - LastSeenAt >= 1000)
+                    {
+                        Client?.SendMsgNoThrow(PhoneClient.MSG_TYPE_HELLO);
+                    }
+                    LastSeenAt = seen;
+                }
+            }
+
+            public void Dispose()
+            {
+                IsDisposed = true;
+
+                PhoneMessageCenter.Singleton.Unregister(
+                    ClientID,
+                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_CONNECTED,
+                    ConnectedCallback
+                );
+
+                PhoneMessageCenter.Singleton.Unregister(
+                    ClientID,
+                    PhoneMessageCenter.MSG_FAKE_TYPE_ON_DISCONNECTED,
+                    DisonnectedCallback
+                );
+            }
+        }
+
+
         public class HandlerList : IList<FileTransmissionAbstract>, IDisposable
         {
             private class HandlerEnum : IEnumerator<FileTransmissionAbstract>
@@ -466,7 +539,7 @@ namespace FnSync
                 },
                 MSG_TYPE_FILE_EXISTS,
                 MSG_TYPE_FILE_EXISTS_BACK,
-                5000,
+                60000,
                 "type",
                 null
             );
@@ -568,22 +641,8 @@ namespace FnSync
             }
 
             SpeedShortTerm.Reset();
-            Watcher();
 
             return Task.CompletedTask;
-        }
-
-        private async void Watcher()
-        {
-            while (_IsDisposed == 0)
-            {
-                await Task.Delay(300);
-                double speed = AddTransmitLength(0);
-                if (speed <= 0)
-                {
-                    Client?.SendMsgNoThrow(PhoneClient.MSG_TYPE_HELLO);
-                }
-            }
         }
 
         private double MaxSpeed = 0.0;

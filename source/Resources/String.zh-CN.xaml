@@ -98,8 +98,8 @@
     <System:String x:Key="RequireRestart">* 重启程序生效。</System:String>
     <System:String x:Key="Browse">浏览</System:String>
     <System:String x:Key="Clear">清空</System:String>
-    <System:String x:Key="FileDefaultSaveFolder">文件保存路径</System:String>
-    <System:String x:Key="FileDefaultSaveFolderNote">文件默认保存路径。如果留空，则每次接受文件都需要选择路径。</System:String>
+    <System:String x:Key="SaveFileAutomatically">自动保存文件</System:String>
+    <System:String x:Key="FileDefaultSaveFolder">保存路径</System:String>
     <System:String x:Key="AdditionalIPs">附加 IP 地址</System:String>
     <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用英文冒号(;)分割。修改后需要刷新二维码。</System:String>
 

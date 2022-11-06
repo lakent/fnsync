@@ -513,6 +513,7 @@ namespace FnSync.Model.ControlFolderList
         private void DisconnectedCallback(string id, string msgType, object msgObject, PhoneClient client)
         {
             Children.Clear();
+            ModelCache.Clear();
             Children.Add(Placeholder.PhoneOffline);
         }
 
@@ -523,7 +524,7 @@ namespace FnSync.Model.ControlFolderList
 
             FileBaseModel Selected = this.Selected;
 
-            if (Selected == null)
+            if (Selected == null || Selected is RootModel)
             {
                 return;
             }

@@ -36,6 +36,14 @@ namespace FnSync
                 else
                 {
                     _ = CurrentWindow.Activate();
+
+                    // https://stackoverflow.com/a/6837421/1968839
+                    if (CurrentWindow.WindowState == WindowState.Minimized)
+                    {
+                        CurrentWindow.WindowState = WindowState.Normal;
+                    }
+
+                    // SystemCommands.RestoreWindow(CurrentWindow);
                 }
 
                 return null;

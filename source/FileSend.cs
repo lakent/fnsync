@@ -293,7 +293,7 @@ namespace FnSync
                         FileReceive.MSG_TYPE_FILE_CONTENT,
                         binary,
                         MSG_TYPE_FILE_CONTENT_RECEIVED,
-                        5000
+                        60000
                         );
 
                     AddTransmitLength(Entry.length);
@@ -328,7 +328,7 @@ namespace FnSync
                             },
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS,
                             MSG_TYPE_FILE_TRANSFER_KEY_EXISTS_REPLY,
-                            5000,
+                            60000,
                             "exists",
                             false
                             );
@@ -370,7 +370,7 @@ namespace FnSync
                 FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY,
                 null,
                 FileReceive.MSG_TYPE_FILE_TRANSFER_REQUEST_KEY_OK,
-                5000
+                60000
                 );
 
             if (!(msgObj is JObject msg))
@@ -409,7 +409,7 @@ namespace FnSync
                         MSG_TYPE_NEW_FOLDER,
                         null,
                         MSG_TYPE_NEW_FOLDER_CREATED,
-                        5000
+                        60000
                         );
 
                     if (!(msgObj is JObject msg))

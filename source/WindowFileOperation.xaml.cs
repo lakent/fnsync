@@ -2,14 +2,12 @@
 using Microsoft.Win32;
 using Ookii.Dialogs.Wpf;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using static FnSync.FileTransmissionAbstract;
 using MessageBox = System.Windows.MessageBox;
 using MessageBoxButton = System.Windows.MessageBoxButton;
@@ -205,25 +203,6 @@ namespace FnSync
         {
         }
 
-        /*
-        public WindowFileOperation(IBase InitializedTransmission, string DestFolder = null) : this(InitializedTransmission, null, null, null, DestFolder)
-        { }
-
-        public WindowFileOperation(IBase Transmission, PhoneClient Client, IList<ControlFolderListItemViewBase.UiItem> UiItems, string RootFolderOnSource, string DestFolder = null) : this()
-        {
-            this.Transmission = Transmission;
-            this.DestFolder = DestFolder;
-            this.Client = Client;
-            this.PendingItems = UiItems;
-            this.SrcFolder = RootFolderOnSource;
-        }
-        */
-
-        /*
-        public WindowFileOperation(BaseModule<BaseEntry> Transmission, PhoneClient Client, IList items, string RootOnPhone, string DestFolder = null) : this(Transmission, Client, items.CloneToTypedList<ControlFolderListItemViewBase.UiItem>(), RootOnPhone, DestFolder)
-        { }
-        */
-
         private static readonly string FAILED = (string)Application.Current.FindResource("Failed");
         private static readonly string SKIPPED = (string)Application.Current.FindResource("Skipped");
         private static readonly string SUCCEED = (string)Application.Current.FindResource("Succeed");
@@ -329,6 +308,9 @@ namespace FnSync
             this.TaskbarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
             FilesTotal.Content = HandlerList.Count.ToString();
 
+            FileTransmittionWatcher Watcher = new FileTransmittionWatcher(ClientId);
+            Watcher.Start();
+
             int i = 0;
             foreach (FileTransmissionAbstract Handler in this.HandlerList)
             {
@@ -376,6 +358,8 @@ namespace FnSync
 
                 Handler.Dispose();
             }
+
+            Watcher.Dispose();
 
             await Task.Delay(1500);
 

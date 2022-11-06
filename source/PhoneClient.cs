@@ -61,6 +61,8 @@ namespace FnSync
 
         public bool IsAlive { get; protected set; } = false;
 
+        public long SeenAt { get; private set; } = 0L;
+
         private class SendQueueClass : QueuedAsyncTask<object, byte[]>
         {
             public readonly PhoneClient ClientObject;
@@ -485,6 +487,8 @@ namespace FnSync
 
             AlivePhones.Singleton.AddOrUpdate(Id, this)?.Dispose();
             IsAlive = true;
+            
+            SeenAt = DateTimeOffset.Now.ToUnixTimeMilliseconds();
 
             PhoneMessageCenter.Singleton.Raise(
                 Id,
@@ -500,6 +504,8 @@ namespace FnSync
         private MessageWithBinary messageWithBinary = null;
         protected override void ConsumePackage(byte[] raw, byte[] decrypted)
         {
+            SeenAt = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+
             if (messageWithBinary != null)
             {
                 messageWithBinary.Binary = decrypted;
