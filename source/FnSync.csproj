@@ -1,378 +1,73 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{06F280A9-52CD-4555-A659-810C2F7951A0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>FnSync</RootNamespace>
-    <AssemblyName>FnSync</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.0.1.0</ApplicationVersion>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>app.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
-    <NoWin32Manifest>true</NoWin32Manifest>
-  </PropertyGroup>
-  <PropertyGroup>
+    <TargetFramework>net6.0-windows10.0.17763.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <StartupObject>FnSync.App</StartupObject>
+    <PlatformTarget>x64</PlatformTarget>
+    <BaseOutputPath>Y:\bin</BaseOutputPath>
+    <BaseIntermediateOutputPath>Y:\obj\</BaseIntermediateOutputPath>
+    <AssemblyVersion>0.8.3.0</AssemblyVersion>
+    <FileVersion>0.8.3.0</FileVersion>
+    <Title>FnSync</Title>
+    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Caching" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="UIAutomationProvider" />
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="WindowsFormsIntegration" />
+    <None Remove=".gitignore" />
+    <None Remove="Resources\baseline_arrow_upward_black_24dp.png" />
+    <None Remove="Resources\baseline_settings_black_24dp.png" />
+    <None Remove="Resources\icon.ico" />
+    <None Remove="Resources\icon1.ico" />
+    <None Remove="Resources\icon2.ico" />
+    <None Remove="Resources\icon3.ico" />
+    <None Remove="Resources\icon4.ico" />
+    <None Remove="Resources\ic_launcher.png" />
   </ItemGroup>
+
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="AutoDisposableTimer.cs" />
-    <Compile Include="Casting.cs" />
-    <Compile Include="ClipboardManager.cs" />
-    <Compile Include="ControlConnecting.xaml.cs">
-      <DependentUpon>ControlConnecting.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlConnectingViewModel.cs">
-      <DependentUpon>ControlConnecting.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlDevice.xaml.cs">
-      <DependentUpon>ControlDevice.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlDeviceInfomation.xaml.cs">
-      <DependentUpon>ControlDeviceInfomation.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlFileList.xaml.cs">
-      <DependentUpon>ControlFileList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlFolderList.xaml.cs">
-      <DependentUpon>ControlFolderList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlFolderListViewModel.cs">
-      <DependentUpon>ControlFolderList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlFolderListModel.cs">
-      <DependentUpon>ControlFolderList.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlHistory.xaml.cs">
-      <DependentUpon>ControlHistory.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ControlSettings.xaml.cs">
-      <DependentUpon>ControlSettings.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DeviceMenuList.cs" />
-    <Compile Include="FakeDispatcher.cs" />
-    <Compile Include="FileCutInside.cs" />
-    <Compile Include="FileCopyInside.cs" />
-    <Compile Include="FileSend.cs" />
-    <Compile Include="FileTransmissionAbstract.cs" />
-    <Compile Include="FileReceive.cs" />
-    <Compile Include="MainConfig.cs" />
-    <Compile Include="QueuedAsyncTask.cs" />
-    <Compile Include="SmallFileCache.cs" />
-    <Compile Include="AlivePhones.cs" />
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="JsonConfigFile.cs" />
-    <Compile Include="MessageWithBinary.cs" />
-    <Compile Include="NetworkChangedHandler.cs" />
-    <Compile Include="NotificationSubchannel.cs" />
-    <Compile Include="PhoneListener.cs" />
-    <Compile Include="PhoneMessageCenter.cs" />
-    <Compile Include="RecordedPkgMapping.cs" />
-    <Compile Include="SavedPhones.cs" />
-    <Compile Include="Extension.cs" />
-    <Compile Include="SingleInstanceLock.cs" />
-    <Compile Include="LengthPrefixedStreamBuffer.cs" />
-    <Compile Include="PhoneClient.cs" />
-    <Compile Include="SpeedWatch.cs" />
-    <Compile Include="UserControlExtension.cs" />
-    <Compile Include="Utils.cs" />
-    <Compile Include="WindowFileAlreadyExists.xaml.cs">
-      <DependentUpon>WindowFileAlreadyExists.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowFileManager.xaml.cs">
-      <DependentUpon>WindowFileManager.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowFileManagerRename.xaml.cs">
-      <DependentUpon>WindowFileManagerRename.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowFileOperation.xaml.cs">
-      <DependentUpon>WindowFileOperation.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowMainViewModel.cs">
-      <DependentUpon>WindowMain.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowMain.xaml.cs">
-      <DependentUpon>WindowMain.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowUnhandledException.xaml.cs">
-      <DependentUpon>WindowUnhandledException.xaml</DependentUpon>
-    </Compile>
+    <Resource Include="Resources\app.ico" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="NotifyIconContextMenuCommand.cs" />
-    <Compile Include="EncryptionManager.cs" />
-    <Compile Include="HandShake.cs" />
-    <Compile Include="NotifyIconViewModel.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
+    <PackageReference Include="AdonisUI" Version="1.17.1" />
+    <PackageReference Include="AdonisUI.ClassicTheme" Version="1.17.1" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.1" />
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="QRCoder" Version="1.4.3" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\baseline_arrow_upward_black_24dp.png" />
+    <Resource Include="Resources\baseline_settings_black_24dp.png" />
+    <Resource Include="Resources\icon.ico" />
+    <Resource Include="Resources\icon1.ico" />
+    <Resource Include="Resources\icon2.ico" />
+    <Resource Include="Resources\icon3.ico" />
+    <Resource Include="Resources\icon4.ico" />
+    <Resource Include="Resources\ic_launcher.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="AdonisUI">
-      <Version>1.17.1</Version>
-    </PackageReference>
-    <PackageReference Include="AdonisUI.ClassicTheme">
-      <Version>1.17.1</Version>
-    </PackageReference>
-    <PackageReference Include="Hardcodet.NotifyIcon.Wpf">
-      <Version>1.1.0</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications">
-      <Version>7.1.2</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts">
-      <Version>10.0.22621.2</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Ookii.Dialogs.Wpf">
-      <Version>5.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Portable.BouncyCastle">
-      <Version>1.9.0</Version>
-    </PackageReference>
-    <PackageReference Include="QRCoder">
-      <Version>1.4.3</Version>
-    </PackageReference>
-    <PackageReference Include="QueryString.NET">
-      <Version>1.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Dataflow">
-      <Version>6.0.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="ControlConnecting.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlDevice.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlDeviceInfomation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlFileList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlFolderList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlHistory.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ControlSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Resources\NotifyIconResources.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\String.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Resources\String.zh-CN.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowFileAlreadyExists.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowFileManager.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowFileManagerRename.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowFileOperation.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowMain.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="WindowUnhandledException.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\icon1.ico" />
-    <None Include="Resources\icon2.ico" />
-    <None Include="Resources\icon3.ico" />
-    <None Include="Resources\icon4.ico" />
-    <Resource Include="Resources\ic_launcher.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.6.2 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\baseline_settings_black_24dp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="app.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\baseline_arrow_upward_black_24dp.png" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

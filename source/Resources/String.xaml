@@ -27,12 +27,13 @@ Scan QR Code</System:String>
     <System:String x:Key="Rename">Rename</System:String>
     <System:String x:Key="Disconnect">Disconnect</System:String>
     <System:String x:Key="OpenMainWindow">Main Window</System:String>
+    <System:String x:Key="TriggerClipboardSync">Sync Clipboard Text Now</System:String>
     <System:String x:Key="Status">Status</System:String>
     <System:String x:Key="Online">Online</System:String>
     <System:String x:Key="Offline">Offline</System:String>
     <System:String x:Key="OfflineWithPhone">Offline - {0} - Click to Reconnect</System:String>
     <System:String x:Key="Connecting">Connecting…</System:String>
-    <System:String x:Key="ConnectingKnown">Connecting known phones...</System:String>
+    <System:String x:Key="ConnectingKnown">Finding known phones...</System:String>
     <System:String x:Key="ConnectedPhones">Connected Phones:</System:String>
     <System:String x:Key="ConnectedPhonesNone">(None)</System:String>
     <System:String x:Key="CopyText">Copy Text</System:String>
@@ -88,10 +89,10 @@ Scan QR Code</System:String>
     <System:String x:Key="PkgID">Package ID</System:String>
     <System:String x:Key="Startup">Startup</System:String>
     <System:String x:Key="Transmitting">Transmitting</System:String>
-    <System:String x:Key="ConnectOnStartup">Connect known phones on startup</System:String>
+    <System:String x:Key="ConnectOnStartup">Try to connect known phones on startup</System:String>
     <System:String x:Key="HideOnStartup">Don't show main window on startup</System:String>
-    <System:String x:Key="HideNotificationOnStartup">Don't show connect toast on startup</System:String>
-    <System:String x:Key="DontToastConnected">Don't toast 'Connected' message</System:String>
+    <System:String x:Key="HideNotificationOnStartup">Don't show connecting toast on startup</System:String>
+    <System:String x:Key="DontToastConnected">Don't show 'Connected' message</System:String>
     <System:String x:Key="ClipboardSync">Sync clipboard text to phones (Text Only)</System:String>
     <System:String x:Key="TextCastAutoCopy">Copy text automatically when received</System:String>
     <System:String x:Key="FixedListenPort">Listen on a fixed port</System:String>
@@ -99,6 +100,8 @@ Scan QR Code</System:String>
     <System:String x:Key="RequireRestart">* You need restart this program for this changes to take effect.</System:String>
     <System:String x:Key="SaveFileAutomatically">Save File Automatically</System:String>
     <System:String x:Key="FileDefaultSaveFolder">Location</System:String>
+    <System:String x:Key="SystemTrayIcon">Tray Icon</System:String>
+    <System:String x:Key="TrayIconDoubleClickAction">Double Click Action</System:String>
     <System:String x:Key="Browse">Browse</System:String>
     <System:String x:Key="Clear">Clear</System:String>
     <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>

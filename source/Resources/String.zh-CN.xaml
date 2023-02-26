@@ -27,6 +27,7 @@
     <System:String x:Key="Rename">重命名</System:String>
     <System:String x:Key="Disconnect">断开连接</System:String>
     <System:String x:Key="OpenMainWindow">打开主界面</System:String>
+    <System:String x:Key="TriggerClipboardSync">立即同步剪切板</System:String>
     <System:String x:Key="Status">状态</System:String>
     <System:String x:Key="Online">在线</System:String>
     <System:String x:Key="Offline">离线</System:String>
@@ -100,6 +101,8 @@
     <System:String x:Key="Clear">清空</System:String>
     <System:String x:Key="SaveFileAutomatically">自动保存文件</System:String>
     <System:String x:Key="FileDefaultSaveFolder">保存路径</System:String>
+    <System:String x:Key="SystemTrayIcon">托盘图标</System:String>
+    <System:String x:Key="TrayIconDoubleClickAction">双击动作</System:String>
     <System:String x:Key="AdditionalIPs">附加 IP 地址</System:String>
     <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用英文冒号(;)分割。修改后需要刷新二维码。</System:String>
 

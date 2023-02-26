@@ -1,0 +1,30 @@
+﻿<adonisControls:AdonisWindow x:Class="FnSync.WindowUnhandledException"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
+        xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+        xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+        xmlns:local="clr-namespace:FnSync"
+        mc:Ignorable="d"
+        Background="{DynamicResource {x:Static SystemColors.MenuBarBrushKey}}"
+        WindowStartupLocation="CenterScreen" Icon="../Resources/icon.ico"
+        Title="{DynamicResource ErrorEncountered}" Height="450" Width="400">
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBox Grid.Row="0" Text="{DynamicResource ErrorLabel}" Background="Transparent" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Hidden" Margin="0,4" BorderThickness="0"/>
+
+        <TextBox x:Name="Message" Grid.Row="1" IsReadOnly="True" IsReadOnlyCaretVisible="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+             VerticalContentAlignment="Top" VerticalAlignment="Stretch"
+             />
+        <StackPanel Grid.Row="2" Margin="0,8,0,0" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button x:Name="QuitThis" Content="{DynamicResource Quit}" Padding="8,4" Click="QuitThis_Click"/>
+            <Button x:Name="IgnoreThis" Content="{DynamicResource Ignore}" Margin="8,0,0,0" Padding="8,4" Click="IgnoreThis_Click"/>
+        </StackPanel>
+    </Grid>
+</adonisControls:AdonisWindow>

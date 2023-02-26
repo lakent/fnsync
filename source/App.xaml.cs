@@ -13,10 +13,10 @@ namespace FnSync
     /// </summary>
     public partial class App : Application
     {
-        public static TaskbarIcon NotifyIcon { get; protected set; } = null;
+        public static TaskbarIcon NotifyIcon { get; protected set; } = null!;
 
-        public static DeviceMenuList MenuList { get; protected set; } = null;
-        public static FakeDispatcher FakeDispatcher = null;
+        public static DeviceMenuList MenuList { get; protected set; } = null!;
+        public static readonly FakeDispatcher FakeDispatcher = FakeDispatcher.Init();
 
         private static void RefreshIcon()
         {
@@ -64,7 +64,11 @@ namespace FnSync
 
             if (e.Args.Contains("-LE"))
             {
-                new WindowUnhandledException(Environment.GetEnvironmentVariable("LAST_ERROR_STRING")).Show();
+                string? exceptionInfo = Environment.GetEnvironmentVariable("LAST_ERROR_STRING");
+                if (exceptionInfo != null)
+                {
+                    new WindowUnhandledException(exceptionInfo).Show();
+                }
                 return;
             }
 
@@ -78,14 +82,14 @@ namespace FnSync
                 return;
             }
 
-            FakeDispatcher = FakeDispatcher.Init();
+            // FakeDispatcher = FakeDispatcher.Init();
 
             ToastNotificationManagerCompat.OnActivated += NotificationSubchannel.OnActivated;
 
+            SetLanguageDictionary();
+
             NotifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
             MenuList = new DeviceMenuList(NotifyIcon.ContextMenu);
-
-            SetLanguageDictionary();
 
             PhoneMessageCenter.Singleton.Register(
                 null,
@@ -178,7 +182,7 @@ namespace FnSync
 
         private void SetLanguageDictionary()
         {
-            ResourceDictionary dict = new ResourceDictionary();
+            ResourceDictionary dict = new();
 
             switch (Thread.CurrentThread.CurrentCulture.Name)
             {
@@ -194,15 +198,15 @@ namespace FnSync
             Resources.MergedDictionaries.Add(dict);
 
 #if DEBUG
-            dict.Source = new Uri("..\\Resources\\String.zh-CN.xaml", UriKind.Relative);
+            dict.Source = new Uri("..\\Resources\\String.xaml", UriKind.Relative);
             Resources.MergedDictionaries.Add(dict);
 #endif
 
             CONNECTED = (string)FindResource("Connected");
         }
 
-        private static string CONNECTED;
-        private static void ToastConnected(string id, string msgType, object msg, PhoneClient client)
+        private static string CONNECTED = "";
+        private static void ToastConnected(string id, string msgType, object? msg, PhoneClient? client)
         {
             if (MainConfig.Config.DontToastConnected)
             {
@@ -210,14 +214,14 @@ namespace FnSync
             }
 
             ToastContentBuilder Builder = new ToastContentBuilder()
-                .AddHeader(id, client.Name, "")
+                .AddHeader(id, client?.Name, "")
                 .AddText(CONNECTED)
                 ;
 
             NotificationSubchannel.Singleton.Push(Builder);
         }
 
-        private static void OnDeviceChangedUIWorks(string id, string msgType, object msg, PhoneClient client)
+        private static void OnDeviceChangedUIWorks(string id, string msgType, object? msg, PhoneClient? client)
         {
             RefreshIcon();
         }
