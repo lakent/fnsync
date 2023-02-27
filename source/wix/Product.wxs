@@ -10,7 +10,7 @@
   <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
 
-  <Product Id="*" Name="FnSync" Language="1033" Version="0.8.3.0" Manufacturer="holmium" UpgradeCode="9AD7C0B9-C690-4CF2-BBB6-093D68C50100" >
+  <Product Id="*" Name="FnSync" Language="1033" Version="0.8.5.0" Manufacturer="holmium" UpgradeCode="9AD7C0B9-C690-4CF2-BBB6-093D68C50100" >
     <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

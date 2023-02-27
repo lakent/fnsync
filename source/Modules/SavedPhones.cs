@@ -52,8 +52,7 @@ namespace FnSync
 
             public string Id { get; private set; }
 
-            private readonly Lazy<HistoryWriter> notificationWriter;
-            public HistoryWriter NotificationWriter => notificationWriter.Value;
+            public readonly HistoryWriter NotificationWriter;
             private readonly Lazy<SmallFileCache> smallFiles;
             public SmallFileCache SmallFiles => smallFiles.Value;
 
@@ -128,8 +127,8 @@ namespace FnSync
                 Folder = GetDeviceFolder(id);
                 Encryption = new EncryptionManager(id);
 
-                notificationWriter = new(() => new HistoryWriter(id));
-                smallFiles = new(() => new SmallFileCache(id));
+                NotificationWriter = new HistoryWriter(id);
+                smallFiles = new(() => new SmallFileCache(Path.GetTempPath() + Id + "\\"));
 
             }
 
@@ -208,14 +207,11 @@ namespace FnSync
 
             public void Dispose()
             {
-                if (notificationWriter.IsValueCreated)
-                {
-                    NotificationWriter?.Dispose();
-                }
+                NotificationWriter.Dispose();
 
                 if (smallFiles.IsValueCreated)
                 {
-                    SmallFiles?.Dispose();
+                    SmallFiles.Dispose();
                 }
             }
         }

@@ -102,26 +102,27 @@ namespace FnSync
         private readonly Lazy<IntPtr> messageWindowHandle;
         private IntPtr MessageWindowHandle => messageWindowHandle.Value;
 
+        // This cannot be garbage-collected since there is a reference in native code, so we hold a reference to this
+        private NativeMethods.WindowClass messageWindowClass;
+
         private ClipboardManager()
         {
             messageWindowHandle = new(() =>
             {
                 string WindowId = "FnSync_" + Guid.NewGuid();
 
-                NativeMethods.WindowClass windowClass;
+                messageWindowClass.style = 0;
+                messageWindowClass.lpfnWndProc = WndProc;
+                messageWindowClass.cbClsExtra = 0;
+                messageWindowClass.cbWndExtra = 0;
+                messageWindowClass.hInstance = IntPtr.Zero;
+                messageWindowClass.hIcon = IntPtr.Zero;
+                messageWindowClass.hCursor = IntPtr.Zero;
+                messageWindowClass.hbrBackground = IntPtr.Zero;
+                messageWindowClass.lpszMenuName = IntPtr.Zero;
+                messageWindowClass.lpszClassName = WindowId;
 
-                windowClass.style = 0;
-                windowClass.lpfnWndProc = WndProc;
-                windowClass.cbClsExtra = 0;
-                windowClass.cbWndExtra = 0;
-                windowClass.hInstance = IntPtr.Zero;
-                windowClass.hIcon = IntPtr.Zero;
-                windowClass.hCursor = IntPtr.Zero;
-                windowClass.hbrBackground = IntPtr.Zero;
-                windowClass.lpszMenuName = IntPtr.Zero;
-                windowClass.lpszClassName = WindowId;
-
-                NativeMethods.RegisterClass(ref windowClass);
+                NativeMethods.RegisterClass(ref messageWindowClass);
 
                 return NativeMethods.CreateWindowEx(
                         0,
