@@ -75,6 +75,10 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Label Grid.Column="0" Content="{DynamicResource TrayIconDoubleClickAction}"/>
                             <ComboBox Grid.Column="1" Margin="8, 0, 0, 0"
                                       ItemsSource="{Binding TrayDoubleClickChoices}"
@@ -86,6 +90,9 @@
                                     </DataTemplate>
                                 </ComboBox.ItemTemplate>
                             </ComboBox>
+                            <Label Grid.Row="1" Grid.Column="1" Margin="8, 0, 0, 0">
+                                <TextBlock Text="{DynamicResource TrayIconDoubleClickActionNote}" TextWrapping="WrapWithOverflow" />
+                            </Label>
                         </Grid>
                     </GroupBox>
                 </StackPanel>

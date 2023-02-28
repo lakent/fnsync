@@ -14,16 +14,22 @@ namespace FnSync
     {
         private readonly string Folder;
 
-        private string GenFilePath(string key, string suffix)
+        private string GenFilePath(string key, string fileExtension)
         {
-            return Folder + Regex.Replace(key.ToLower(), @"[^a-z0-9._]{1}", "_") +
-                (suffix != null ? "." + suffix.ToLower() : "");
+            return Path.Combine(
+                Folder,
+                Regex.Replace(key.ToLower(), @"[^a-z0-9._]{1}", "_"),
+                string.IsNullOrWhiteSpace(fileExtension) ? "." + fileExtension.ToLower() : ""
+                );
         }
 
         public SmallFileCache(string Folder)
         {
             this.Folder = Folder.AppendIfNotEnding("\\")!;
-            Directory.CreateDirectory(this.Folder);
+            if (!Directory.Exists(this.Folder))
+            {
+                Directory.CreateDirectory(this.Folder);
+            }
         }
 
         private void SaveBytes(string path, byte[] bytes)

@@ -128,7 +128,9 @@ namespace FnSync
                 Encryption = new EncryptionManager(id);
 
                 NotificationWriter = new HistoryWriter(id);
-                smallFiles = new(() => new SmallFileCache(Path.GetTempPath() + Id + "\\"));
+                smallFiles = new(() => new SmallFileCache(
+                    Path.Combine(Path.GetTempPath(), Id)
+                ));
 
             }
 

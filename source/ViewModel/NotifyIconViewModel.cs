@@ -78,20 +78,27 @@ namespace FnSync
                 {
                     CommandAction = () =>
                     {
-                        switch (MainConfig.Config.TrayDoubleClickAction.Value)
+                        if (AlivePhones.Singleton.AliveCount == 0)
                         {
-                            default:
-                            case "OpenMainWindow":
-                                WindowMain.NewOne();
-                                break;
+                            WindowMain.NewOne();
+                        }
+                        else
+                        {
+                            switch (MainConfig.Config.TrayDoubleClickAction.Value)
+                            {
+                                default:
+                                case "OpenMainWindow":
+                                    WindowMain.NewOne();
+                                    break;
 
-                            case "FileManager":
-                                WindowFileManager.NewOne();
-                                break;
+                                case "FileManager":
+                                    WindowFileManager.NewOne();
+                                    break;
 
-                            case "TriggerClipboardSync":
-                                ClipboardManager.Singleton.SyncClipboardText(true);
-                                break;
+                                case "TriggerClipboardSync":
+                                    ClipboardManager.Singleton.SyncClipboardText(true);
+                                    break;
+                            }
                         }
                     }
                 };
