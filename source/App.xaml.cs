@@ -88,6 +88,8 @@ namespace FnSync
 
             SetLanguageDictionary();
 
+            NotificationSubchannel._Force = 0;
+
             NotifyIcon = (TaskbarIcon)FindResource("NotifyIcon");
             MenuList = new DeviceMenuList(NotifyIcon.ContextMenu);
 

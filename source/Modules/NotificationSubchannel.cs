@@ -15,6 +15,8 @@ namespace FnSync
     {
         public static readonly NotificationSubchannel Singleton = new();
 
+        public static int _Force = -1;
+
         private readonly BufferBlock<ToastContentBuilder> Queue = new();
 
         private NotificationSubchannel()
