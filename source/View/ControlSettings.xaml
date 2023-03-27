@@ -95,6 +95,21 @@
                             </Label>
                         </Grid>
                     </GroupBox>
+                    <GroupBox Header="{DynamicResource Hotkeys}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Grid.Column="0" Content="{DynamicResource TriggerClipboardSync}"/>
+                            <TextBox Grid.Column="1" x:Name="TriggerClipboardSyncHotkeyBox"
+                                    VerticalContentAlignment="Center"
+                                    IsReadOnlyCaretVisible="True" />
+                        </Grid>
+                    </GroupBox>
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
