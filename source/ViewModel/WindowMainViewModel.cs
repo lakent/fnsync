@@ -128,7 +128,7 @@ namespace FnSync.ViewModel.WindowMain
 
         public ViewModel(string? id)
         {
-            LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<ControlConnectionByQR>("Connection", this, true));
+            LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<FnSync.ControlConnecting>("Connection", this, true));
             LeftPanelItemSet.Add(new LeftPanel.ControlWrapper<ControlSettings>("Setting", this, true));
 
             foreach (SavedPhones.Phone Phone in SavedPhones.Singleton.Values)

@@ -11,11 +11,11 @@ namespace FnSync
     /// <summary>
     /// Interaction logic for ControlConnectionByQR.xaml
     /// </summary>
-    public partial class ControlConnectionByQR : UserControlExtension
+    public partial class ControlConnecting : UserControlExtension
     {
         private readonly ViewModel.ControlConnecting.ViewModel ViewModel = new();
 
-        public ControlConnectionByQR()
+        public ControlConnecting()
         {
             this.DataContext = this.ViewModel;
 

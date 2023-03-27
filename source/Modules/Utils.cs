@@ -27,8 +27,8 @@ namespace FnSync
 
             foreach (NetworkInterface adapter in Adapters)
             {
-                var ips = adapter.GetIPProperties().UnicastAddresses;
-                foreach (var ip in ips)
+                UnicastIPAddressInformationCollection ips = adapter.GetIPProperties().UnicastAddresses;
+                foreach (UnicastIPAddressInformation ip in ips)
                 {
                     if (ip.Address.AddressFamily != AddressFamily.InterNetwork &&
                         ip.Address.AddressFamily != AddressFamily.InterNetworkV6
@@ -49,12 +49,6 @@ namespace FnSync
 
                     string str = ip.Address.ToString();
 
-#if DEBUG
-                    if (str.StartsWith("10."))
-                    {
-                        continue;
-                    }
-#endif
                     if (ip.Address.IsIPv6LinkLocal && str.Contains('%'))
                     {
                         str = str[..str.IndexOf('%')];
