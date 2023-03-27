@@ -414,8 +414,8 @@ namespace FnSync
             if (reply == null)
             {
                 _ = MessageBox.Show(
-                    (string)Application.Current.FindResource("DatetimeNotMatched"),
-                    (string)Application.Current.FindResource("Prompt"),
+                    (string)Application.Current.FindResource("DecryptionErrorNote"),
+                    (string)Application.Current.FindResource("DecryptionError"),
                     MessageBoxButton.OK,
                     MessageBoxImage.Exclamation
                     );

@@ -10,7 +10,11 @@
     <System:String x:Key="Cancel">Cancel</System:String>
     <System:String x:Key="Cancelling">Cancelling</System:String>
     <System:String x:Key="Prompt">Prompt</System:String>
-    <System:String x:Key="DatetimeNotMatched">Please check the datetimes of both of your devices, the difference must be less than 5min.</System:String>
+    <System:String x:Key="DecryptionError">Decryption Error</System:String>
+    <System:String x:Key="DecryptionErrorNote" xml:space="preserve">Please check:
+1. The correctness of connection code (if you use this method).
+2. The datetimes of both of your devices, the difference must be less than 5min.
+    </System:String>
     <System:String x:Key="PleaseEnterConnectionCode">Please enter connection code.</System:String>
 
     <System:String x:Key="MethodCode" xml:space="preserve">Method 2

@@ -10,7 +10,11 @@
     <System:String x:Key="Cancel">取消</System:String>
     <System:String x:Key="Cancelling">取消</System:String>
     <System:String x:Key="Prompt">提示</System:String>
-    <System:String x:Key="DatetimeNotMatched">请检查您设备的日期和时间，两个设备的时间差不能超过 5 分钟</System:String>
+    <System:String x:Key="DecryptionError">密钥错误</System:String>
+    <System:String x:Key="DecryptionErrorNote" xml:space="preserve">请检查：
+1. 连接码是否正确（如果使用连接码连接的话）；
+2. 您设备的日期和时间，两个设备的时间差不能超过 5 分钟。
+    </System:String>
     <System:String x:Key="PleaseEnterConnectionCode">请输入连接码。</System:String>
 
     <System:String x:Key="MethodCode" xml:space="preserve">方式二

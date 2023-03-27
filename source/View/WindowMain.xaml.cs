@@ -44,6 +44,11 @@ namespace FnSync
                     }
 
                     // SystemCommands.RestoreWindow(CurrentWindow);
+
+                    if (id != null && CurrentWindow.DataContext is ViewModel.WindowMain.ViewModel viewModel)
+                    {
+                        viewModel.JumpToDevice(id);
+                    }
                 }
 
                 return null;

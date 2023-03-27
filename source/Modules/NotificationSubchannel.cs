@@ -58,10 +58,6 @@ namespace FnSync
 
                 one.AddCustomTimeStamp(DateTime.Now);
 
-#if !DEBUG
-                try
-                {
-#endif
                 string Tag = LastTag.ToString();
                 one.Show(toast =>
                 {
@@ -80,11 +76,6 @@ namespace FnSync
                 LastTag++;
                 Last = one;
                 await Task.Delay(1000);
-
-#if !DEBUG
-                }
-                catch (Exception e) { }
-#endif
             }
         }
 
@@ -157,10 +148,10 @@ namespace FnSync
 
         private static void ToastPhoneNotification(string clientId, string clientName, JObject msg)
         {
-            string? title = (string?)msg["title"];
+            string title = msg.OptString("title", "")!;
             string text = msg.OptString("text", "")!;
-            string? pkgname = (string?)msg["pkgname"];
-            string? appName = msg.OptString("appname", null);
+            string? pkgname = msg.OptString("pkgname");
+            string? appName = msg.OptString("appname");
             // long? time = (long?)msg["time"];
 
             string? icon = pkgname != null ?
@@ -207,90 +198,6 @@ namespace FnSync
             }
 
             Singleton.Push(Builder);
-
-            /*
-
-            ToastActionsCustom Actions = new ToastActionsCustom()
-            {
-                ContextMenuItems =
-                    {
-                        new ToastContextMenuItem(COPY_TEXT,
-                            new QueryString()
-                            {
-                                { "Copy", text },
-                            }.ToString()
-                        ),
-                    },
-                Buttons = { }
-            };
-
-            string[] copyables = GetCopyableSeries(text, 5 - Actions.ContextMenuItems.Count);
-            if (copyables != null)
-            {
-                foreach (string copyable in copyables)
-                {
-                    Actions.Buttons.Add(
-                        new ToastButton(copyable, new QueryString() { { "Copy", copyable } }.ToString())
-                        {
-                            ActivationType = ToastActivationType.Foreground
-                        }
-                    );
-                }
-            }
-
-            ToastContent toastContent = new ToastContent()
-            {
-                //Launch = "action=viewConversation&conversationId=5",
-
-                Header = new ToastHeader(clientId, clientName, ""),
-
-                Visual = new ToastVisual()
-                {
-                    BindingGeneric = new ToastBindingGeneric()
-                    {
-                        Children =
-                        {
-                            new AdaptiveText()
-                            {
-                                Text = title,
-                                HintMaxLines = 1
-                            },
-                            new AdaptiveText()
-                            {
-                                Text = text.Truncate(120),
-                            },
-                        },
-                        AppLogoOverride = icon == null ? null : new ToastGenericAppLogo()
-                        {
-                            Source = icon,
-                            HintCrop = ToastGenericAppLogoCrop.Default,
-                            AlternateText = pkgname
-                        },
-                        Attribution = appName != null ? new ToastGenericAttributionText()
-                        {
-                            Text = appName
-                        } : null,
-                    }
-                },
-
-                Actions = Actions,
-                DisplayTimestamp = DateTimeOffset.FromUnixTimeMilliseconds(time).LocalDateTime
-            };
-
-            // Create the XML document (BE SURE TO REFERENCE WINDOWS.DATA.XML.DOM)
-            var doc = new XmlDocument();
-            doc.LoadXml(toastContent.GetContent());
-
-            // And create the Toast notification
-            var Toast = new ToastNotification(doc);
-            var ToastDup = new ToastNotification(doc);
-
-            // And then show it
-
-            Singleton.Push(Toast, ToastDup);
-
-            */
-
         }
 
         public void Push(ToastContentBuilder Builder)
