@@ -145,7 +145,12 @@ namespace FnSync
         public async Task<JObject?> ReadJSON()
         {
             byte[]? bytes = await ReadBytes();
-            return bytes != null ? EncryptionManager.ExtractJSON(bytes) : null;
+            if (bytes == null)
+            {
+                return null;
+            }
+            JObject? ret = EncryptionManager.ExtractJSON(bytes);
+            return ret;
         }
 
         protected virtual void ConsumePackage(byte[] raw, byte[]? decrypted)
