@@ -12,34 +12,37 @@ namespace FnSync
     sealed class HandShake : IDisposable
     {
         private static readonly int DEFAULT_PORT = 21365;
-        private UdpClient? udpClient = null, udpClient6 = null;
+
+        private readonly Lazy<UdpClient> UdpClient = new(() =>
+        {
+            return new UdpClient(AddressFamily.InterNetwork);
+        });
+
+        private readonly Lazy<UdpClient> UdpClient6 = new(() =>
+        {
+            return new UdpClient(AddressFamily.InterNetworkV6);
+        });
 
         private volatile int Round = 0;
 
-        private void CreateSocket()
-        {
-            udpClient?.Close();
-            udpClient6?.Close();
-
-            udpClient = new UdpClient(AddressFamily.InterNetwork);
-            udpClient6 = new UdpClient(AddressFamily.InterNetworkV6);
-            udpClient.Client.EnableBroadcast = true;
-            udpClient6.Client.EnableBroadcast = true;
-        }
-
-        public HandShake()
-        {
-
-        }
+        public HandShake() { }
 
         public void Dispose()
         {
             Cancel();
-            udpClient?.Close();
-            udpClient6?.Close();
+
+            if (this.UdpClient.IsValueCreated)
+            {
+                UdpClient.Value.Close();
+            }
+
+            if (this.UdpClient6.IsValueCreated)
+            {
+                UdpClient6.Value.Close();
+            }
         }
 
-        public static String GetMachineName()
+        public static string GetMachineName()
         {
             try
             {
@@ -75,14 +78,14 @@ namespace FnSync
             return json;
         }
 
-        private static byte[] MakePackage(bool OldConnection, string? token, IEnumerable<SavedPhones.Phone>? target)
+        private static byte[] MakePackage(bool OldConnection, string? token, IEnumerable<SavedPhones.Phone>? targets)
         {
             List<string>? TargetIds = null;
-            if (target != null)
+            if (targets != null)
             {
                 TargetIds = new List<string>();
 
-                foreach(SavedPhones.Phone t in target)
+                foreach (SavedPhones.Phone t in targets)
                 {
                     TargetIds.Add(t.Id);
                 }
@@ -107,7 +110,7 @@ namespace FnSync
             foreach (string ip in Ipv6BroadcastAddresses)
                 try
                 {
-                    udpClient6?.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
+                    UdpClient6.Value.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
                 }
                 catch (Exception)
                 {
@@ -117,7 +120,7 @@ namespace FnSync
             foreach (string ip in Ipv4BroadcastAddresses)
                 try
                 {
-                    udpClient?.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
+                    UdpClient.Value.Send(data, data.Length, ip, DEFAULT_PORT + portIncrement);
                 }
                 catch (Exception)
                 {
@@ -137,46 +140,41 @@ namespace FnSync
                     }
                     else if (phone.LastIp.Contains(':'))
                     {
-                        udpClient6?.Send(data, data.Length, phone.LastIp, DEFAULT_PORT + portIncrement);
+                        UdpClient6.Value.Send(data, data.Length, phone.LastIp, DEFAULT_PORT + portIncrement);
                     }
                     else if (phone.LastIp.Contains('.'))
                     {
-                        udpClient?.Send(data, data.Length, phone.LastIp, DEFAULT_PORT + portIncrement);
+                        UdpClient.Value.Send(data, data.Length, phone.LastIp, DEFAULT_PORT + portIncrement);
                     }
                 }
                 catch (Exception) { }
             }
         }
 
-        public void Reach(int timeout, bool OldConnection, IEnumerable<SavedPhones.Phone>? targets)
+        public async void Reach(int timeout, bool OldConnection, IEnumerable<SavedPhones.Phone>? targets)
         {
             int ThisRound = Interlocked.Increment(ref Round);
 
-            CreateSocket();
-
             byte[] data = MakePackage(OldConnection, null, targets);
 
-            _ = Task.Run(() =>
-             {
-                 RefreshBroadcastAddresses();
+            RefreshBroadcastAddresses();
 
-                 int remain = timeout;
-                 int portIncrement = 0;
+            int remain = timeout;
+            int portIncrement = 0;
 
-                 while (remain > 0 && ThisRound == Round)
-                 {
-                     if (targets != null)
-                     {
-                         ReachTargets(data, targets, portIncrement / 2);
-                     }
+            while (remain > 0 && ThisRound == Round)
+            {
+                if (targets != null)
+                {
+                    ReachTargets(data, targets, portIncrement / 2);
+                }
 
-                     ReachLocalNetwork(data, portIncrement);
+                ReachLocalNetwork(data, portIncrement);
 
-                     remain -= 2500;
-                     ++portIncrement;
-                     Thread.Sleep(2500);
-                 }
-             });
+                remain -= 2500;
+                ++portIncrement;
+                await Task.Delay(2500);
+            }
         }
 
         public void Cancel()

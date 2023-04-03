@@ -22,7 +22,7 @@ namespace FnSync
             Task.Run(AddressChangedAction);
         }
 
-        private static void AddressChangedAction()
+        private static void AddressChangedAction() // DO NOT use async func
         {
             const int DELAY_MILLS = 5000;
 
