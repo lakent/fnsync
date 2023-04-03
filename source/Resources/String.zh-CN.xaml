@@ -109,6 +109,7 @@
     <System:String x:Key="TrayIconDoubleClickAction">双击动作</System:String>
     <System:String x:Key="TrayIconDoubleClickActionNote">此选项仅当有活动连接时有效。当没有活动连接时，双击始终会打开主界面</System:String>
     <System:String x:Key="Hotkeys">热键</System:String>
+    <System:String x:Key="HotkeysNotSet">(未设定)</System:String>
     <System:String x:Key="AdditionalIPs">附加 IP 地址</System:String>
     <System:String x:Key="AdditionalIPsNote">您可以指定附加的 IP 地址，这些地址会嵌入到二维码中。手机 APP 可以识别这些 IP 地址并尝试链接。用英文冒号(;)分割。修改后需要刷新二维码。</System:String>
 

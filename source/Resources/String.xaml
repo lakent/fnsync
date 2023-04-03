@@ -108,6 +108,7 @@ Scan QR Code</System:String>
     <System:String x:Key="TrayIconDoubleClickAction">Double Click Action</System:String>
     <System:String x:Key="TrayIconDoubleClickActionNote">This only applies when there is active connections. Otherwise, main window will always open.</System:String>
     <System:String x:Key="Hotkeys">Hotkeys</System:String>
+    <System:String x:Key="HotkeysNotSet">(not set)</System:String>
     <System:String x:Key="Browse">Browse</System:String>
     <System:String x:Key="Clear">Clear</System:String>
     <System:String x:Key="AdditionalIPs">Additional IP Addresses</System:String>

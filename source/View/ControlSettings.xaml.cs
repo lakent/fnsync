@@ -18,6 +18,7 @@ namespace FnSync
     /// <summary>
     /// Interaction logic for ControlSettings.xaml
     /// </summary>
+
     public partial class ControlSettings : UserControlExtension
     {
         public ControlSettings()
