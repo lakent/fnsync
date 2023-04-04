@@ -31,7 +31,7 @@ Scan QR Code</System:String>
     <System:String x:Key="Rename">Rename</System:String>
     <System:String x:Key="Disconnect">Disconnect</System:String>
     <System:String x:Key="OpenMainWindow">Main Window</System:String>
-    <System:String x:Key="TriggerClipboardSync">Sync Clipboard Text Immediately</System:String>
+    <System:String x:Key="TriggerClipboardSync">Sync Clipboard Text Now</System:String>
     <System:String x:Key="Status">Status</System:String>
     <System:String x:Key="Online">Online</System:String>
     <System:String x:Key="Offline">Offline</System:String>

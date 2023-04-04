@@ -49,6 +49,7 @@ namespace FnSync
                 ["SaveFileAutomatically"] = false,
                 ["FileDefaultSaveFolder"] = "",
                 ["TrayDoubleClickAction"] = "OpenMainWindow",
+                ["TriggerClipboardSync"] = "Ctrl + Shift + D",
 
                 // Don't assign null
             };
@@ -64,6 +65,8 @@ namespace FnSync
             this.trayDoubleClickAction = trayDoubleClickChoiceMap.Value[
                 this.OptString("TrayDoubleClickAction") ?? "OpenMainWindow"
                 ];
+
+            this.triggerClipboardSync = new(this.OptString("TriggerClipboardSync") ?? "Ctrl + Shift + D");
         }
 
         public string ThisId
@@ -183,6 +186,18 @@ namespace FnSync
                 this.trayDoubleClickAction = value;
                 this["TrayDoubleClickAction"] = value.Value;
                 this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TrayDoubleClickAction)));
+            }
+        }
+
+        private Hotkey triggerClipboardSync;
+        public Hotkey TriggerClipboardSync
+        {
+            get => triggerClipboardSync;
+            set
+            {
+                this.triggerClipboardSync = value;
+                this["TriggerClipboardSync"] = value.ToString();
+                this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TriggerClipboardSync)));
             }
         }
     }

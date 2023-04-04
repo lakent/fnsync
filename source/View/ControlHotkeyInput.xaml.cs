@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FnSync.View
+namespace FnSync
 {
     /// <summary>
     /// Interaction logic for ControlHotkeyInput.xaml
@@ -54,19 +54,19 @@ namespace FnSync.View
             foreach (string k in keySequences)
             {
                 string keyTrimmed = k.Trim();
-                if (k.Equals("ctrl", StringComparison.OrdinalIgnoreCase))
+                if (keyTrimmed.Equals("ctrl", StringComparison.OrdinalIgnoreCase))
                 {
                     modifiers |= ModifierKeys.Control;
                 }
-                else if (k.Equals("shift", StringComparison.OrdinalIgnoreCase))
+                else if (keyTrimmed.Equals("shift", StringComparison.OrdinalIgnoreCase))
                 {
                     modifiers |= ModifierKeys.Shift;
                 }
-                else if (k.Equals("alt", StringComparison.OrdinalIgnoreCase))
+                else if (keyTrimmed.Equals("alt", StringComparison.OrdinalIgnoreCase))
                 {
                     modifiers |= ModifierKeys.Alt;
                 }
-                else if (k.Equals("win", StringComparison.OrdinalIgnoreCase))
+                else if (keyTrimmed.Equals("win", StringComparison.OrdinalIgnoreCase))
                 {
                     modifiers |= ModifierKeys.Windows;
                 }

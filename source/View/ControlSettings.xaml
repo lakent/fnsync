@@ -105,9 +105,7 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Label Grid.Column="0" Content="{DynamicResource TriggerClipboardSync}"/>
-                            <TextBox Grid.Column="1" x:Name="TriggerClipboardSyncHotkeyBox"
-                                    VerticalContentAlignment="Center"
-                                    IsReadOnlyCaretVisible="True" />
+                            <local:ControlHotkeyInput Grid.Column="1" Margin="8,0,0,0" Hotkey="{Binding TriggerClipboardSync, Mode=TwoWay}"/>
                         </Grid>
                     </GroupBox>
                 </StackPanel>
