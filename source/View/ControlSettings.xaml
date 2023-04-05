@@ -199,6 +199,13 @@
                         </Hyperlink>
                         <LineBreak/>
 
+                        <Run Text="NHotkey.Wpf"/>
+                        <Run Text=": License: "/>
+                        <Hyperlink NavigateUri="https://github.com/thomaslevesque/NHotkey/blob/master/LICENSE.md" RequestNavigate="HyperLink_RequestNavigate">
+                            <Run Text="{Binding NavigateUri, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Hyperlink}}}"/>
+                        </Hyperlink>
+                        <LineBreak/>
+
                     </Paragraph>
 
                 </FlowDocument>

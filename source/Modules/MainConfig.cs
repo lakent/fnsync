@@ -1,5 +1,7 @@
 ﻿using FnSync.Model;
 using Newtonsoft.Json.Linq;
+using NHotkey;
+using NHotkey.Wpf;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,6 +69,22 @@ namespace FnSync
                 ];
 
             this.triggerClipboardSync = new(this.OptString("TriggerClipboardSync") ?? "Ctrl + Shift + D");
+            RegisterTriggerClipboardSyncHotkey();
+        }
+
+        private void RegisterTriggerClipboardSyncHotkey()
+        {
+            HotkeyManager.Current.AddOrReplace(
+                "TriggerClipboardSync",
+                this.triggerClipboardSync.Key,
+                this.triggerClipboardSync.Modifiers,
+                TriggerClipboardSyncHotkeyHandler
+                );
+        }
+
+        private void TriggerClipboardSyncHotkeyHandler(object? sender, HotkeyEventArgs e)
+        {
+            ClipboardManager.Singleton.SyncClipboardText(true);
         }
 
         public string ThisId
@@ -198,6 +216,7 @@ namespace FnSync
                 this.triggerClipboardSync = value;
                 this["TriggerClipboardSync"] = value.ToString();
                 this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TriggerClipboardSync)));
+                RegisterTriggerClipboardSyncHotkey();
             }
         }
     }
